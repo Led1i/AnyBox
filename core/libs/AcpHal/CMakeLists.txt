@@ -1,0 +1,10 @@
+anybox_add_system_library(AcpHal src/Exports.cpp AcpHal.def)
+target_include_directories(AcpHal PUBLIC include)
+
+if(BUILD_TESTING)
+    add_executable(acphal_exception_tests tests/Exceptions.cpp)
+    target_link_libraries(acphal_exception_tests PRIVATE AcpHal anybox_options)
+    set_target_properties(acphal_exception_tests PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${ANYBOX_RUNTIME_DIRECTORY}")
+    add_test(NAME acphal.exceptions COMMAND acphal_exception_tests)
+    set_tests_properties(acphal.exceptions PROPERTIES TIMEOUT 15)
+endif()
