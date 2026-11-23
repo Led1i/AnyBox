@@ -1,0 +1,12 @@
+#include <xg_xs.hpp>
+#include <anybox/ExceptionTest.hpp>
+
+int main() {
+    return AnyBox::Tests::Run([] {
+        IXGTextureComputer* computer = nullptr;
+        std::uint32_t swizzleMode = 0xFFFFFFFF;
+        AnyBox::Tests::ExpectUnimplemented("XGCreateTextureComputer", [&] { XGCreateTextureComputer(nullptr, &computer); });
+        AnyBox::Tests::ExpectUnimplemented("XGSuggestSwizzleMode", [&] { XGSuggestSwizzleMode(nullptr, 0, &swizzleMode); });
+        if (computer != nullptr || swizzleMode != 0xFFFFFFFF) throw std::runtime_error("An unimplemented export changed its output");
+    });
+}
