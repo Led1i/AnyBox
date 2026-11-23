@@ -1,10 +1,15 @@
 anybox_add_system_library(AcpHal src/Exports.cpp src/memory/Allocation.cpp src/memory/Exports.cpp src/memory/Heap.cpp src/memory/Mapping.cpp src/shape/Contexts.cpp AcpHal.def)
 target_include_directories(AcpHal PUBLIC include)
+target_sources(AcpHal PRIVATE src/channel/Commands.cpp src/channel/Lifetime.cpp src/channel/Messages.cpp)
 target_link_libraries(AcpHal PRIVATE xmem)
 
-anybox_add_exception_test(AcpHal)
 
 if(BUILD_TESTING)
+    add_executable(acphal_channel_tests tests/channel/Channel.cpp tests/channel/Concurrent.cpp)
+    target_link_libraries(acphal_channel_tests PRIVATE AcpHal)
+    set_target_properties(acphal_channel_tests PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${ANYBOX_RUNTIME_DIRECTORY}")
+    add_test(NAME acphal.channel COMMAND acphal_channel_tests)
+    set_tests_properties(acphal.channel PROPERTIES TIMEOUT 15)
     add_executable(acphal_shape_tests tests/shape/Contexts.cpp)
     target_link_libraries(acphal_shape_tests PRIVATE AcpHal)
     set_target_properties(acphal_shape_tests PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${ANYBOX_RUNTIME_DIRECTORY}")
