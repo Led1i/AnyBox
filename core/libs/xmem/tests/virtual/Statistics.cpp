@@ -1,6 +1,7 @@
 #include "Tests.hpp"
 
 #include <algorithm>
+#include <array>
 #include <cstdint>
 
 void AnyBox::Tests::CheckStatistics() {
@@ -27,6 +28,17 @@ void AnyBox::Tests::CheckStatistics() {
     auto during = statistics.gameUsed;
     XMemGetWorkingSetStatistics(0x20000001, &statistics);
     Require(statistics.gameUsed < during, "XMem statistics did not observe released host memory");
+    for (auto version : {0U, 0x10000000U, 0x20000000U}) {
+        std::array<std::uint64_t, 17> guarded;
+        guarded.fill(0xA5A5A5A5A5A5A5A5ULL);
+        auto* legacy = reinterpret_cast<XMemWorkingSetStatistics*>(guarded.data() + 1);
+        Require(XMemGetWorkingSetStatistics(version | 1, legacy) != 0, "Versioned XMem statistics failed");
+        auto words = version == 0x20000000 ? 15 : version == 0x10000000 ? 10 : 9;
+        Require(guarded[0] == 0xA5A5A5A5A5A5A5A5ULL, "XMem statistics wrote before its buffer");
+        for (std::size_t i = words + 1; i < guarded.size(); ++i) {
+            Require(guarded[i] == 0xA5A5A5A5A5A5A5A5ULL, "XMem statistics overran its versioned buffer");
+        }
+    }
     ExpectException<std::invalid_argument>([] { XMemGetWorkingSetStatistics(0, nullptr); });
     Require(output.before == 0x1A2B3C4D && output.after == 0x4D3C2B1A, "XMem statistics overran its output");
 }
