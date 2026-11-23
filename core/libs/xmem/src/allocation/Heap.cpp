@@ -1,6 +1,5 @@
 #include "Heap.hpp"
 
-#include <cstring>
 #include <new>
 #include <stdexcept>
 
@@ -19,7 +18,6 @@ void* AnyBox::XMem::Heap::Allocate(std::size_t size, std::uint64_t attributes, s
         ::operator delete(allocation, std::align_val_t{alignment});
         throw;
     }
-    std::memset(allocation, 0, size);
     return allocation;
 }
 

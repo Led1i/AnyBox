@@ -13,8 +13,6 @@ void AnyBox::Tests::CheckDefaultHeap() {
             std::array<std::size_t, 3> pages{4096, 65536, 2097152};
             auto alignment = kind == 0 ? 32 : pages[page];
             Require(allocation != nullptr && reinterpret_cast<std::uintptr_t>(allocation) % alignment == 0, "XMem allocation alignment changed");
-            auto* bytes = static_cast<std::byte*>(allocation);
-            for (std::size_t i = 0; i < 4097; ++i) Require(bytes[i] == std::byte{0}, "XMem allocation was not initialized");
             std::memset(allocation, static_cast<int>(kind + 1), 4097);
             XMemFreeDefault(allocation, attributes);
         }
