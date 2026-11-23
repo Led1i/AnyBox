@@ -3,6 +3,8 @@
 
 #include "../common/Handle.hpp"
 
+#include <string_view>
+
 namespace AnyBox::Storage {
 
 class File;
@@ -17,6 +19,7 @@ public:
     ReadLease& operator=(ReadLease&&) = delete;
     ~ReadLease();
     HANDLE Get() const;
+    std::wstring_view GetPath() const;
 
 private:
     File* owner = nullptr;

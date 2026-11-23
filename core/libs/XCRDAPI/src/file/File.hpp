@@ -10,6 +10,7 @@
 
 #include <condition_variable>
 #include <mutex>
+#include <string>
 
 namespace AnyBox::Storage {
 
@@ -29,6 +30,7 @@ private:
     void finishRead();
     StorageObjectRegistration registration;
     ReferenceCount references{1};
+    std::wstring path;
     std::mutex mutex;
     std::condition_variable readsFinished;
     std::size_t pendingReads = 0;

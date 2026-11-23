@@ -1,6 +1,8 @@
 #ifndef ANYBOX_STORAGE_TYPES_HPP
 #define ANYBOX_STORAGE_TYPES_HPP
 
+#include "StorageErrors.hpp"
+
 #include <array>
 #include <cstddef>
 #include <cstdint>
@@ -44,7 +46,6 @@ struct StorageQueueInformation1 {
     std::uint16_t emptySlotCount;
     std::uint16_t requestCountUntilAutoSubmit;
 };
-struct StorageErrorRecord;
 
 static_assert(sizeof(StorageQueueDescription) == 24);
 static_assert(sizeof(StorageQueueDescription1) == 32);

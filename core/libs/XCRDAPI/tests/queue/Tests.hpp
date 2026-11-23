@@ -36,6 +36,8 @@ void CheckFileQueue();
 void CheckQueueLimits();
 void CheckCancellation();
 void CheckQueueInformation();
+void CheckQueueErrors();
+void CheckFileErrorRecord(IStorageQueue* queue, const StorageRequest& request, const wchar_t* path);
 
 }
 

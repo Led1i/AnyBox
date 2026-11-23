@@ -20,6 +20,7 @@ void AnyBox::Storage::Queue::run() {
         --submitted;
         spaceAvailable.notify_one();
         lock.unlock();
+        std::int32_t failure = 0;
         try {
             if (auto* request = std::get_if<ReadOperation>(&operation)) read(*request);
             else if (auto* status = std::get_if<StatusOperation>(&operation)) {
@@ -29,11 +30,15 @@ void AnyBox::Storage::Queue::run() {
                 if (!SetEvent(event->event.Get())) Windows::ThrowLastError("SetEvent DirectStorage queue");
             }
         } catch (const std::system_error& error) {
-            if (groupResult == 0) groupResult = std::bit_cast<std::int32_t>(0x80070000U | (static_cast<std::uint32_t>(error.code().value()) & 0xFFFF));
-            if (!SetEvent(errorEvent.Get())) std::terminate();
+            failure = std::bit_cast<std::int32_t>(0x80070000U | (static_cast<std::uint32_t>(error.code().value()) & 0xFFFF));
+        } catch (const std::bad_alloc&) {
+            failure = std::bit_cast<std::int32_t>(std::uint32_t{0x8007000E});
         } catch (...) {
-            if (groupResult == 0) groupResult = std::bit_cast<std::int32_t>(std::uint32_t{0x80004005});
-            if (!SetEvent(errorEvent.Get())) std::terminate();
+            failure = std::bit_cast<std::int32_t>(std::uint32_t{0x80004005});
+        }
+        if (failure != 0) {
+            if (groupResult == 0) groupResult = failure;
+            recordError(operation, failure);
         }
         operation.emplace<std::monostate>();
         lock.lock();

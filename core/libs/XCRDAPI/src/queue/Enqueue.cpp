@@ -42,6 +42,9 @@ void AnyBox::Storage::Queue::EnqueueRequest(const StorageRequest* request) {
     if (description.description.sourceType == 1 && request->sourceSize > maximum - reinterpret_cast<std::uintptr_t>(request->source)) throw std::overflow_error("DirectStorage source range overflows");
 
     ReadOperation operation{*request, RetainFile(*request, description.description.sourceType)};
+    if (request->name) {
+        for (std::size_t i = 0; i + 1 < operation.name.size() && request->name[i] != '\0'; ++i) operation.name[i] = request->name[i];
+    }
     std::unique_lock lock(mutex);
     requireSpace(lock);
     operations[(head + count) % operations.size()].emplace<ReadOperation>(std::move(operation));

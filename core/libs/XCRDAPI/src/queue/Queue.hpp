@@ -40,6 +40,7 @@ private:
     void requireSpace(std::unique_lock<std::mutex>& lock);
     void publish();
     void run();
+    void recordError(const Operation& operation, std::int32_t result);
     void read(ReadOperation& operation);
     void readFile(ReadOperation& operation, std::span<std::byte> destination);
     void decompress(std::span<const std::byte> source, std::span<std::byte> destination);
@@ -60,6 +61,7 @@ private:
     std::optional<ZlibDecoder> decoder;
     std::unique_ptr<std::byte[]> overlapBuffer;
     std::size_t overlapCapacity = 0;
+    StorageErrorRecord errorRecord;
     Handle errorEvent;
     Handle readEvent;
     std::jthread worker;

@@ -15,6 +15,7 @@ struct ReadOperation {
     StorageRequest request;
     ReadLease file;
     bool canceled = false;
+    std::array<char, 64> name{};
 };
 
 class StatusOperation {

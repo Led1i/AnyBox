@@ -53,6 +53,7 @@ void AnyBox::Tests::CheckFileQueue() {
     Require(test.status->GetHResult(0) == std::bit_cast<std::int32_t>(0x80070000U | ERROR_HANDLE_EOF), "Queue did not propagate the short read error");
     Storage::Handle error(test.queue->GetErrorEvent());
     Require(WaitForSingleObject(error.Get(), 0) == WAIT_OBJECT_0, "Queue error event was not set");
+    CheckFileErrorRecord(test.queue.get(), request, source.Path());
     request.sourceOffset = 0;
     test.queue->EnqueueRequest(&request);
     test.Wait();

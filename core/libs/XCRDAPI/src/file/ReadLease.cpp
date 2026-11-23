@@ -13,3 +13,5 @@ AnyBox::Storage::ReadLease::~ReadLease() {
 }
 
 HANDLE AnyBox::Storage::ReadLease::Get() const { return handle.Get(); }
+
+std::wstring_view AnyBox::Storage::ReadLease::GetPath() const { return owner ? std::wstring_view(owner->path) : std::wstring_view{}; }

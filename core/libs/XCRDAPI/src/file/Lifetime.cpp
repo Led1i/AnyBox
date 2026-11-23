@@ -7,6 +7,7 @@
 
 AnyBox::Storage::File::File(const wchar_t* path) {
     if (!path || *path == L'\0') throw std::invalid_argument("DirectStorage file path is empty");
+    this->path = path;
     handle = CreateFileW(path, GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_OVERLAPPED, nullptr);
     if (handle == INVALID_HANDLE_VALUE) Windows::ThrowLastError("CreateFileW DirectStorage");
 }
