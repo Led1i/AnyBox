@@ -18,9 +18,7 @@ void AnyBox::Storage::Queue::read(ReadOperation& operation) {
             readFile(operation, destination);
             return;
         }
-        auto staging = GetStagingPool().Acquire(request.sourceSize);
-        readFile(operation, staging.Get());
-        decompress(staging.Get(), destination);
+        decompressFile(operation, destination);
         return;
     }
     if (!compressed) {

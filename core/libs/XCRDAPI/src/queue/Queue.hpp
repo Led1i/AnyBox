@@ -6,6 +6,7 @@
 #include "../metrics/Memory.hpp"
 #include "../metrics/Lifetime.hpp"
 #include "../compression/ZlibDecoder.hpp"
+#include "../compression/ZlibStream.hpp"
 
 #include <StorageInterfaces.hpp>
 #include "../staging/Pool.hpp"
@@ -46,7 +47,8 @@ private:
     void process();
     void recordError(const Operation& operation, std::int32_t result);
     void read(ReadOperation& operation);
-    void readFile(ReadOperation& operation, std::span<std::byte> destination);
+    void readFile(ReadOperation& operation, std::span<std::byte> destination, std::uint64_t offset = 0);
+    void decompressFile(ReadOperation& operation, std::span<std::byte> destination);
     void decompress(std::span<const std::byte> source, std::span<std::byte> destination);
     StorageObjectRegistration registration;
     QueueStatistics statisticsRegistration;
@@ -66,6 +68,7 @@ private:
     bool closing = false;
     bool closed = false;
     std::optional<ZlibDecoder> decoder;
+    std::optional<ZlibStream> streamDecoder;
     TrackedArray<std::byte> overlapBuffer;
     std::size_t overlapCapacity = 0;
     StorageErrorRecord errorRecord;

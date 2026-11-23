@@ -5,14 +5,16 @@
 #include <stdexcept>
 #include <system_error>
 
-void AnyBox::Storage::Queue::readFile(ReadOperation& operation, std::span<std::byte> destination) {
+void AnyBox::Storage::Queue::readFile(ReadOperation& operation, std::span<std::byte> destination, std::uint64_t offset) {
     const auto& request = operation.request;
-    if (request.sourceOffset > static_cast<std::uint64_t>(std::numeric_limits<std::int64_t>::max()) - destination.size()) {
+    auto maximum = static_cast<std::uint64_t>(std::numeric_limits<std::int64_t>::max());
+    if (request.sourceOffset > maximum || offset > maximum - request.sourceOffset || destination.size() > maximum - request.sourceOffset - offset) {
         throw std::overflow_error("DirectStorage file range overflows");
     }
+    auto position = request.sourceOffset + offset;
     OVERLAPPED overlapped{};
-    overlapped.Offset = static_cast<DWORD>(request.sourceOffset);
-    overlapped.OffsetHigh = static_cast<DWORD>(request.sourceOffset >> 32);
+    overlapped.Offset = static_cast<DWORD>(position);
+    overlapped.OffsetHigh = static_cast<DWORD>(position >> 32);
     overlapped.hEvent = readEvent.Get();
     if (!ResetEvent(readEvent.Get())) Windows::ThrowLastError("ResetEvent DirectStorage read");
 

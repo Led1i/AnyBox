@@ -34,6 +34,7 @@ void AnyBox::Storage::Queue::EnqueueRequest(const StorageRequest* request) {
     if ((request->options & ~((1ULL << 22) | 1)) != 0) throw std::invalid_argument("DirectStorage request transformation is not implemented");
     if (((request->options >> 22) & 1) != description.description.sourceType) throw std::invalid_argument("DirectStorage request source does not match its queue");
     bool compressed = (request->options & 1) != 0;
+    if (compressed && description.description.sourceType == 0 && request->sourceOffset % 16 != 0) throw std::invalid_argument("DirectStorage compressed file offset must be 16-byte aligned");
     if (!compressed && request->sourceSize != request->destinationSize) throw std::invalid_argument("DirectStorage uncompressed request sizes differ");
     if (compressed && (request->sourceSize == 0 || request->destinationSize < request->sourceSize)) throw std::invalid_argument("Invalid DirectStorage compressed request sizes");
     if (request->sourceSize != 0 && (!request->source || !request->destination)) throw std::invalid_argument("DirectStorage request buffer is null");

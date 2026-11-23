@@ -20,9 +20,11 @@ AnyBox::Storage::WorkStatistics::WorkStatistics(WorkType type) noexcept : pendin
 }
 
 AnyBox::Storage::WorkStatistics::~WorkStatistics() {
-    if (std::uncaught_exceptions() > exceptions) errors.fetch_add(1, std::memory_order_relaxed);
+    if (reportErrors && std::uncaught_exceptions() > exceptions) errors.fetch_add(1, std::memory_order_relaxed);
     if (pending.fetch_sub(1, std::memory_order_relaxed) == 0) std::terminate();
 }
+
+void AnyBox::Storage::WorkStatistics::Cancel() noexcept { reportErrors = false; }
 
 AnyBox::Storage::RequestValidation::RequestValidation() noexcept : exceptions(std::uncaught_exceptions()) {}
 

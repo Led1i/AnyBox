@@ -7,6 +7,7 @@ int main() {
         AnyBox::Tests::CheckTrackedMemory();
         AnyBox::Tests::CheckStaging();
         AnyBox::Tests::CheckZlibDecoder();
+        AnyBox::Tests::CheckZlibStream();
         AnyBox::Tests::CheckCompressedMemory();
         AnyBox::Tests::CheckCompressedFile();
         return 0;

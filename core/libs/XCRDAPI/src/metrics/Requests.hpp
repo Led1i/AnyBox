@@ -24,11 +24,13 @@ public:
     WorkStatistics(const WorkStatistics&) = delete;
     WorkStatistics& operator=(const WorkStatistics&) = delete;
     ~WorkStatistics();
+    void Cancel() noexcept;
 
 private:
     std::atomic<std::uint32_t>& pending;
     std::atomic<std::uint32_t>& errors;
     int exceptions;
+    bool reportErrors = true;
 };
 
 class RequestValidation {
