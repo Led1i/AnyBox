@@ -14,7 +14,7 @@ struct XDspActivationParameters {
     std::uint32_t flags;
     std::uint32_t frameCount;
     std::uint32_t channels;
-    std::uint32_t impulseResponseSize;
+    std::uint32_t impulseResponseFloatCount;
     AnyBox::AbiValue<const float*> impulseResponse;
 };
 

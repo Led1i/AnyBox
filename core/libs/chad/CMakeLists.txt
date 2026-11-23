@@ -3,9 +3,14 @@ target_sources(chad PRIVATE src/dsp/FourierTransform.cpp src/dsp/RealTransform.c
 
 target_include_directories(chad PUBLIC include)
 target_link_libraries(chad PUBLIC anybox_common)
-anybox_add_exception_test(chad)
+target_sources(chad PRIVATE src/runtime/Connection.cpp src/runtime/Connections.cpp src/runtime/Stream.cpp src/runtime/Streams.cpp src/runtime/Submit.cpp)
 
 if(BUILD_TESTING)
+    add_executable(chad_runtime_tests tests/runtime/Concurrent.cpp tests/runtime/Main.cpp tests/runtime/Limits.cpp tests/runtime/FourierTransform.cpp tests/runtime/Convolver.cpp)
+    target_link_libraries(chad_runtime_tests PRIVATE chad)
+    set_target_properties(chad_runtime_tests PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${ANYBOX_RUNTIME_DIRECTORY}")
+    add_test(NAME chad.runtime COMMAND chad_runtime_tests)
+    set_tests_properties(chad.runtime PROPERTIES TIMEOUT 15)
     add_executable(chad_dsp_tests tests/dsp/Main.cpp tests/dsp/FourierTransform.cpp tests/dsp/Convolver.cpp src/dsp/FourierTransform.cpp src/dsp/RealTransform.cpp src/dsp/Convolver.cpp)
     target_include_directories(chad_dsp_tests PRIVATE src/dsp)
     target_link_libraries(chad_dsp_tests PRIVATE anybox_options)
