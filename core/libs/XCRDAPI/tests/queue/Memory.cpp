@@ -45,4 +45,6 @@ void AnyBox::Tests::CheckQueueLimits() {
     StorageQueueDescription invalid{1, 127, 0, {}, "Invalid"};
     void* output = nullptr;
     ExpectException<std::invalid_argument>([&] { test.factory->CreateQueue(&invalid, Storage::QueueId, &output); });
+    invalid.capacity = 128;
+    ExpectException<std::invalid_argument>([&] { test.factory->CreateQueue(&invalid, Storage::QueueId, &output); });
 }

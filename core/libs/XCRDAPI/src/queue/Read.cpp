@@ -6,7 +6,7 @@
 #include <system_error>
 
 void AnyBox::Storage::Queue::read(ReadOperation& operation) {
-    if (operation.canceled) throw std::system_error(ERROR_OPERATION_ABORTED, std::system_category(), "Canceled DirectStorage request");
+    if (operation.canceled) return;
     const auto& request = operation.request;
     if (request.sourceSize == 0) return;
     if (description.description.sourceType == 1) {

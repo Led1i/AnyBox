@@ -5,6 +5,7 @@
 int main() {
     try {
         AnyBox::Tests::CheckMemoryQueue();
+        AnyBox::Tests::CheckCancellation();
         AnyBox::Tests::CheckQueueLimits();
         AnyBox::Tests::CheckFileQueue();
         return 0;

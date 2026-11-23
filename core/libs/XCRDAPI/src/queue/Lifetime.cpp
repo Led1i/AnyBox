@@ -5,6 +5,7 @@
 AnyBox::Storage::Queue::Queue(const StorageQueueDescription1& input) : description(input), name(input.description.name ? input.description.name : "") {
     if (description.description.sourceType > 1 || description.description.capacity < 128) throw std::invalid_argument("Invalid DirectStorage queue source or capacity");
     if (description.description.priority < -1 || description.description.priority > 2) throw std::invalid_argument("Invalid DirectStorage queue priority");
+    if (description.description.sourceType == 1 && description.description.priority != 2) throw std::invalid_argument("Memory-sourced DirectStorage queues require real-time priority");
     for (auto reserved : description.description.reserved) if (reserved != 0) throw std::invalid_argument("DirectStorage queue reserved fields must be zero");
     if ((description.options & ~1ULL) != 0) throw std::invalid_argument("Unsupported DirectStorage queue options");
     description.description.name = name.c_str();

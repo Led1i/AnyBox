@@ -6,7 +6,7 @@ target_include_directories(XCRDAPI PUBLIC include)
 target_link_libraries(XCRDAPI PUBLIC anybox_common)
 
 if(BUILD_TESTING)
-    add_executable(storage_queue_tests tests/queue/File.cpp tests/queue/Memory.cpp tests/queue/Main.cpp)
+    add_executable(storage_queue_tests tests/queue/Cancellation.cpp tests/queue/File.cpp tests/queue/Memory.cpp tests/queue/Main.cpp)
     target_link_libraries(storage_queue_tests PRIVATE XCRDAPI)
     set_target_properties(storage_queue_tests PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${ANYBOX_RUNTIME_DIRECTORY}")
     add_test(NAME storage.queue COMMAND storage_queue_tests)

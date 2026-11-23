@@ -10,7 +10,7 @@ class QueueFixture {
 public:
     explicit QueueFixture(std::uint64_t sourceType) : factory(GetFactory()), event(CreateEventW(nullptr, TRUE, FALSE, nullptr)) {
         if (!event.Get()) Windows::ThrowLastError("CreateEventW queue test");
-        StorageQueueDescription1 description{{sourceType, 128, 0, {}, "Queue test"}, 1};
+        StorageQueueDescription1 description{{sourceType, 128, static_cast<std::int8_t>(sourceType == 1 ? 2 : 0), {}, "Queue test"}, 1};
         void* output = nullptr;
         Require(factory->CreateQueue1(&description, Storage::QueueId, &output) == 0, "Queue creation failed");
         queue.reset(static_cast<IStorageQueue*>(output));
@@ -34,6 +34,7 @@ public:
 void CheckMemoryQueue();
 void CheckFileQueue();
 void CheckQueueLimits();
+void CheckCancellation();
 
 }
 
