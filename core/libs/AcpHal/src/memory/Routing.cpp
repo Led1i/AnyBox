@@ -10,7 +10,7 @@ AnyBox::AcpHal::Pool& AnyBox::AcpHal::Heap::getPool(const void* address) const {
 
 void* AnyBox::AcpHal::Heap::Allocate(std::uint32_t size, std::uint32_t alignment, std::uint32_t flags) {
     if (flags < 1 || flags > 2) throw std::invalid_argument("Unsupported APU allocation flags");
-    ensureCreated();
+    Initialize();
     return pools[flags - 1]->Allocate(size, alignment);
 }
 

@@ -11,6 +11,7 @@ namespace AnyBox::AcpHal {
 class Heap {
 public:
     void Create(std::uint32_t normalSize, std::uint32_t shapeSize);
+    void Initialize();
     void* Allocate(std::uint32_t size, std::uint32_t alignment, std::uint32_t flags);
     void Free(void* allocation);
     bool IsValid(const void* address, std::uint32_t alignment) const;
@@ -19,7 +20,6 @@ public:
 
 private:
     void initialize(std::uint32_t normalSize, std::uint32_t shapeSize);
-    void ensureCreated();
     Pool& getPool(const void* address) const;
     mutable std::mutex mutex;
     std::atomic<bool> created{false};

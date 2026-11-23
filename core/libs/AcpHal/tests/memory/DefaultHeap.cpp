@@ -8,6 +8,13 @@
 int main(int argumentCount, char** arguments) {
     try {
         using AnyBox::Tests::Require;
+        if (argumentCount == 2 && std::string_view(arguments[1]) == "--lazy-shape") {
+            AcpHalShapeContexts contexts{};
+            Require(AcpHalAllocateShapeContexts(&contexts) == 0, "Lazy SHAPE context initialization failed");
+            AnyBox::Tests::ExpectException<std::logic_error>([] { ApuCreateHeap(0x100000, 0); });
+            Require(AcpHalReleaseShapeContexts() == 0, "Lazy SHAPE contexts did not release");
+            return 0;
+        }
         bool lazy = argumentCount == 2 && std::string_view(arguments[1]) == "--lazy";
         bool defaultShape = argumentCount == 2 && std::string_view(arguments[1]) == "--default-shape";
         if (!lazy) Require(ApuCreateHeap(0x100000, defaultShape ? 0 : 0x226E00) == 0, "APU pools could not be created");

@@ -20,7 +20,7 @@ void AnyBox::AcpHal::Heap::Create(std::uint32_t normalSize, std::uint32_t shapeS
     initialize(normalSize, shapeSize);
 }
 
-void AnyBox::AcpHal::Heap::ensureCreated() {
+void AnyBox::AcpHal::Heap::Initialize() {
     if (created.load(std::memory_order_acquire)) return;
     std::lock_guard lock(mutex);
     if (!created.load(std::memory_order_relaxed)) initialize(0x4000000, 0x114000);

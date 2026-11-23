@@ -19,6 +19,7 @@ int main() {
         ExpectException<std::invalid_argument>([] { AcpHalCreate(nullptr); });
         ExpectException<std::invalid_argument>([&] { channel->Connect(0, 2); });
         Require(channel->Connect(4, 4) == 0, "ACP channel connection failed");
+        ExpectException<std::logic_error>([] { ApuCreateHeap(0x100000, 0); });
         ExpectException<std::logic_error>([&] { channel->Connect(4, 4); });
         ExpectException<std::logic_error>([&] { channel->Release(); });
         std::uint32_t samples = 192;

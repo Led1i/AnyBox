@@ -1,4 +1,5 @@
 #include <AcpHal.hpp>
+#include "../memory/Heap.hpp"
 
 #include <array>
 #include <cstring>
@@ -30,6 +31,7 @@ std::int32_t AcpHalAllocateShapeContexts(AcpHalShapeContexts* shapeContexts) noe
     if ((counts[0] || counts[5]) && counts[0] != counts[4] + counts[5]) throw std::invalid_argument("Inconsistent SHAPE context counts");
     std::lock_guard lock(contextMutex);
     if (allocated) throw std::logic_error("SHAPE contexts already exist");
+    AnyBox::AcpHal::GetHeap().Initialize();
     std::array<void*, 5> replacement{};
     AcpHalShapeContexts result = *shapeContexts;
     result.contexts.fill(nullptr);

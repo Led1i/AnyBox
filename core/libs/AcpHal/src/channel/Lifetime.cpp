@@ -1,9 +1,11 @@
 #include "Channel.hpp"
+#include "../memory/Heap.hpp"
 
 #include <stdexcept>
 
 std::int32_t AnyBox::AcpHal::Channel::Connect(std::uint32_t commandCapacity, std::uint32_t messageCapacity) {
     if (commandCapacity == 0 || messageCapacity < 2) throw std::invalid_argument("ACP channel capacities are invalid");
+    GetHeap().Initialize();
     std::lock_guard lock(mutex);
     if (connected) throw std::logic_error("ACP channel is already connected");
     if (count != 0) throw std::logic_error("ACP channel has undrained messages");
