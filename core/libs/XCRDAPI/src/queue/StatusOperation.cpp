@@ -24,3 +24,5 @@ void AnyBox::Storage::StatusOperation::Complete(std::int32_t result) {
     array->GetEntry(index).Complete(ticket, result);
     completed = true;
 }
+
+StorageStatusFailure AnyBox::Storage::StatusOperation::GetFailure() const { return {array, index}; }

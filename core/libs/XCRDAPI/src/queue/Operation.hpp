@@ -1,6 +1,7 @@
 #ifndef ANYBOX_STORAGE_OPERATION_HPP
 #define ANYBOX_STORAGE_OPERATION_HPP
 
+#include "SignalOperation.hpp"
 #include "../common/Handle.hpp"
 #include "../file/ReadLease.hpp"
 #include "../status/StatusArray.hpp"
@@ -25,6 +26,7 @@ public:
     StatusOperation& operator=(StatusOperation&&) = delete;
     ~StatusOperation();
     void Complete(std::int32_t result);
+    StorageStatusFailure GetFailure() const;
 
 private:
     StatusArray* array;
@@ -37,7 +39,7 @@ struct EventOperation {
     Handle event;
 };
 
-using Operation = std::variant<std::monostate, ReadOperation, StatusOperation, EventOperation>;
+using Operation = std::variant<std::monostate, ReadOperation, StatusOperation, EventOperation, SignalOperation>;
 
 }
 

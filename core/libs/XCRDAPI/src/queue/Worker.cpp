@@ -26,6 +26,9 @@ void AnyBox::Storage::Queue::run() {
             else if (auto* status = std::get_if<StatusOperation>(&operation)) {
                 status->Complete(groupResult);
                 groupResult = 0;
+            } else if (auto* signal = std::get_if<SignalOperation>(&operation)) {
+                auto result = signal->Complete();
+                if (result < 0) failure = result;
             } else if (auto* event = std::get_if<EventOperation>(&operation)) {
                 if (!SetEvent(event->event.Get())) Windows::ThrowLastError("SetEvent DirectStorage queue");
             }

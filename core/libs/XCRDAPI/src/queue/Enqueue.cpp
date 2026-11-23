@@ -84,3 +84,11 @@ void AnyBox::Storage::Queue::CancelRequestsWithTag(std::uint64_t mask, std::uint
         if (read && (read->request.cancellationTag & mask) == value) read->canceled = true;
     }
 }
+
+void AnyBox::Storage::Queue::EnqueueSignal(ID3D12Fence* fence, std::uint64_t value) {
+    SignalOperation operation(fence, value);
+    std::unique_lock lock(mutex);
+    requireSpace(lock);
+    operations[(head + count) % operations.size()].emplace<SignalOperation>(std::move(operation));
+    publish();
+}

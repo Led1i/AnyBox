@@ -26,7 +26,7 @@ public:
     std::uint32_t Release() override;
     void EnqueueRequest(const StorageRequest* request) override;
     void EnqueueStatus(IStorageStatusArray* array, std::uint32_t index) override;
-    void EnqueueSignal(IStorageUnknown* fence, std::uint64_t value) override;
+    void EnqueueSignal(ID3D12Fence* fence, std::uint64_t value) override;
     void Submit() override;
     void CancelRequestsWithTag(std::uint64_t mask, std::uint64_t value) override;
     void Close() override;

@@ -9,6 +9,7 @@
 struct StorageQueueDescription;
 struct StorageQueueDescription1;
 struct StorageStatistics;
+struct ID3D12Fence;
 
 struct IStorageUnknown {
     virtual std::int32_t QueryInterface(const AnyBox::Guid& interfaceId, void** object) = 0;
@@ -29,7 +30,7 @@ struct IStorageStatusArray : IStorageUnknown {
 struct IStorageQueue : IStorageUnknown {
     virtual void EnqueueRequest(const StorageRequest* request) = 0;
     virtual void EnqueueStatus(IStorageStatusArray* array, std::uint32_t index) = 0;
-    virtual void EnqueueSignal(IStorageUnknown* fence, std::uint64_t value) = 0;
+    virtual void EnqueueSignal(ID3D12Fence* fence, std::uint64_t value) = 0;
     virtual void Submit() = 0;
     virtual void CancelRequestsWithTag(std::uint64_t mask, std::uint64_t value) = 0;
     virtual void Close() = 0;

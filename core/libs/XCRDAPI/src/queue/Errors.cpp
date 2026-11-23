@@ -23,6 +23,12 @@ void AnyBox::Storage::Queue::recordError(const Operation& operation, std::int32_
             auto path = read->file.GetPath();
             auto length = std::min(path.size(), output.filename.size() - 1);
             for (std::size_t i = 0; i < length; ++i) output.filename[i] = static_cast<char16_t>(path[i]);
+        } else if (const auto* signal = std::get_if<SignalOperation>(&operation)) {
+            failure.commandType = 2;
+            failure.signal = signal->GetFailure();
+        } else if (const auto* status = std::get_if<StatusOperation>(&operation)) {
+            failure.commandType = 1;
+            failure.status = status->GetFailure();
         }
     }
     ++errorRecord.failureCount;

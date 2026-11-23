@@ -6,7 +6,7 @@
 #include <cstdint>
 
 struct IStorageStatusArray;
-struct IStorageUnknown;
+struct ID3D12Fence;
 
 struct StorageRequestFailure {
     std::uint64_t options;
@@ -26,7 +26,7 @@ struct StorageStatusFailure {
 };
 
 struct StorageSignalFailure {
-    IStorageUnknown* fence;
+    ID3D12Fence* fence;
     std::uint64_t value;
 };
 
