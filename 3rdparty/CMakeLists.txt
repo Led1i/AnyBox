@@ -9,3 +9,13 @@ function(anybox_add_opus)
 endfunction()
 
 anybox_add_opus()
+
+function(anybox_add_libdeflate)
+    set(LIBDEFLATE_BUILD_SHARED_LIB OFF CACHE BOOL "" FORCE)
+    set(LIBDEFLATE_BUILD_GZIP OFF CACHE BOOL "" FORCE)
+    set(LIBDEFLATE_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+    set(LIBDEFLATE_GZIP_SUPPORT OFF CACHE BOOL "" FORCE)
+    add_subdirectory(libdeflate)
+endfunction()
+
+anybox_add_libdeflate()
