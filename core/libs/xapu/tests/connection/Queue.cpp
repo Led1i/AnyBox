@@ -89,9 +89,7 @@ void CheckQueue(std::uint32_t channels, std::uint32_t sampleRate) {
     AnyBox::XApu::OpusDecoder reference(channels, sampleRate);
     std::vector<float> interleaved(frames * channels);
     reference.Decode(std::as_bytes(std::span(input, static_cast<std::size_t>(bytes))), interleaved);
-    for (std::size_t channel = 0; channel < channels; ++channel) {
-        for (std::size_t frame = 0; frame < frames; ++frame) Require(output[channel * frames + frame] == interleaved[frame * channels + channel], "XApu PCM differs from the decoded packet");
-    }
+    Require(std::equal(interleaved.begin(), interleaved.end(), output), "XApu PCM does not use the interleaved order consumed by the title");
 
     auto alternateRate = sampleRate == 48000 ? 24000U : 48000U;
     decode.sampleRate = static_cast<float>(alternateRate);

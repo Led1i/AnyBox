@@ -3,6 +3,7 @@
 #include <anybox/Unimplemented.hpp>
 
 #include <cmath>
+#include <cstring>
 #include <stdexcept>
 
 void AnyBox::XApu::Connection::decode(Stream& stream, const XApuDecodeCommand& command, XApuResult& result) {
@@ -33,12 +34,7 @@ void AnyBox::XApu::Connection::decode(Stream& stream, const XApuDecodeCommand& c
     if (decoded != frames) throw std::runtime_error("XApu decoded packet duration changed");
     stream.decoded = true;
 
-    auto* samples = static_cast<float*>(output);
-    for (std::uint32_t channel = 0; channel < channels; ++channel) {
-        for (std::uint32_t frame = 0; frame < outputFrames; ++frame) {
-            samples[channel * outputFrames + frame] = stream.samples[(command.firstFrame + frame) * channels + channel];
-        }
-    }
+    std::memcpy(output, stream.samples.data() + command.firstFrame * channels, outputSize);
 
     result.state = 3;
     result.frameCount = outputFrames;
