@@ -20,6 +20,11 @@ struct IStorageFile : IStorageUnknown {
     virtual void* GetHandle() = 0;
 };
 
+struct IStorageStatusArray : IStorageUnknown {
+    virtual bool IsComplete(std::uint32_t index) = 0;
+    virtual std::int32_t GetHResult(std::uint32_t index) = 0;
+};
+
 struct IStorageFactory : IStorageUnknown {
     virtual std::int32_t CreateQueue(const StorageQueueDescription* description, const AnyBox::Guid& interfaceId, void** queue) = 0;
     virtual std::int32_t OpenFile(const wchar_t* path, const AnyBox::Guid& interfaceId, void** file) = 0;

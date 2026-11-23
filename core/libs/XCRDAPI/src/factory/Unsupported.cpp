@@ -10,10 +10,6 @@ std::int32_t AnyBox::Storage::Factory::CreateQueue1(const StorageQueueDescriptio
     ANYBOX_NOT_IMPLEMENTED();
 }
 
-std::int32_t AnyBox::Storage::Factory::CreateStatusArray(std::uint32_t, const char*, const Guid&, void**) {
-    ANYBOX_NOT_IMPLEMENTED();
-}
-
 void AnyBox::Storage::Factory::GetStats(StorageStatistics*) {
     ANYBOX_NOT_IMPLEMENTED();
 }
