@@ -7,7 +7,6 @@
 #include <array>
 #include <cmath>
 #include <cstring>
-#include <iostream>
 #include <memory>
 #include <stdexcept>
 #include <vector>
@@ -106,6 +105,20 @@ void CheckQueue(std::uint32_t channels, std::uint32_t sampleRate) {
     XApuDequeueResult(connection, &result);
     Require(result.sampleRate == static_cast<float>(alternateRate) && result.frameCount == alternateRate / 50, "XApu reset did not allow a new native sample rate");
     Require(XApuGetResultCount(connection, &dequeued) == 0 && dequeued == 4 && submitted == 4, "XApu cumulative counters reset with the stream");
+    reference.SetSampleRate(alternateRate);
+    interleaved.resize(alternateRate / 50 * channels);
+    auto packet = std::as_bytes(std::span(input, static_cast<std::size_t>(bytes)));
+    reference.Decode(packet, interleaved);
+    reference.Decode(packet, interleaved);
+    decode.firstFrame = 17;
+    auto trimmed = alternateRate / 50 - decode.firstFrame;
+    output[trimmed * channels] = -99.0F;
+    XApuEnqueueCommand(connection, &decode.command, &submitted);
+    XApuDequeueResult(connection, &result);
+    Require(result.frameCount == trimmed && result.outputSize == trimmed * channels * sizeof(float), "XApu skip metadata changed");
+    Require(std::equal(interleaved.begin() + decode.firstFrame * channels, interleaved.end(), output), "XApu skip did not preserve interleaved frames and decoder history");
+    Require(output[-1] == -99.0F && output[trimmed * channels] == -99.0F, "XApu skip overran its output");
+    Require(XApuGetResultCount(connection, &dequeued) == 0 && submitted == 5 && dequeued == 5, "XApu skip changed cumulative counters");
     ExpectException<std::underflow_error>([&] { XApuDequeueResult(connection, &result); });
 
     XApuCommand release{};
@@ -122,18 +135,9 @@ void CheckQueue(std::uint32_t channels, std::uint32_t sampleRate) {
 
 }
 
-void CheckConnectionErrors();
-
-int main() {
-    try {
-        CheckConnectionErrors();
-        for (auto sampleRate : {8000U, 12000U, 16000U, 24000U, 48000U}) {
-            CheckQueue(1, sampleRate);
-            CheckQueue(2, sampleRate);
-        }
-        return 0;
-    } catch (const std::exception& error) {
-        std::cerr << error.what() << '\n';
-        return 1;
+void CheckQueues() {
+    for (auto sampleRate : {8000U, 12000U, 16000U, 24000U, 48000U}) {
+        CheckQueue(1, sampleRate);
+        CheckQueue(2, sampleRate);
     }
 }

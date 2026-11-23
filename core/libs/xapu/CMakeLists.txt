@@ -6,7 +6,7 @@ target_include_directories(xapu PUBLIC include)
 
 
 if(BUILD_TESTING)
-    add_executable(xapu_queue_tests tests/connection/Errors.cpp tests/connection/Queue.cpp src/codec/OpusDecoder.cpp)
+    add_executable(xapu_queue_tests tests/connection/Errors.cpp tests/connection/Queue.cpp tests/connection/Main.cpp src/codec/OpusDecoder.cpp)
     target_link_libraries(xapu_queue_tests PRIVATE xapu opus anybox_options)
     set_target_properties(xapu_queue_tests PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${ANYBOX_RUNTIME_DIRECTORY}")
     add_test(NAME xapu.queue COMMAND xapu_queue_tests)
