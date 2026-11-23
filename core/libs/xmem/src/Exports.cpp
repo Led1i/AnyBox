@@ -20,7 +20,3 @@ std::int32_t XMemMapPhysicalPagesScatter(void* const*, std::size_t, const std::u
 std::int32_t XMemTransferMemory(std::uint32_t, std::size_t) noexcept(false) {
     ANYBOX_NOT_IMPLEMENTED();
 }
-
-void* XMemVirtualAlloc(void*, std::size_t, std::uint32_t, std::uint32_t, std::uint32_t) noexcept(false) {
-    ANYBOX_NOT_IMPLEMENTED();
-}

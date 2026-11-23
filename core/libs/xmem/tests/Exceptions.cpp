@@ -12,7 +12,6 @@ int main() {
         AnyBox::Tests::ExpectUnimplemented("XMemMapPhysicalPages", [&] { XMemMapPhysicalPages(nullptr, 1, &pageFrame); });
         AnyBox::Tests::ExpectUnimplemented("XMemMapPhysicalPagesScatter", [&] { XMemMapPhysicalPagesScatter(&address, 1, &pageFrame); });
         AnyBox::Tests::ExpectUnimplemented("XMemTransferMemory", [&] { XMemTransferMemory(1, 4096); });
-        AnyBox::Tests::ExpectUnimplemented("XMemVirtualAlloc", [&] { XMemVirtualAlloc(nullptr, 4096, 0, 0, 0); });
         if (pageCount != 1 || pageFrame != 0x123456789ABCDEF0 || address != nullptr) throw std::runtime_error("An unimplemented export changed its output");
     });
 }

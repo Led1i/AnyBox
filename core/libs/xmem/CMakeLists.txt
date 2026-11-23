@@ -1,10 +1,11 @@
 anybox_add_system_library(xmem src/Capabilities.cpp src/Exports.cpp src/allocation/Attributes.cpp src/allocation/Default.cpp src/allocation/Dispatch.cpp src/allocation/Heap.cpp src/allocation/TitleHooks.cpp src/virtual/Query.cpp src/virtual/Statistics.cpp xmem.def)
+target_sources(xmem PRIVATE src/virtual/Allocate.cpp src/virtual/Protection.cpp)
 target_include_directories(xmem PUBLIC include)
 target_link_libraries(xmem PRIVATE psapi)
 anybox_add_exception_test(xmem)
 
 if(BUILD_TESTING)
-    add_executable(xmem_virtual_tests tests/virtual/Main.cpp tests/virtual/Query.cpp tests/virtual/Statistics.cpp)
+    add_executable(xmem_virtual_tests tests/virtual/Allocate.cpp tests/virtual/Main.cpp tests/virtual/Query.cpp tests/virtual/Statistics.cpp)
     target_link_libraries(xmem_virtual_tests PRIVATE xmem anybox_common)
     set_target_properties(xmem_virtual_tests PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${ANYBOX_RUNTIME_DIRECTORY}")
     add_test(NAME xmem.virtual COMMAND xmem_virtual_tests)

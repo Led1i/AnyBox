@@ -5,6 +5,7 @@
 int main() {
     try {
         AnyBox::Tests::CheckQuery();
+        AnyBox::Tests::CheckVirtualAllocation();
         AnyBox::Tests::CheckStatistics();
         return 0;
     } catch (const std::exception& error) {
