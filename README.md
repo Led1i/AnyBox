@@ -6,6 +6,10 @@ AnyBox is a compatibility layer for running Xbox Series X|S executables natively
 
 Initial development. No playable titles confirmed.
 
+## Building
+
+AnyBox uses standard C++20 and can be built with any conforming compiler targeting 64-bit Windows. MSVC or `clang-cl` with the MSVC runtime is recommended for ABI compatibility and correct stack unwinding of diagnostic C++ exceptions through title code.
+
 ## Disclaimer
 
 The project is intended for interoperability, research and preservation. Game files, firmware, cryptographic keys and proprietary SDK libraries are not distributed with the project.
