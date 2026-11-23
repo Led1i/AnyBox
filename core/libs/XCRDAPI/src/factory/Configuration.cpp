@@ -20,8 +20,6 @@ void AnyBox::Storage::Factory::SetDebugFlags(std::uint32_t flags) {
 }
 
 std::int32_t AnyBox::Storage::Factory::SetStagingBufferSize(std::uint32_t size) {
-    std::vector<std::byte> replacement(size);
-    std::lock_guard lock(mutex);
-    stagingBuffer.swap(replacement);
+    stagingPool.SetSize(size);
     return 0;
 }

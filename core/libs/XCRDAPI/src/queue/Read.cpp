@@ -1,7 +1,6 @@
 #include "Queue.hpp"
 
 #include <cstring>
-#include <limits>
 #include <stdexcept>
 #include <system_error>
 
@@ -9,21 +8,45 @@ void AnyBox::Storage::Queue::read(ReadOperation& operation) {
     if (operation.canceled) return;
     const auto& request = operation.request;
     if (request.sourceSize == 0) return;
-    if (description.description.sourceType == 1) {
-        std::memmove(request.destination, request.source, request.sourceSize);
+    auto destination = std::span(static_cast<std::byte*>(request.destination), request.destinationSize);
+    bool compressed = (request.options & 1) != 0;
+
+    if (description.description.sourceType == 0) {
+        if (!compressed) {
+            readFile(operation, destination);
+            return;
+        }
+        auto staging = GetStagingPool().Acquire(request.sourceSize);
+        readFile(operation, staging.Get());
+        decompress(staging.Get(), destination);
         return;
     }
-    if (request.sourceOffset > static_cast<std::uint64_t>(std::numeric_limits<std::int64_t>::max()) - request.sourceSize) {
-        throw std::overflow_error("DirectStorage file range overflows");
+    if (!compressed) {
+        std::memmove(destination.data(), request.source, request.sourceSize);
+        return;
     }
-    OVERLAPPED overlapped{};
-    overlapped.Offset = static_cast<DWORD>(request.sourceOffset);
-    overlapped.OffsetHigh = static_cast<DWORD>(request.sourceOffset >> 32);
-    overlapped.hEvent = readEvent.Get();
-    if (!ResetEvent(readEvent.Get())) Windows::ThrowLastError("ResetEvent DirectStorage read");
-    DWORD transferred = 0;
-    auto result = ReadFile(operation.file.Get(), request.destination, request.sourceSize, &transferred, &overlapped);
-    if (!result && GetLastError() != ERROR_IO_PENDING) Windows::ThrowLastError("ReadFile DirectStorage");
-    if (!GetOverlappedResult(operation.file.Get(), &overlapped, &transferred, TRUE)) Windows::ThrowLastError("GetOverlappedResult DirectStorage");
-    if (transferred != request.destinationSize) throw std::system_error(ERROR_HANDLE_EOF, std::system_category(), "Short DirectStorage read");
+
+    auto source = std::span(static_cast<const std::byte*>(request.source), request.sourceSize);
+    auto sourceAddress = reinterpret_cast<std::uintptr_t>(source.data());
+    auto destinationAddress = reinterpret_cast<std::uintptr_t>(destination.data());
+    bool overlaps = sourceAddress < destinationAddress + destination.size() && destinationAddress < sourceAddress + source.size();
+    if (overlaps) {
+        if (source.size() > overlapCapacity) {
+            auto replacement = std::make_unique_for_overwrite<std::byte[]>(source.size());
+            overlapBuffer = std::move(replacement);
+            overlapCapacity = source.size();
+        }
+        std::memcpy(overlapBuffer.get(), source.data(), source.size());
+        source = {overlapBuffer.get(), source.size()};
+    }
+    decompress(source, destination);
+}
+
+void AnyBox::Storage::Queue::decompress(std::span<const std::byte> source, std::span<std::byte> destination) {
+    if (!decoder) decoder.emplace();
+    try {
+        decoder->Decode(source, destination);
+    } catch (const std::runtime_error& error) {
+        throw std::system_error(ERROR_INVALID_DATA, std::system_category(), error.what());
+    }
 }

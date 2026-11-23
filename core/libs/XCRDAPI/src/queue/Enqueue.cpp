@@ -1,6 +1,7 @@
 #include "Queue.hpp"
 #include "../file/File.hpp"
 
+#include <limits>
 #include <stdexcept>
 
 namespace {
@@ -28,12 +29,18 @@ void AnyBox::Storage::Queue::publish() {
 
 void AnyBox::Storage::Queue::EnqueueRequest(const StorageRequest* request) {
     if (!request) throw std::invalid_argument("DirectStorage request is null");
-    if ((request->options & ~(1ULL << 22)) != 0) throw std::invalid_argument("DirectStorage request transformation is not implemented");
+    if ((request->options & ~((1ULL << 22) | 1)) != 0) throw std::invalid_argument("DirectStorage request transformation is not implemented");
     if (((request->options >> 22) & 1) != description.description.sourceType) throw std::invalid_argument("DirectStorage request source does not match its queue");
-    if (request->sourceSize != request->destinationSize) throw std::invalid_argument("DirectStorage uncompressed request sizes differ");
+    bool compressed = (request->options & 1) != 0;
+    if (!compressed && request->sourceSize != request->destinationSize) throw std::invalid_argument("DirectStorage uncompressed request sizes differ");
+    if (compressed && (request->sourceSize == 0 || request->destinationSize < request->sourceSize)) throw std::invalid_argument("Invalid DirectStorage compressed request sizes");
     if (request->sourceSize != 0 && (!request->source || !request->destination)) throw std::invalid_argument("DirectStorage request buffer is null");
     if (request->destinationPageOffset != 0 || request->reserved1 != 0) throw std::invalid_argument("Invalid DirectStorage memory destination fields");
     for (auto reserved : request->reserved0) if (reserved != 0) throw std::invalid_argument("DirectStorage request reserved fields must be zero");
+    auto maximum = std::numeric_limits<std::uintptr_t>::max();
+    if (request->destinationSize > maximum - reinterpret_cast<std::uintptr_t>(request->destination)) throw std::overflow_error("DirectStorage destination range overflows");
+    if (description.description.sourceType == 1 && request->sourceSize > maximum - reinterpret_cast<std::uintptr_t>(request->source)) throw std::overflow_error("DirectStorage source range overflows");
+
     ReadOperation operation{*request, RetainFile(*request, description.description.sourceType)};
     std::lock_guard lock(mutex);
     requireSpace();

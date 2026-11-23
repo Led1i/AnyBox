@@ -5,6 +5,7 @@
 #include "ReadLease.hpp"
 
 #include <StorageInterfaces.hpp>
+#include "../staging/Pool.hpp"
 #include <anybox/platform/Windows.hpp>
 
 #include <condition_variable>
@@ -26,6 +27,7 @@ public:
 private:
     friend class ReadLease;
     void finishRead();
+    StorageObjectRegistration registration;
     ReferenceCount references{1};
     std::mutex mutex;
     std::condition_variable readsFinished;

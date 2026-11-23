@@ -2,13 +2,11 @@
 #define ANYBOX_STORAGE_FACTORY_HPP
 
 #include "../common/ReferenceCount.hpp"
+#include "../staging/Pool.hpp"
 
 #include <StorageInterfaces.hpp>
 
 #include <atomic>
-#include <cstddef>
-#include <mutex>
-#include <vector>
 
 namespace AnyBox::Storage {
 
@@ -28,8 +26,7 @@ public:
 
 private:
     ReferenceCount references{0};
-    std::mutex mutex;
-    std::vector<std::byte> stagingBuffer;
+    StagingPool& stagingPool = GetStagingPool();
     std::atomic<std::uint64_t> cpuAffinity{0};
     std::atomic<std::uint32_t> debugFlags{0};
 };
