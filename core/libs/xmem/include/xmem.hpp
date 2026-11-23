@@ -19,7 +19,7 @@ std::int32_t XMemIsToolsMemAvailable() noexcept(false);
 void* XMemMapPhysicalPages(void* address, std::size_t pageCount, const std::uint64_t* pageFrames) noexcept(false);
 std::int32_t XMemMapPhysicalPagesScatter(void* const* addresses, std::size_t pageCount, const std::uint64_t* pageFrames) noexcept(false);
 std::int32_t XMemTransferMemory(std::uint32_t memoryPool, std::size_t size) noexcept(false);
-void* XMemVirtualAlloc(void* address, std::size_t size, std::uint32_t allocationType, std::uint32_t protection, std::uint32_t flags) noexcept(false);
+void* XMemVirtualAlloc(void* address, std::size_t size, std::uint32_t allocationType, std::uint32_t attributes, std::uint32_t protection) noexcept(false);
 std::int32_t XMemVirtualQuery(void* process, const void* address, XMemMemoryBasicInformation* information) noexcept(false);
 
 }

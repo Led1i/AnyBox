@@ -58,8 +58,8 @@ TitleHooks __XMemAllocationHooks__{Allocate, Free};
 
 int main() {
     try {
-        std::array<std::jthread, 8> threads;
         std::array<std::exception_ptr, 8> errors{};
+        std::array<std::jthread, 8> threads;
         for (std::size_t i = 0; i < threads.size(); ++i) {
             threads[i] = std::jthread([&errors, i] {
                 try {
