@@ -8,7 +8,7 @@ Initial development. No playable titles confirmed.
 
 Seven system libraries with a total of 39 functions required by the test title and its bundled libraries have been added and build successfully. Launch has been tested with the title's executable.
 
-Every added function throws a C++ exception. Cross-library stack unwinding and destructor execution are verified by tests. The title reaches an unimplemented function and terminates with an unhandled MSVC-compatible C++ exception; its call stack is visible in the debugger. Destructor execution during unwinding through the title's code has not been verified.
+Unimplemented functions throw a C++ exception. Cross-library stack unwinding and destructor execution are verified by tests. The title reaches an unimplemented function and terminates with an unhandled MSVC-compatible C++ exception; its call stack is visible in the debugger. Destructor execution during unwinding through the title's code has not been verified.
 
 ## Building
 
