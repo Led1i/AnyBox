@@ -33,14 +33,27 @@ struct StorageRequest {
     const char* name;
 };
 
-struct StorageQueueInformation;
-struct StorageQueueInformation1;
+struct StorageQueueInformation {
+    StorageQueueDescription description;
+    std::uint16_t emptySlotCount;
+    std::uint16_t requestCountUntilAutoSubmit;
+};
+
+struct StorageQueueInformation1 {
+    StorageQueueDescription1 description;
+    std::uint16_t emptySlotCount;
+    std::uint16_t requestCountUntilAutoSubmit;
+};
 struct StorageErrorRecord;
 
 static_assert(sizeof(StorageQueueDescription) == 24);
 static_assert(sizeof(StorageQueueDescription1) == 32);
 static_assert(offsetof(StorageQueueDescription, capacity) == 8);
 static_assert(offsetof(StorageQueueDescription, name) == 16);
+static_assert(sizeof(StorageQueueInformation) == 32);
+static_assert(sizeof(StorageQueueInformation1) == 40);
+static_assert(offsetof(StorageQueueInformation, emptySlotCount) == 24);
+static_assert(offsetof(StorageQueueInformation1, emptySlotCount) == 32);
 static_assert(sizeof(StorageRequest) == 72);
 static_assert(offsetof(StorageRequest, source) == 32);
 static_assert(offsetof(StorageRequest, sourceSize) == 48);

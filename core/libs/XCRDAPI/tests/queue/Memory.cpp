@@ -39,14 +39,14 @@ void AnyBox::Tests::CheckMemoryQueue() {
 
 void AnyBox::Tests::CheckQueueLimits() {
     std::byte source{0x71};
-    std::array<std::byte, 129> received{};
+    std::array<std::byte, 128> received{};
     QueueFixture test(1);
     StorageRequest request{};
     request.options = 1ULL << 22;
     request.source = &source;
     request.sourceSize = 1;
     request.destinationSize = 1;
-    for (std::size_t i = 0; i < 128; ++i) {
+    for (std::size_t i = 0; i < 127; ++i) {
         request.destination = &received[i];
         test.queue->EnqueueRequest(&request);
     }

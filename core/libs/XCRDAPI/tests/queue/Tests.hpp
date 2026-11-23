@@ -35,6 +35,7 @@ void CheckMemoryQueue();
 void CheckFileQueue();
 void CheckQueueLimits();
 void CheckCancellation();
+void CheckQueueInformation();
 
 }
 

@@ -7,6 +7,7 @@ int main() {
         AnyBox::Tests::CheckMemoryQueue();
         AnyBox::Tests::CheckCancellation();
         AnyBox::Tests::CheckQueueLimits();
+        AnyBox::Tests::CheckQueueInformation();
         AnyBox::Tests::CheckFileQueue();
         return 0;
     } catch (const std::exception& error) {

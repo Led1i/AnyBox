@@ -17,13 +17,13 @@ AnyBox::Storage::ReadLease RetainFile(const StorageRequest& request, std::uint64
 }
 
 void AnyBox::Storage::Queue::requireSpace(std::unique_lock<std::mutex>& lock) {
-    spaceAvailable.wait(lock, [this] { return closing || count < operations.size(); });
+    spaceAvailable.wait(lock, [this] { return closing || count < operations.size() - 1; });
     if (closing) throw std::logic_error("DirectStorage queue is closing");
 }
 
 void AnyBox::Storage::Queue::publish() {
     ++count;
-    if ((description.options & 1) == 0 && count - submitted > operations.size() / 2) submitted = count;
+    if ((description.options & 1) == 0 && count - submitted >= operations.size() / 2) submitted = count;
     if (submitted != 0) wake.notify_one();
 }
 
