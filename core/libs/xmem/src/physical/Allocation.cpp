@@ -7,7 +7,12 @@
 #include <set>
 #include <stdexcept>
 
+AnyBox::XMem::Section::Section(HANDLE handle, std::size_t size) : handle(handle), memory(static_cast<std::byte*>(MapViewOfFile(handle, FILE_MAP_READ | FILE_MAP_WRITE, 0, 0, size))) {
+    if (!memory) Windows::ThrowLastError("MapViewOfFile physical storage");
+}
+
 AnyBox::XMem::Section::~Section() {
+    if (!UnmapViewOfFile(memory)) std::terminate();
     if (!CloseHandle(handle)) std::terminate();
 }
 
@@ -20,7 +25,7 @@ void AnyBox::XMem::Pool::Allocate(std::uint64_t flags, std::size_t count, std::u
     if (!handle) Windows::ThrowLastError("CreateFileMappingW physical pages");
     std::shared_ptr<Section> section;
     try {
-        section = std::make_shared<Section>(handle);
+        section = std::make_shared<Section>(handle, static_cast<std::size_t>(size));
     } catch (...) {
         CloseHandle(handle);
         throw;
@@ -43,6 +48,7 @@ void AnyBox::XMem::Pool::Free(std::span<const std::uint64_t> frames) {
     for (auto frame : frames) {
         if (!requested.insert(frame).second) throw std::invalid_argument("Duplicate XMem physical frame in free request");
         if (!pages.contains(frame)) throw std::invalid_argument("XMem physical frame is not allocated");
+        if (pinned.contains(frame)) throw std::logic_error("XMem physical frame has pending memory operations");
     }
     for (const auto& [address, mapping] : mappings) {
         if (requested.contains(mapping.frame)) throw std::logic_error("XMem physical frame must be unmapped before release");
