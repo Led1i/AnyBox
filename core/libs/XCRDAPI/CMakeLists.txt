@@ -7,10 +7,17 @@ target_sources(XCRDAPI PRIVATE src/factory/Status.cpp src/status/StatusArray.cpp
 target_sources(XCRDAPI PRIVATE src/factory/Queue.cpp src/queue/Enqueue.cpp src/queue/Lifetime.cpp src/queue/Read.cpp src/queue/StatusOperation.cpp src/queue/SignalOperation.cpp src/queue/Worker.cpp)
 target_sources(XCRDAPI PRIVATE src/staging/Pool.cpp src/staging/Lifetime.cpp src/compression/ZlibDecoder.cpp src/queue/FileRead.cpp src/queue/CompressedFile.cpp src/compression/ZlibStream.cpp src/queue/Query.cpp src/queue/Errors.cpp)
 
+target_sources(XCRDAPI PRIVATE src/memory/View.cpp src/memory/Mapped.cpp src/queue/ReadMemory.cpp src/queue/Stream.cpp)
+
 target_include_directories(XCRDAPI PUBLIC include)
-target_link_libraries(XCRDAPI PUBLIC anybox_common PRIVATE libdeflate_static zlibstatic)
+target_link_libraries(XCRDAPI PUBLIC anybox_common PRIVATE libdeflate_static zlibstatic xmem)
 
 if(BUILD_TESTING)
+    add_executable(storage_physical_tests tests/physical/Buffer.cpp tests/physical/Packet.cpp tests/physical/Memory.cpp tests/physical/File.cpp tests/physical/Overlap.cpp tests/physical/Lifetime.cpp tests/physical/Main.cpp)
+    target_link_libraries(storage_physical_tests PRIVATE XCRDAPI xmem libdeflate_static)
+    set_target_properties(storage_physical_tests PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${ANYBOX_RUNTIME_DIRECTORY}")
+    add_test(NAME storage.physical COMMAND storage_physical_tests)
+    set_tests_properties(storage.physical PROPERTIES TIMEOUT 30)
     add_executable(storage_large_stream_tests tests/compression/Large.cpp tests/compression/LargeMain.cpp)
     target_link_libraries(storage_large_stream_tests PRIVATE XCRDAPI libdeflate_static)
     set_target_properties(storage_large_stream_tests PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${ANYBOX_RUNTIME_DIRECTORY}")

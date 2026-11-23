@@ -47,8 +47,12 @@ private:
     void process();
     void recordError(const Operation& operation, std::int32_t result);
     void read(ReadOperation& operation);
+    void readMemory(ReadOperation& operation);
+    void startStream(MemoryView& destination);
+    void processStream(std::span<const std::byte> source, bool finalChunk);
+    std::span<std::byte> captureSource(const MemoryView& source);
     void readFile(ReadOperation& operation, std::span<std::byte> destination, std::uint64_t offset = 0);
-    void decompressFile(ReadOperation& operation, std::span<std::byte> destination);
+    void decompressFile(ReadOperation& operation, MemoryView& destination);
     void decompress(std::span<const std::byte> source, std::span<std::byte> destination);
     StorageObjectRegistration registration;
     QueueStatistics statisticsRegistration;

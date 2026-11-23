@@ -2,6 +2,7 @@
 #define ANYBOX_STORAGE_OPERATION_HPP
 
 #include "SignalOperation.hpp"
+#include "../memory/View.hpp"
 #include "../common/Handle.hpp"
 #include "../file/ReadLease.hpp"
 #include "../status/StatusArray.hpp"
@@ -15,6 +16,8 @@ namespace AnyBox::Storage {
 struct ReadOperation {
     StorageRequest request;
     ReadLease file;
+    MemoryView source;
+    MemoryView destination;
     bool canceled = false;
     std::array<char, 64> name{};
 };

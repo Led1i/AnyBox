@@ -11,7 +11,7 @@ struct StorageQueueDescription {
     std::uint64_t sourceType;
     std::uint16_t capacity;
     std::int8_t priority;
-    std::array<std::uint8_t, 5> reserved;
+    std::array<std::uint8_t, 5> padding;
     const char* name;
 };
 
@@ -24,9 +24,9 @@ struct StorageRequest {
     std::uint64_t options;
     void* destination;
     std::uint16_t destinationPageOffset;
-    std::array<std::uint8_t, 6> reserved0;
+    std::array<std::uint8_t, 6> padding0;
     std::uint32_t destinationSize;
-    std::uint32_t reserved1;
+    std::uint32_t padding1;
     void* source;
     std::uint64_t sourceOffset;
     std::uint32_t sourceSize;
