@@ -19,3 +19,14 @@ function(anybox_add_libdeflate)
 endfunction()
 
 anybox_add_libdeflate()
+
+function(anybox_add_zlib)
+    set(ZLIB_BUILD_TESTING OFF CACHE BOOL "" FORCE)
+    set(ZLIB_BUILD_SHARED OFF CACHE BOOL "" FORCE)
+    set(ZLIB_BUILD_STATIC ON CACHE BOOL "" FORCE)
+    set(ZLIB_INSTALL OFF CACHE BOOL "" FORCE)
+    set(ZLIB_PREFIX anybox_z_ CACHE STRING "" FORCE)
+    add_subdirectory(zlib)
+endfunction()
+
+anybox_add_zlib()
