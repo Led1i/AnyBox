@@ -1,15 +1,7 @@
 #include <xmem.hpp>
 #include <anybox/Unimplemented.hpp>
 
-void* XMemAllocDefault(std::size_t, std::uint64_t, void*, const XMemAllocationHook*) noexcept(false) {
-    ANYBOX_NOT_IMPLEMENTED();
-}
-
 std::int32_t XMemAllocatePhysicalPages(std::uint32_t, std::size_t*, std::uint64_t*) noexcept(false) {
-    ANYBOX_NOT_IMPLEMENTED();
-}
-
-void XMemFreeDefault(void*, std::uint64_t, void*, const XMemFreeHook*) noexcept(false) {
     ANYBOX_NOT_IMPLEMENTED();
 }
 

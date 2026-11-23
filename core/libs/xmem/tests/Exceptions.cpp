@@ -6,11 +6,7 @@ int main() {
         std::size_t pageCount = 1;
         std::uint64_t pageFrame = 0x123456789ABCDEF0;
         void* address = nullptr;
-        AnyBox::Tests::ExpectUnimplemented("XMemAllocDefault", [&] { XMemAlloc(4096, 0); });
-        AnyBox::Tests::ExpectUnimplemented("XMemAllocDefault", [&] { XMemAllocDefault(4096, 0, nullptr, nullptr); });
         AnyBox::Tests::ExpectUnimplemented("XMemAllocatePhysicalPages", [&] { XMemAllocatePhysicalPages(0, &pageCount, &pageFrame); });
-        AnyBox::Tests::ExpectUnimplemented("XMemFreeDefault", [&] { XMemFree(nullptr, 0); });
-        AnyBox::Tests::ExpectUnimplemented("XMemFreeDefault", [&] { XMemFreeDefault(nullptr, 0, nullptr, nullptr); });
         AnyBox::Tests::ExpectUnimplemented("XMemFreePhysicalPages", [&] { XMemFreePhysicalPages(1, &pageFrame); });
         AnyBox::Tests::ExpectUnimplemented("XMemGetWorkingSetStatistics", [&] { XMemGetWorkingSetStatistics(0, nullptr); });
         if (XMemIsToolsMemAvailable() != 0) throw std::runtime_error("Development-kit tools memory is not available");
