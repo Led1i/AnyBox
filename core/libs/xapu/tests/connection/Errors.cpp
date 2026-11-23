@@ -64,7 +64,11 @@ void CheckConnectionErrors() {
 
     XApuDecodeCommand decode{};
     decode.command.kind = 3;
-    decode.pitch = 1.0F;
+    decode.sampleRate = 0.0F;
+    ExpectException<std::invalid_argument>([&] { XApuEnqueueCommand(connection, &decode.command, nullptr); });
+    decode.sampleRate = 1.0F;
+    ExpectException<std::runtime_error>([&] { XApuEnqueueCommand(connection, &decode.command, nullptr); });
+    decode.sampleRate = 48000.0F;
     decode.inputSize = 1;
     decode.input.Set(&command);
     decode.outputSize = 4;

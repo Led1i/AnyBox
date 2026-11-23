@@ -6,8 +6,9 @@
 #include <stdexcept>
 
 void AnyBox::XApu::Connection::decode(Stream& stream, const XApuDecodeCommand& command, XApuResult& result) {
-    if (!std::isfinite(command.pitch) || !std::isfinite(command.ramp)) throw std::invalid_argument("XApu processing parameter is not finite");
-    if (command.pitch != 1.0F || command.ramp != 0.0F) ANYBOX_NOT_IMPLEMENTED();
+    if (!std::isfinite(command.sampleRate) || !std::isfinite(command.ramp)) throw std::invalid_argument("XApu processing parameter is not finite");
+    if (command.sampleRate <= 0.0F) throw std::invalid_argument("XApu sample rate must be positive");
+    if (command.sampleRate != 48000.0F || command.ramp != 0.0F) ANYBOX_NOT_IMPLEMENTED();
 
     auto* input = command.input.Get();
     auto* output = command.output.Get();
@@ -37,7 +38,7 @@ void AnyBox::XApu::Connection::decode(Stream& stream, const XApuDecodeCommand& c
     result.frameCount = outputFrames;
     result.outputSize = outputSize;
     result.output.Set(output);
-    result.pitch = command.pitch;
+    result.sampleRate = command.sampleRate;
     result.inputSize = command.inputSize;
     result.input.Set(input);
 }

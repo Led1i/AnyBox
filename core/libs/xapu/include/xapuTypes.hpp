@@ -40,7 +40,7 @@ struct XApuActivateCommand {
 struct XApuDecodeCommand {
     XApuCommand command;
     float ramp;
-    float pitch;
+    float sampleRate;
     std::uint32_t firstFrame;
     std::uint32_t frameCount;
     std::uint32_t inputSize;
@@ -58,7 +58,7 @@ struct XApuResult {
     std::uint32_t frameCount;
     std::uint32_t outputSize;
     AnyBox::AbiValue<void*> output;
-    float pitch;
+    float sampleRate;
     std::uint32_t inputSize;
     AnyBox::AbiValue<const void*> input;
 };
@@ -69,9 +69,11 @@ static_assert(std::is_trivially_copyable_v<XApuActivateCommand>);
 static_assert(std::is_trivially_copyable_v<XApuDecodeCommand>);
 static_assert(sizeof(XApuActivateCommand) == 56);
 static_assert(sizeof(XApuDecodeCommand) == 64);
+static_assert(offsetof(XApuDecodeCommand, sampleRate) == 28);
 static_assert(offsetof(XApuDecodeCommand, input) == 44);
 static_assert(sizeof(XApuResult) == 80);
 static_assert(offsetof(XApuResult, error) == 44);
 static_assert(offsetof(XApuResult, outputSize) == 52);
+static_assert(offsetof(XApuResult, sampleRate) == 64);
 
 #endif

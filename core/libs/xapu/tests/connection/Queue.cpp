@@ -61,7 +61,7 @@ void CheckQueue(std::uint32_t channels) {
     XApuDecodeCommand decode{};
     decode.command.kind = 3;
     decode.command.stream = 5;
-    decode.pitch = 1.0F;
+    decode.sampleRate = 48000.0F;
     decode.frameCount = 960;
     decode.inputSize = static_cast<std::uint32_t>(bytes);
     decode.input.Set(input);
@@ -82,6 +82,7 @@ void CheckQueue(std::uint32_t channels) {
     Require(result.command.kind == 3 && result.error == 0 && result.frameCount == 960, "XApu decoding result is invalid");
     Require(result.input.Get() == input && result.inputSize == static_cast<std::uint32_t>(bytes), "XApu result input metadata changed");
     Require(result.output.Get() == output && result.outputSize == decode.outputSize, "XApu result output metadata changed");
+    Require(result.sampleRate == 48000.0F, "XApu result sample rate changed from the title command");
     Require(output[-1] == -99.0F && output[960 * channels] == -99.0F, "XApu PCM write overran its output");
 
     AnyBox::XApu::OpusDecoder reference(channels);
