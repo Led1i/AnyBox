@@ -7,4 +7,6 @@ namespace AnyBox {
 
 }
 
+#define ANYBOX_NOT_IMPLEMENTED() ::AnyBox::NotImplemented(ANYBOX_LIBRARY_NAME, __func__)
+
 #endif

@@ -1,5 +1,6 @@
 function(anybox_add_system_library target)
     add_library(${target} SHARED ${ARGN})
+    target_compile_definitions(${target} PRIVATE ANYBOX_LIBRARY_NAME="${target}.dll")
     target_link_libraries(${target} PRIVATE anybox_common PUBLIC anybox_options)
     set_target_properties(${target} PROPERTIES
         PREFIX ""
