@@ -52,7 +52,8 @@ void* XMemVirtualAlloc(void* address, std::size_t size, std::uint32_t allocation
     MEM_EXTENDED_PARAMETER parameter{};
     parameter.Type = MemExtendedParameterAddressRequirements;
     parameter.Pointer = &requirements;
-    auto useAlignment = !address && reserve;
+    auto useAlignment = !address && (reserve || (hostType & MEM_COMMIT) != 0);
+    if (useAlignment && !reserve) hostType |= MEM_RESERVE;
     auto* result = allocate(nullptr, address, size, hostType, hostProtection, useAlignment ? &parameter : nullptr, useAlignment ? 1 : 0);
     if (!result) AnyBox::Windows::ThrowLastError("VirtualAlloc2");
     return result;

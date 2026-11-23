@@ -20,8 +20,8 @@ void AnyBox::Tests::CheckAddressRanges() {
         Range{0x7001, 0x100000000ULL, 0xFFFFFFFFFFULL}
     };
     for (const auto& range : ranges) {
-        for (auto direction : {0U, static_cast<unsigned>(MEM_TOP_DOWN)}) {
-            Region memory(XMemVirtualAlloc(nullptr, 0x10000, MEM_RESERVE | MEM_COMMIT | direction, range.attributes, PAGE_READWRITE));
+        for (auto type : {MEM_RESERVE | MEM_COMMIT, MEM_RESERVE | MEM_COMMIT | MEM_TOP_DOWN, MEM_COMMIT, MEM_COMMIT | MEM_TOP_DOWN}) {
+            Region memory(XMemVirtualAlloc(nullptr, 0x10000, type, range.attributes, PAGE_READWRITE));
             auto address = reinterpret_cast<std::uintptr_t>(memory.get());
             Require(address >= range.lower && address <= range.upper - 0xFFFF, "XMem allocation escaped its requested address range");
             auto* bytes = static_cast<std::byte*>(memory.get());
