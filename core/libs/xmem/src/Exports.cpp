@@ -48,3 +48,7 @@ std::int32_t XMemTransferMemory(std::uint32_t, std::size_t) noexcept(false) {
 void* XMemVirtualAlloc(void*, std::size_t, std::uint32_t, std::uint32_t, std::uint32_t) noexcept(false) {
     ANYBOX_NOT_IMPLEMENTED();
 }
+
+std::int32_t XMemVirtualQuery(void*, const void*, XMemMemoryBasicInformation*) noexcept(false) {
+    ANYBOX_NOT_IMPLEMENTED();
+}

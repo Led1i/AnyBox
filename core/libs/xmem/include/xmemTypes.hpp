@@ -4,5 +4,6 @@
 struct XMemWorkingSetStatistics;
 struct XMemAllocationHook;
 struct XMemFreeHook;
+struct XMemMemoryBasicInformation;
 
 #endif
