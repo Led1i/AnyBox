@@ -1,10 +1,15 @@
-anybox_add_system_library(AcpHal src/Exports.cpp src/memory/Allocation.cpp src/memory/Exports.cpp src/memory/Heap.cpp src/memory/Mapping.cpp AcpHal.def)
+anybox_add_system_library(AcpHal src/Exports.cpp src/memory/Allocation.cpp src/memory/Exports.cpp src/memory/Heap.cpp src/memory/Mapping.cpp src/shape/Contexts.cpp AcpHal.def)
 target_include_directories(AcpHal PUBLIC include)
 target_link_libraries(AcpHal PRIVATE xmem)
 
 anybox_add_exception_test(AcpHal)
 
 if(BUILD_TESTING)
+    add_executable(acphal_shape_tests tests/shape/Contexts.cpp)
+    target_link_libraries(acphal_shape_tests PRIVATE AcpHal)
+    set_target_properties(acphal_shape_tests PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${ANYBOX_RUNTIME_DIRECTORY}")
+    add_test(NAME acphal.shape COMMAND acphal_shape_tests)
+    set_tests_properties(acphal.shape PROPERTIES TIMEOUT 15)
     add_executable(acphal_default_heap_tests tests/memory/DefaultHeap.cpp)
     target_link_libraries(acphal_default_heap_tests PRIVATE AcpHal)
     set_target_properties(acphal_default_heap_tests PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${ANYBOX_RUNTIME_DIRECTORY}")
