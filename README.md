@@ -1,6 +1,6 @@
 # About
 
-AnyBox is a tool for porting Xbox Series X|S executables to native Windows programs.
+AnyBox is a compatibility layer for running Xbox Series X|S executables natively on Windows.
 
 ## Status
 
