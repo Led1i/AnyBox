@@ -12,7 +12,7 @@ AnyBox::Storage::File::File(const wchar_t* path) {
 }
 
 AnyBox::Storage::File::~File() {
-    if (handle != INVALID_HANDLE_VALUE && !CloseHandle(handle)) std::terminate();
+    Close();
 }
 
 std::int32_t AnyBox::Storage::File::QueryInterface(const Guid& interfaceId, void** object) {
@@ -34,7 +34,9 @@ std::uint32_t AnyBox::Storage::File::Release() {
 }
 
 void AnyBox::Storage::File::Close() {
-    std::lock_guard lock(mutex);
+    std::unique_lock lock(mutex);
+    closing = true;
+    readsFinished.wait(lock, [this] { return pendingReads == 0; });
     if (handle == INVALID_HANDLE_VALUE) return;
     if (!CloseHandle(handle)) Windows::ThrowLastError("CloseHandle DirectStorage file");
     handle = INVALID_HANDLE_VALUE;
@@ -42,7 +44,7 @@ void AnyBox::Storage::File::Close() {
 
 void* AnyBox::Storage::File::GetHandle() {
     std::lock_guard lock(mutex);
-    if (handle == INVALID_HANDLE_VALUE) throw std::logic_error("DirectStorage file is closed");
+    if (closing || handle == INVALID_HANDLE_VALUE) throw std::logic_error("DirectStorage file is closed");
     HANDLE duplicate;
     auto process = GetCurrentProcess();
     if (!DuplicateHandle(process, handle, process, &duplicate, 0, FALSE, DUPLICATE_SAME_ACCESS)) Windows::ThrowLastError("DuplicateHandle DirectStorage file");

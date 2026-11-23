@@ -1,6 +1,19 @@
 #include "Queue.hpp"
+#include "../file/File.hpp"
 
 #include <stdexcept>
+
+namespace {
+
+AnyBox::Storage::ReadLease RetainFile(const StorageRequest& request, std::uint64_t sourceType) {
+    if (sourceType == 1) return {};
+    if (!request.source) throw std::invalid_argument("DirectStorage file source is null");
+    auto* file = dynamic_cast<AnyBox::Storage::File*>(static_cast<IStorageFile*>(request.source));
+    if (!file) throw std::invalid_argument("DirectStorage file does not belong to this runtime");
+    return file->AcquireRead();
+}
+
+}
 
 void AnyBox::Storage::Queue::requireSpace() const {
     if (closing) throw std::logic_error("DirectStorage queue is closing");
@@ -21,8 +34,7 @@ void AnyBox::Storage::Queue::EnqueueRequest(const StorageRequest* request) {
     if (request->sourceSize != 0 && (!request->source || !request->destination)) throw std::invalid_argument("DirectStorage request buffer is null");
     if (request->destinationPageOffset != 0 || request->reserved1 != 0) throw std::invalid_argument("Invalid DirectStorage memory destination fields");
     for (auto reserved : request->reserved0) if (reserved != 0) throw std::invalid_argument("DirectStorage request reserved fields must be zero");
-    ReadOperation operation{*request, {}};
-    if (description.description.sourceType == 0 && request->source) operation.file = Handle(static_cast<IStorageFile*>(request->source)->GetHandle());
+    ReadOperation operation{*request, RetainFile(*request, description.description.sourceType)};
     std::lock_guard lock(mutex);
     requireSpace();
     operations[(head + count) % operations.size()].emplace<ReadOperation>(std::move(operation));

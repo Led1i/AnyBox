@@ -2,6 +2,7 @@
 #define ANYBOX_STORAGE_OPERATION_HPP
 
 #include "../common/Handle.hpp"
+#include "../file/ReadLease.hpp"
 #include "../status/StatusArray.hpp"
 
 #include <StorageTypes.hpp>
@@ -12,7 +13,7 @@ namespace AnyBox::Storage {
 
 struct ReadOperation {
     StorageRequest request;
-    Handle file;
+    ReadLease file;
     bool canceled = false;
 };
 

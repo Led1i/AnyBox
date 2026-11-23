@@ -3,6 +3,8 @@
 #include <array>
 #include <bit>
 #include <cstddef>
+#include <exception>
+#include <thread>
 
 namespace {
 
@@ -55,5 +57,48 @@ void AnyBox::Tests::CheckFileQueue() {
     test.queue->EnqueueRequest(&request);
     test.Wait();
     Require(test.status->GetHResult(0) == 0, "Queue reused an error from a previous status group");
+    test.queue->EnqueueRequest(&request);
+    Storage::Handle started(CreateEventW(nullptr, TRUE, FALSE, nullptr));
+    Storage::Handle closed(CreateEventW(nullptr, TRUE, FALSE, nullptr));
+    Require(started.Get() && closed.Get(), "File close test event creation failed");
+    std::exception_ptr closeError;
+    std::jthread closer([&] {
+        SetEvent(started.Get());
+        try {
+            file->Close();
+        } catch (...) {
+            closeError = std::current_exception();
+        }
+        SetEvent(closed.Get());
+    });
+    auto startedResult = WaitForSingleObject(started.Get(), 5000);
+    auto beforeSubmit = WaitForSingleObject(closed.Get(), 50);
+    test.Wait();
+    auto finished = WaitForSingleObject(closed.Get(), 5000);
+    closer.join();
+    if (closeError) std::rethrow_exception(closeError);
+    Require(startedResult == WAIT_OBJECT_0 && beforeSubmit == WAIT_TIMEOUT, "DirectStorage Close returned before pending IO completed");
+    Require(finished == WAIT_OBJECT_0, "DirectStorage Close did not observe completed IO");
+    ExpectException<std::logic_error>([&] { file->GetHandle(); });
+    file.reset();
+    test.factory->OpenFile(source.Path(), Storage::FileId, &output);
+    file.reset(static_cast<IStorageFile*>(output));
+    request.source = file.get();
+    Require(ResetEvent(started.Get()) && ResetEvent(closed.Get()), "File release test event reset failed");
+    test.queue->EnqueueRequest(&request);
+    auto* lastReference = file.release();
+    std::uint32_t releaseCount = 99;
+    std::jthread releaser([&] {
+        SetEvent(started.Get());
+        releaseCount = lastReference->Release();
+        SetEvent(closed.Get());
+    });
+    startedResult = WaitForSingleObject(started.Get(), 5000);
+    beforeSubmit = WaitForSingleObject(closed.Get(), 50);
+    test.Wait();
+    finished = WaitForSingleObject(closed.Get(), 5000);
+    releaser.join();
+    Require(startedResult == WAIT_OBJECT_0 && beforeSubmit == WAIT_TIMEOUT, "Last file Release returned before pending IO completed");
+    Require(finished == WAIT_OBJECT_0 && releaseCount == 0, "Last file Release did not retire completed IO");
     test.queue->Close();
 }

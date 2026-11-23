@@ -1,5 +1,5 @@
 anybox_add_system_library(XCRDAPI src/Exports.cpp XCRDAPI.def)
-target_sources(XCRDAPI PRIVATE src/factory/Configuration.cpp src/factory/Lifetime.cpp src/factory/Unsupported.cpp src/file/Lifetime.cpp)
+target_sources(XCRDAPI PRIVATE src/factory/Configuration.cpp src/factory/Lifetime.cpp src/factory/Unsupported.cpp src/file/Lifetime.cpp src/file/ReadLease.cpp src/file/Reads.cpp)
 target_sources(XCRDAPI PRIVATE src/factory/Status.cpp src/status/StatusArray.cpp)
 target_sources(XCRDAPI PRIVATE src/factory/Queue.cpp src/queue/Enqueue.cpp src/queue/Lifetime.cpp src/queue/Read.cpp src/queue/StatusOperation.cpp src/queue/Unsupported.cpp src/queue/Worker.cpp)
 target_include_directories(XCRDAPI PUBLIC include)
