@@ -36,6 +36,14 @@ void AnyBox::Tests::CheckVirtualAllocation() {
         Require(replaced == placeholder.get(), "XMem placeholder replacement moved its address");
         std::memset(replaced, 0x15, 0x10000);
     }
+    Region unalignedReservation(XMemVirtualAlloc(nullptr, 0x10000, MEM_RESERVE, 7, PAGE_NOACCESS));
+    auto* unaligned = static_cast<std::byte*>(unalignedReservation.get()) + 4093;
+    Require(XMemVirtualAlloc(unaligned, 8, MEM_COMMIT, 7, PAGE_READWRITE) == unalignedReservation.get(), "XMem commit did not round its address down");
+    std::memset(unaligned, 0x53, 8);
+    XMemVirtualQuery(process, unaligned + 7, &information);
+    Require(information.state == MEM_COMMIT, "XMem rounded range omitted the final page");
+    auto* overflowing = reinterpret_cast<void*>(std::numeric_limits<std::uintptr_t>::max() - 4096);
+    ExpectException<std::overflow_error>([&] { XMemVirtualAlloc(overflowing, 8192, MEM_COMMIT, 0, PAGE_READWRITE); });
     ExpectException<std::invalid_argument>([] { XMemVirtualAlloc(nullptr, 0, MEM_RESERVE, 0, PAGE_NOACCESS); });
     ExpectException<std::invalid_argument>([] { XMemVirtualAlloc(nullptr, 4096, 0x80000000, 0, PAGE_READWRITE); });
     ExpectException<std::invalid_argument>([] { XMemVirtualAlloc(nullptr, 4096, MEM_RESERVE, 0x80000000, PAGE_READWRITE); });

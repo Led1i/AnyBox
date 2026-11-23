@@ -21,11 +21,16 @@ void* XMemVirtualAlloc(void* address, std::size_t size, std::uint32_t allocation
     bool replace = (hostType & MEM_REPLACE_PLACEHOLDER) != 0;
     static const auto allocate = AnyBox::XMem::GetMemoryFunction<AnyBox::XMem::AllocateVirtual>("VirtualAlloc2");
     bool placeholder = (hostType & MEM_RESERVE_PLACEHOLDER) != 0 || (pageMode != 0 && reserve && (hostType & MEM_COMMIT) == 0);
-    if (reserve && pageMode != 0) {
-        if (size > std::numeric_limits<std::size_t>::max() - (alignment - 1)) throw std::overflow_error("XMem virtual allocation size overflows");
-        size = (size + alignment - 1) & ~(alignment - 1);
-        if (address && reinterpret_cast<std::uintptr_t>(address) % alignment != 0) throw std::invalid_argument("XMem requested address is misaligned");
-    }
+    auto pageSize = pageMode == 0 ? std::size_t{4096} : alignment;
+    auto requested = reinterpret_cast<std::uintptr_t>(address);
+    auto addressAlignment = reserve && pageMode == 0 ? alignment : pageSize;
+    auto roundedAddress = requested & ~(addressAlignment - 1);
+    auto offset = requested - roundedAddress;
+    auto maximum = std::numeric_limits<std::size_t>::max();
+    if (size > maximum - offset || size + offset > maximum - (pageSize - 1)) throw std::overflow_error("XMem virtual allocation size overflows");
+    size = (size + offset + pageSize - 1) & ~(pageSize - 1);
+    if (address && roundedAddress > maximum - size) throw std::overflow_error("XMem virtual allocation address range overflows");
+    address = reinterpret_cast<void*>(roundedAddress);
     if (placeholder && replace) {
         MEMORY_BASIC_INFORMATION information{};
         if (!VirtualQuery(address, &information, sizeof(information))) AnyBox::Windows::ThrowLastError("VirtualQuery placeholder");
