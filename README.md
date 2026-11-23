@@ -1,6 +1,6 @@
 # About
 
-AnyBox is a compatibility layer for running Xbox Series X|S executables natively on Windows.
+AnyBox is a compatibility layer for running Xbox Series X|S executables natively on Windows. Part of [AnyPS5](https://github.com/boykopovar/AnyPS5) ecosystem. The [shader recompiler from AnyPS5 core](https://github.com/boykopovar/AnyPS5/tree/main/core/shader/recompiler) is planned to be used.
 
 ## Status
 
