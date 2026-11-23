@@ -1,0 +1,17 @@
+#ifndef ANYBOX_D3D12_XS_HPP
+#define ANYBOX_D3D12_XS_HPP
+
+#include <d3d12_xsTypes.hpp>
+#include <anybox/Types.hpp>
+
+#include <cstdint>
+
+extern "C" {
+
+std::int32_t D3D12ConfigureVirtualMemoryX(const D3D12VirtualMemoryConfiguration* configuration) noexcept(false);
+std::int32_t D3D12SerializeVersionedRootSignature(const D3D12VersionedRootSignatureDescription* description, ID3DBlob** blob, ID3DBlob** errorBlob) noexcept(false);
+std::int32_t D3D12XboxCreateDevice(IGraphicsUnknown* adapter, const D3D12XboxCreateDeviceParameters* parameters, const AnyBox::Guid& interfaceId, void** device) noexcept(false);
+
+}
+
+#endif
