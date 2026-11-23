@@ -21,7 +21,12 @@ AnyBox::Storage::MemoryView::MemoryView(void* memory, std::size_t size, bool phy
     pages.reset(AnyBoxAcquirePhysicalPages(count, static_cast<const std::uint64_t*>(memory)));
     if (!pages) throw std::runtime_error("Physical memory provider returned a null lease");
     auto range = pages->GetContiguousMemory();
-    if (!range.empty()) contiguous = range.subspan(pageOffset, size);
+    if (!range.empty()) {
+        contiguous = range.subspan(pageOffset, size);
+        lower = reinterpret_cast<std::uintptr_t>(contiguous.data());
+        upper = lower + size;
+        return;
+    }
     lower = std::numeric_limits<std::uintptr_t>::max();
     for (std::size_t index = 0; index < pages->GetPageCount(); ++index) {
         auto page = pages->GetPage(index);

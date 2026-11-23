@@ -39,9 +39,16 @@ void CheckMemoryCase(bool compressed, bool sourcePhysical, bool destinationPhysi
     request.destinationSize = static_cast<std::uint32_t>(data.plain.size());
     request.padding0.fill(0xA5);
     request.padding1 = 0xB713A857;
+    StorageStatistics before{};
+    fixture.factory->GetStats(&before);
     fixture.queue->EnqueueRequest(&request);
     fixture.Wait();
     Require(fixture.status->GetHResult(0) == 0, "Physical memory request failed");
+    if (!compressed) {
+        StorageStatistics after{};
+        fixture.factory->GetStats(&after);
+        Require(after.currentMemoryUsage == before.currentMemoryUsage, "Disjoint physical copy allocated a data staging buffer");
+    }
     auto actual = destinationPhysical ? destination.GetMemory().subspan(outputOffset, data.plain.size()) : std::span(output).subspan(1, data.plain.size());
     Require(std::equal(data.plain.begin(), data.plain.end(), actual.begin()), "Physical memory request changed its data or page order");
     if (destinationPhysical) {

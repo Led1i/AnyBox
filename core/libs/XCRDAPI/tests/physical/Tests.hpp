@@ -38,7 +38,10 @@ void CheckPhysicalCopies();
 void CheckPhysicalMemoryDecode();
 void CheckPhysicalFileRead();
 void CheckPhysicalOverlaps();
+void CheckDisjointSharedPage();
 void CheckPhysicalLifetime();
+void CheckPhysicalCancellation();
+void CheckPhysicalFailure();
 void CheckRequestPadding();
 
 }

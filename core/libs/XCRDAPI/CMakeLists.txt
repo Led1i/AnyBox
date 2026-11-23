@@ -13,7 +13,7 @@ target_include_directories(XCRDAPI PUBLIC include)
 target_link_libraries(XCRDAPI PUBLIC anybox_common PRIVATE libdeflate_static zlibstatic xmem)
 
 if(BUILD_TESTING)
-    add_executable(storage_physical_tests tests/physical/Buffer.cpp tests/physical/Packet.cpp tests/physical/Memory.cpp tests/physical/File.cpp tests/physical/Overlap.cpp tests/physical/Lifetime.cpp tests/physical/Main.cpp)
+    add_executable(storage_physical_tests tests/physical/Buffer.cpp tests/physical/Packet.cpp tests/physical/Memory.cpp tests/physical/File.cpp tests/physical/Overlap.cpp tests/physical/SharedPage.cpp tests/physical/Lifetime.cpp tests/physical/Completion.cpp tests/physical/Main.cpp)
     target_link_libraries(storage_physical_tests PRIVATE XCRDAPI xmem libdeflate_static)
     set_target_properties(storage_physical_tests PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${ANYBOX_RUNTIME_DIRECTORY}")
     add_test(NAME storage.physical COMMAND storage_physical_tests)
