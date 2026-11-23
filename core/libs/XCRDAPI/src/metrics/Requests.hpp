@@ -3,6 +3,8 @@
 
 #include "Counters.hpp"
 
+#include <source_location>
+
 namespace AnyBox::Storage {
 
 class RequestStatistics {
@@ -35,13 +37,14 @@ private:
 
 class RequestValidation {
 public:
-    RequestValidation() noexcept;
+    explicit RequestValidation(std::source_location location = std::source_location::current()) noexcept;
     RequestValidation(const RequestValidation&) = delete;
     RequestValidation& operator=(const RequestValidation&) = delete;
     ~RequestValidation();
 
 private:
     int exceptions;
+    const char* function;
 };
 
 }

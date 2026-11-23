@@ -1,4 +1,5 @@
 #include "Requests.hpp"
+#include "../debug/Configuration.hpp"
 
 #include <exception>
 
@@ -26,8 +27,10 @@ AnyBox::Storage::WorkStatistics::~WorkStatistics() {
 
 void AnyBox::Storage::WorkStatistics::Cancel() noexcept { reportErrors = false; }
 
-AnyBox::Storage::RequestValidation::RequestValidation() noexcept : exceptions(std::uncaught_exceptions()) {}
+AnyBox::Storage::RequestValidation::RequestValidation(std::source_location location) noexcept : exceptions(std::uncaught_exceptions()), function(location.function_name()) {}
 
 AnyBox::Storage::RequestValidation::~RequestValidation() {
-    if (std::uncaught_exceptions() > exceptions) GetCounters().errors.fetch_add(1, std::memory_order_relaxed);
+    if (std::uncaught_exceptions() <= exceptions) return;
+    GetCounters().errors.fetch_add(1, std::memory_order_relaxed);
+    ReportValidationFailure(function);
 }

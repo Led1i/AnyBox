@@ -6,8 +6,6 @@
 
 #include <StorageInterfaces.hpp>
 
-#include <atomic>
-
 namespace AnyBox::Storage {
 
 class Factory final : public IStorageFactory {
@@ -27,7 +25,6 @@ public:
 private:
     ReferenceCount references{0};
     StagingPool& stagingPool = GetStagingPool();
-    std::atomic<std::uint32_t> debugFlags{0};
 };
 
 Factory& GetFactory();

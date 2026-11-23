@@ -1,5 +1,5 @@
 anybox_add_system_library(XCRDAPI src/Exports.cpp XCRDAPI.def)
-set(ANYBOX_STORAGE_METRICS src/metrics/Counters.cpp src/metrics/Memory.cpp src/metrics/Lifetime.cpp src/metrics/Requests.cpp src/metrics/Snapshot.cpp)
+set(ANYBOX_STORAGE_METRICS src/metrics/Counters.cpp src/metrics/Memory.cpp src/metrics/Lifetime.cpp src/metrics/Requests.cpp src/metrics/Snapshot.cpp src/debug/Configuration.cpp)
 target_sources(XCRDAPI PRIVATE ${ANYBOX_STORAGE_METRICS} src/workers/Lifetime.cpp src/workers/Affinity.cpp src/queue/Startup.cpp)
 
 target_sources(XCRDAPI PRIVATE src/factory/Configuration.cpp src/factory/Lifetime.cpp src/factory/Statistics.cpp src/file/Lifetime.cpp src/file/ReadLease.cpp src/file/Reads.cpp)
@@ -13,6 +13,11 @@ target_include_directories(XCRDAPI PUBLIC include)
 target_link_libraries(XCRDAPI PUBLIC anybox_common PRIVATE libdeflate_static zlibstatic xmem)
 
 if(BUILD_TESTING)
+    add_executable(storage_debug_tests tests/debug/Child.cpp tests/debug/Session.cpp tests/debug/Main.cpp)
+    target_link_libraries(storage_debug_tests PRIVATE XCRDAPI)
+    set_target_properties(storage_debug_tests PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${ANYBOX_RUNTIME_DIRECTORY}")
+    add_test(NAME storage.debug COMMAND storage_debug_tests)
+    set_tests_properties(storage.debug PROPERTIES TIMEOUT 30)
     add_executable(storage_physical_tests tests/physical/Buffer.cpp tests/physical/Packet.cpp tests/physical/Memory.cpp tests/physical/File.cpp tests/physical/Overlap.cpp tests/physical/SharedPage.cpp tests/physical/Lifetime.cpp tests/physical/Completion.cpp tests/physical/Main.cpp)
     target_link_libraries(storage_physical_tests PRIVATE XCRDAPI xmem libdeflate_static)
     set_target_properties(storage_physical_tests PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${ANYBOX_RUNTIME_DIRECTORY}")
