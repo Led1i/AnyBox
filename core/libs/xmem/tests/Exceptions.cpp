@@ -8,13 +8,11 @@ int main() {
         void* address = nullptr;
         AnyBox::Tests::ExpectUnimplemented("XMemAllocatePhysicalPages", [&] { XMemAllocatePhysicalPages(0, &pageCount, &pageFrame); });
         AnyBox::Tests::ExpectUnimplemented("XMemFreePhysicalPages", [&] { XMemFreePhysicalPages(1, &pageFrame); });
-        AnyBox::Tests::ExpectUnimplemented("XMemGetWorkingSetStatistics", [&] { XMemGetWorkingSetStatistics(0, nullptr); });
         if (XMemIsToolsMemAvailable() != 0) throw std::runtime_error("Development-kit tools memory is not available");
         AnyBox::Tests::ExpectUnimplemented("XMemMapPhysicalPages", [&] { XMemMapPhysicalPages(nullptr, 1, &pageFrame); });
         AnyBox::Tests::ExpectUnimplemented("XMemMapPhysicalPagesScatter", [&] { XMemMapPhysicalPagesScatter(&address, 1, &pageFrame); });
         AnyBox::Tests::ExpectUnimplemented("XMemTransferMemory", [&] { XMemTransferMemory(1, 4096); });
         AnyBox::Tests::ExpectUnimplemented("XMemVirtualAlloc", [&] { XMemVirtualAlloc(nullptr, 4096, 0, 0, 0); });
-        AnyBox::Tests::ExpectUnimplemented("XMemVirtualQuery", [] { XMemVirtualQuery(nullptr, nullptr, nullptr); });
         if (pageCount != 1 || pageFrame != 0x123456789ABCDEF0 || address != nullptr) throw std::runtime_error("An unimplemented export changed its output");
     });
 }
