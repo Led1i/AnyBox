@@ -19,7 +19,8 @@ std::int32_t XMemFreePhysicalPages(std::size_t pageCount, const std::uint64_t* p
 
 void* XMemMapPhysicalPages(void* address, std::size_t pageCount, const std::uint64_t* pageFrames) noexcept(false) {
     auto value = reinterpret_cast<std::uintptr_t>(address);
-    if (!address || pageCount == 0) throw std::invalid_argument("XMem physical mapping requires an address and count");
+    if (!address) throw std::invalid_argument("XMem physical mapping requires an address");
+    if (pageCount == 0) return address;
     if (pageCount > (std::numeric_limits<std::uintptr_t>::max() - value) / AnyBox::XMem::PhysicalPageSize) throw std::overflow_error("XMem physical mapping address range overflows");
     std::vector<void*> addresses;
     addresses.reserve(pageCount);
@@ -29,7 +30,8 @@ void* XMemMapPhysicalPages(void* address, std::size_t pageCount, const std::uint
 }
 
 std::int32_t XMemMapPhysicalPagesScatter(void* const* addresses, std::size_t pageCount, const std::uint64_t* pageFrames) noexcept(false) {
-    if (pageCount != 0 && !addresses) throw std::invalid_argument("XMem scatter address array is null");
+    if (!addresses) throw std::invalid_argument("XMem scatter address array is null");
+    if (pageCount == 0) return 1;
     AnyBox::XMem::GetPool().Map({addresses, pageCount}, pageFrames);
     return 1;
 }

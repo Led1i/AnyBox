@@ -1,4 +1,4 @@
-#include "../virtual/Tests.hpp"
+#include "Tests.hpp"
 
 #include <array>
 #include <cstddef>
@@ -10,6 +10,7 @@
 int main() {
     try {
         using namespace AnyBox::Tests;
+        CheckPhysicalPageModes();
         std::size_t count = 2;
         std::array<std::uint64_t, 2> frames{};
         Require(XMemAllocatePhysicalPages(0x280, &count, frames.data()) != 0 && count == 2, "Physical allocation count changed");
@@ -54,7 +55,8 @@ int main() {
         ExpectException<std::invalid_argument>([] { XMemAllocatePhysicalPages(0, nullptr, nullptr); });
         Require(frames == sentinel && count == 2, "Rejected physical allocation changed its outputs");
         Require(XMemFreePhysicalPages(0, nullptr) != 0, "Empty physical free did not return success");
-        Require(XMemMapPhysicalPagesScatter(nullptr, 0, nullptr) != 0, "Empty scatter operation failed");
+        Require(XMemMapPhysicalPagesScatter(reversedAddresses.data(), 0, nullptr) != 0, "Empty scatter operation failed");
+        ExpectException<std::invalid_argument>([] { XMemMapPhysicalPagesScatter(nullptr, 0, nullptr); });
         return 0;
     } catch (const std::exception& error) {
         std::cerr << error.what() << '\n';

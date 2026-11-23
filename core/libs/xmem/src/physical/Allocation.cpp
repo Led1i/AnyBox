@@ -17,8 +17,13 @@ AnyBox::XMem::Section::~Section() {
 }
 
 void AnyBox::XMem::Pool::Allocate(std::uint64_t flags, std::size_t count, std::uint64_t* frames) {
-    if ((flags & ~0x380ULL) != 0) throw std::invalid_argument("Unsupported XMem physical allocation flags");
-    if (count == 0 || !frames) throw std::invalid_argument("XMem physical allocation requires a count and output");
+    if ((flags & ~0x20400380ULL) != 0) throw std::invalid_argument("Unsupported XMem physical allocation flags");
+    auto pageMode = flags & 0x20400000;
+    if (pageMode == 0x400000) throw std::invalid_argument("Invalid XMem physical page mode");
+    bool largePages = pageMode == 0x20000000;
+    if (largePages && count % 32 != 0) throw std::invalid_argument("XMem 2 MiB physical allocation requires a multiple of 32 pages");
+    if (count == 0) return;
+    if (!frames) throw std::invalid_argument("XMem physical allocation output is null");
     if (count > std::numeric_limits<std::uint64_t>::max() / PhysicalPageSize) throw std::overflow_error("XMem physical allocation size overflows");
     auto size = static_cast<std::uint64_t>(count) * PhysicalPageSize;
     auto handle = CreateFileMappingW(INVALID_HANDLE_VALUE, nullptr, PAGE_READWRITE, static_cast<DWORD>(size >> 32), static_cast<DWORD>(size), nullptr);
@@ -31,15 +36,19 @@ void AnyBox::XMem::Pool::Allocate(std::uint64_t flags, std::size_t count, std::u
         throw;
     }
     std::lock_guard lock(mutex);
-    if (count > (std::numeric_limits<std::uint64_t>::max() - nextFrame) / 16) throw std::overflow_error("XMem physical frame identifiers exhausted");
+    std::uint64_t alignment = largePages ? 512 : 16;
+    auto maximum = std::numeric_limits<std::uint64_t>::max();
+    if (nextFrame > maximum - (alignment - 1)) throw std::overflow_error("XMem physical frame alignment overflows");
+    auto firstFrame = (nextFrame + alignment - 1) & ~(alignment - 1);
+    if (count > (maximum - firstFrame) / 16) throw std::overflow_error("XMem physical frame identifiers exhausted");
     std::map<std::uint64_t, Page> added;
     for (std::size_t i = 0; i < count; ++i) {
-        auto frame = nextFrame + i * 16;
+        auto frame = firstFrame + i * 16;
         added.emplace(frame, Page{section, i * PhysicalPageSize, frame});
     }
     pages.merge(added);
-    for (std::size_t i = 0; i < count; ++i) frames[i] = nextFrame + i * 16;
-    nextFrame += count * 16;
+    for (std::size_t i = 0; i < count; ++i) frames[i] = firstFrame + i * 16;
+    nextFrame = firstFrame + count * 16;
 }
 
 void AnyBox::XMem::Pool::Free(std::span<const std::uint64_t> frames) {
