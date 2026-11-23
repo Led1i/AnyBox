@@ -39,7 +39,7 @@ int main() {
         Require(!ApuIsVirtualAddressValid(nullptr, 64), "Null APU address is valid");
         Require(ApuMapVirtualAddress(nullptr) == 0 && ApuMapApuAddress(0) == nullptr, "Null APU translations changed");
         void* output = nullptr;
-        ExpectException<std::logic_error>([&] { ApuAlloc(&output, nullptr, 64, 64, 0); });
+        ExpectException<std::logic_error>([&] { ApuAlloc(&output, nullptr, 64, 64, 1); });
         ExpectException<std::invalid_argument>([] { ApuCreateHeap(0, 0); });
         Require(backingAllocations == 0, "Rejected APU heap allocated storage");
         Require(ApuCreateHeap(0x100000, 0x12340000) == 0, "APU heap creation failed");

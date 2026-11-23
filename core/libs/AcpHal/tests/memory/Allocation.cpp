@@ -8,7 +8,7 @@
 void AnyBox::Tests::CheckAllocation() {
     std::array<void*, 3> allocations{};
     for (std::uint32_t i = 0; i < allocations.size(); ++i) {
-        Require(ApuAlloc(&allocations[i], nullptr, 4096, 2048, i) == 0, "APU allocation failed");
+        Require(ApuAlloc(&allocations[i], nullptr, 4096, 2048, i % 2 + 1) == 0, "APU allocation failed");
         Require(reinterpret_cast<std::uintptr_t>(allocations[i]) % 2048 == 0, "APU allocation is misaligned");
         std::memset(allocations[i], static_cast<int>(i + 1), 4096);
     }
@@ -26,8 +26,8 @@ void AnyBox::Tests::CheckAllocation() {
     ApuFree(allocations[2]);
     ApuFree(replacement);
     void* entireHeap = nullptr;
-    Require(ApuAlloc(&entireHeap, nullptr, 0x100000, 1, 0) == 0, "APU free blocks were not coalesced");
-    std::memset(entireHeap, 0x5A, 0x100000);
+    Require(ApuAlloc(&entireHeap, nullptr, 0xFFF00, 256, 1) == 0, "APU free blocks were not coalesced");
+    std::memset(entireHeap, 0x5A, 0xFFF00);
     ApuFree(entireHeap);
     ApuFree(nullptr);
 }

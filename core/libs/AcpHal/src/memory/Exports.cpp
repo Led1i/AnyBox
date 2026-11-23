@@ -6,6 +6,8 @@
 
 std::int32_t ApuAlloc(void** allocation, std::uint32_t* apuAddress, std::uint32_t size, std::uint32_t alignment, std::uint32_t flags) noexcept(false) {
     if (!allocation) throw std::invalid_argument("APU allocation output is null");
+    *allocation = nullptr;
+    if (apuAddress) *apuAddress = 0;
     auto* result = AnyBox::AcpHal::GetHeap().Allocate(size, alignment, flags);
     if (apuAddress) *apuAddress = AnyBox::AcpHal::GetHeap().ToApu(result);
     *allocation = result;

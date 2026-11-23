@@ -25,7 +25,7 @@ private:
         bool allocated;
     };
 
-    std::mutex mutex;
+    mutable std::mutex mutex;
     std::atomic<std::byte*> memory{nullptr};
     std::uint32_t memorySize = 0;
     std::uint32_t busBase = 0;
