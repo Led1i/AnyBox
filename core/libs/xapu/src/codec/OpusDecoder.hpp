@@ -18,6 +18,7 @@ class OpusDecoder {
 public:
     explicit OpusDecoder(std::uint32_t channels, std::uint32_t sampleRate = 48000);
     std::uint32_t Decode(std::span<const std::byte> packet, std::span<float> output);
+    std::uint32_t GetFrameCount(std::span<const std::byte> packet) const;
     void Reset();
     std::uint32_t GetChannelCount() const;
 
