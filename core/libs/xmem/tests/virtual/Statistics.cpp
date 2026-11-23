@@ -56,7 +56,7 @@ void AnyBox::Tests::CheckStatistics() {
     XMemGetWorkingSetStatistics(0x20000010, &statistics);
     Require(statistics.cpuPageTableSize < pageTablesDuring, "XMem page table statistics did not observe released ranges");
     statistics.gameUsed = 0x571;
-    for (auto flags : {0x20000004U, 0x20000008U, 0x2000000AU}) {
+    for (auto flags : {0x20000008U, 0x2000000AU}) {
         ExpectException<std::runtime_error>([&] { XMemGetWorkingSetStatistics(flags, &statistics); });
         Require(statistics.gameUsed == 0x571, "Unsupported statistics query changed its output");
     }

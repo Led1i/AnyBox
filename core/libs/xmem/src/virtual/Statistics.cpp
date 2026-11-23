@@ -13,7 +13,7 @@
 std::int32_t XMemGetWorkingSetStatistics(std::uint32_t flags, XMemWorkingSetStatistics* statistics) noexcept(false) {
     if (!statistics) throw std::invalid_argument("XMem working set output is null");
     if ((flags & 0x0FFF7FE0U) != 0) throw std::invalid_argument("Invalid XMem working set statistics flags");
-    if ((flags & 0x0C) != 0) ANYBOX_NOT_IMPLEMENTED();
+    if ((flags & 8) != 0) ANYBOX_NOT_IMPLEMENTED();
     XMemWorkingSetStatistics result{};
     if ((flags & 1) != 0) {
         PROCESS_MEMORY_COUNTERS_EX counters{};
@@ -29,6 +29,7 @@ std::int32_t XMemGetWorkingSetStatistics(std::uint32_t flags, XMemWorkingSetStat
         result.gameUsedPeak = counters.PeakPagefileUsage;
     }
 
+    if ((flags & 4) != 0) result.stackUsed = AnyBox::XMem::GetStackSize();
     if ((flags & 0x10) != 0) result.cpuPageTableSize = AnyBox::XMem::GetPageTableSize();
 
     auto version = flags & 0xF0000000;

@@ -6,6 +6,7 @@
 namespace AnyBox::XMem {
 
 std::uint32_t GetPageTableSize();
+std::uint32_t GetStackSize();
 
 }
 
