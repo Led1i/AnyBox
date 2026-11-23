@@ -1,4 +1,12 @@
 anybox_add_system_library(XCRDAPI src/Exports.cpp XCRDAPI.def)
+target_sources(XCRDAPI PRIVATE src/factory/Configuration.cpp src/factory/Lifetime.cpp src/factory/Unsupported.cpp src/file/Lifetime.cpp)
 target_include_directories(XCRDAPI PUBLIC include)
 target_link_libraries(XCRDAPI PUBLIC anybox_common)
-anybox_add_exception_test(XCRDAPI)
+
+if(BUILD_TESTING)
+    add_executable(storage_file_tests tests/file/Factory.cpp tests/file/File.cpp tests/file/Main.cpp)
+    target_link_libraries(storage_file_tests PRIVATE XCRDAPI)
+    set_target_properties(storage_file_tests PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${ANYBOX_RUNTIME_DIRECTORY}")
+    add_test(NAME storage.file COMMAND storage_file_tests)
+    set_tests_properties(storage.file PROPERTIES TIMEOUT 15)
+endif()
