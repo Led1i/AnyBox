@@ -12,7 +12,7 @@ namespace AnyBox::AcpHal {
 class Heap {
 public:
     void Create(std::uint32_t size, std::uint32_t attributes);
-    void* Allocate(void* requestedAddress, std::uint32_t size, std::uint32_t alignment, std::uint32_t flags);
+    void* Allocate(std::uint32_t size, std::uint32_t alignment, std::uint32_t flags);
     void Free(void* allocation);
     bool IsValid(const void* address, std::uint32_t alignment) const;
     std::uint32_t ToApu(const void* address) const;

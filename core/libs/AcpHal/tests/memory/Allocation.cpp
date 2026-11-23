@@ -17,10 +17,11 @@ void AnyBox::Tests::CheckAllocation() {
         auto* bytes = static_cast<const std::byte*>(allocations[i]);
         for (std::size_t j = 0; j < 4096; ++j) Require(bytes[j] == std::byte(i + 1), "APU allocation contents changed");
     }
-    auto* requested = allocations[1];
-    ApuFree(requested);
+    ApuFree(allocations[1]);
     void* replacement = nullptr;
-    Require(ApuAlloc(&replacement, requested, 4096, 2048, 0) == 0 && replacement == requested, "APU requested address was not honored");
+    std::uint32_t apuAddress = 0;
+    Require(ApuAlloc(&replacement, &apuAddress, 4096, 2048, 1) == 0, "APU allocation with bus output failed");
+    Require(apuAddress != 0 && ApuMapApuAddress(apuAddress) == replacement, "APU allocation bus output does not map to its CPU output");
     ApuFree(allocations[0]);
     ApuFree(allocations[2]);
     ApuFree(replacement);

@@ -6,9 +6,9 @@
 #include <limits>
 #include <stdexcept>
 
-void* XMemVirtualAlloc(void* address, std::size_t size, std::uint32_t allocationType, std::uint32_t attributes, std::uint32_t protection) noexcept(false) {
+void* XMemVirtualAlloc(void* address, std::size_t size, std::uint32_t allocationType, std::uint64_t attributes, std::uint32_t protection) noexcept(false) {
     if (size == 0) throw std::invalid_argument("XMem virtual allocation size must be nonzero");
-    if ((attributes & ~0x3A7U) != 0) throw std::invalid_argument("Unsupported XMem virtual allocation attributes");
+    if ((attributes & ~0x3A7ULL) != 0) throw std::invalid_argument("Unsupported XMem virtual allocation attributes");
     constexpr std::uint32_t pageModeMask = 0x20400000;
     constexpr std::uint32_t hostMask = MEM_COMMIT | MEM_RESERVE | MEM_REPLACE_PLACEHOLDER | MEM_RESERVE_PLACEHOLDER | MEM_TOP_DOWN | MEM_WRITE_WATCH | MEM_RESET | MEM_RESET_UNDO;
     if ((allocationType & ~(pageModeMask | hostMask)) != 0) throw std::invalid_argument("Unsupported XMem virtual allocation type");
