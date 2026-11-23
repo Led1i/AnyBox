@@ -3,7 +3,7 @@
 #include <bit>
 #include <system_error>
 
-void AnyBox::Storage::Queue::run() {
+void AnyBox::Storage::Queue::process() {
     std::int32_t groupResult = 0;
     std::unique_lock lock(mutex);
     for (;;) {

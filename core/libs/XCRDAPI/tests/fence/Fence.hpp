@@ -25,6 +25,7 @@ public:
     HRESULT STDMETHODCALLTYPE Signal(UINT64 value) override;
     void SetResult(HRESULT result);
     void SetInterfaceSupported(bool supported);
+    void ExpectAffinity(std::uint64_t affinity);
     void ExpectRead(const std::byte* address, std::byte value);
     ULONG GetReferenceCount() const;
     std::uint32_t GetSignalCount() const;
@@ -35,6 +36,7 @@ private:
     std::atomic<std::uint32_t> signalCount{0};
     HRESULT result = S_OK;
     bool supported = true;
+    std::uint64_t expectedAffinity = 0;
     const std::byte* address = nullptr;
     std::byte expected{};
 };

@@ -1,5 +1,7 @@
 #include "Fence.hpp"
 
+#include <anybox/platform/WindowsError.hpp>
+
 #include <cstring>
 #include <stdexcept>
 
@@ -32,6 +34,23 @@ HRESULT AnyBox::Tests::TestFence::SetEventOnCompletion(UINT64, HANDLE) { throw s
 HRESULT AnyBox::Tests::TestFence::Signal(UINT64 value) {
     ++signalCount;
     if (address && *address != expected) return E_FAIL;
+    if (expectedAffinity != 0) {
+        using QueryAffinity = BOOL (WINAPI*)(HANDLE, PGROUP_AFFINITY);
+        static const auto query = [] {
+            auto module = GetModuleHandleW(L"kernel32.dll");
+            if (!module) AnyBox::Windows::ThrowLastError("GetModuleHandleW fence affinity test");
+            auto address = GetProcAddress(module, "GetThreadGroupAffinity");
+            if (!address) AnyBox::Windows::ThrowLastError("GetThreadGroupAffinity fence test");
+            QueryAffinity function;
+            static_assert(sizeof(function) == sizeof(address));
+            std::memcpy(&function, &address, sizeof(function));
+            return function;
+        }();
+        GROUP_AFFINITY affinity{};
+        if (!query(GetCurrentThread(), &affinity)) AnyBox::Windows::ThrowLastError("GetThreadGroupAffinity fence test");
+        if (affinity.Mask != expectedAffinity) return E_FAIL;
+        if ((expectedAffinity & (1ULL << GetCurrentProcessorNumber())) == 0) return E_FAIL;
+    }
     if (FAILED(result)) return result;
     completed.store(value);
     return result;
@@ -39,6 +58,7 @@ HRESULT AnyBox::Tests::TestFence::Signal(UINT64 value) {
 
 void AnyBox::Tests::TestFence::SetInterfaceSupported(bool value) { supported = value; }
 void AnyBox::Tests::TestFence::SetResult(HRESULT value) { result = value; }
+void AnyBox::Tests::TestFence::ExpectAffinity(std::uint64_t value) { expectedAffinity = value; }
 void AnyBox::Tests::TestFence::ExpectRead(const std::byte* input, std::byte value) { address = input; expected = value; }
 ULONG AnyBox::Tests::TestFence::GetReferenceCount() const { return references.load(); }
 std::uint32_t AnyBox::Tests::TestFence::GetSignalCount() const { return signalCount.load(); }

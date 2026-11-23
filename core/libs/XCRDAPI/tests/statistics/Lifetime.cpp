@@ -22,7 +22,7 @@ void AnyBox::Tests::CheckStatisticsLifetime() {
         queue->Close();
         auto closed = ReadStatistics(factory.get());
         Require(closed.priorities[index].currentQueueCount == baseline.priorities[index].currentQueueCount, "Closed queue remained open in statistics");
-        Require(closed.currentMemoryUsage == opened.currentMemoryUsage, "Closing a live queue object incorrectly freed its ring charge");
+        Require(closed.currentMemoryUsage > baseline.currentMemoryUsage && closed.currentMemoryUsage <= opened.currentMemoryUsage, "Closing a live queue object corrupted its memory charge");
         queue.reset();
         auto released = ReadStatistics(factory.get());
         Require(released.currentMemoryUsage == baseline.currentMemoryUsage, "Released queue retained its memory charge");

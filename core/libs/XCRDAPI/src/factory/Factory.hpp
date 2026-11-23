@@ -27,7 +27,6 @@ public:
 private:
     ReferenceCount references{0};
     StagingPool& stagingPool = GetStagingPool();
-    std::atomic<std::uint64_t> cpuAffinity{0};
     std::atomic<std::uint32_t> debugFlags{0};
 };
 

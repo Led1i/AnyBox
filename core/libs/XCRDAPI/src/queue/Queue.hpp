@@ -11,6 +11,7 @@
 #include "../staging/Pool.hpp"
 
 #include <condition_variable>
+#include <exception>
 #include <mutex>
 #include <optional>
 #include <string>
@@ -42,6 +43,7 @@ private:
     void requireSpace(std::unique_lock<std::mutex>& lock);
     void publish();
     void run();
+    void process();
     void recordError(const Operation& operation, std::int32_t result);
     void read(ReadOperation& operation);
     void readFile(ReadOperation& operation, std::span<std::byte> destination);
@@ -59,6 +61,8 @@ private:
     std::size_t head = 0;
     std::size_t count = 0;
     std::size_t submitted = 0;
+    bool started = false;
+    std::exception_ptr startupError;
     bool closing = false;
     bool closed = false;
     std::optional<ZlibDecoder> decoder;

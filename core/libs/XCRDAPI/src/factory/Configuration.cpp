@@ -1,16 +1,12 @@
 #include "Factory.hpp"
+#include "../workers/Configuration.hpp"
 
 #include <anybox/platform/WindowsError.hpp>
 
 #include <stdexcept>
 
 std::int32_t AnyBox::Storage::Factory::SetCpuAffinity(std::uint64_t affinity) {
-    if (affinity == 0) throw std::invalid_argument("DirectStorage CPU affinity mask is empty");
-    DWORD_PTR processMask;
-    DWORD_PTR systemMask;
-    if (!GetProcessAffinityMask(GetCurrentProcess(), &processMask, &systemMask)) Windows::ThrowLastError("GetProcessAffinityMask DirectStorage");
-    if ((affinity & ~processMask) != 0) throw std::invalid_argument("DirectStorage CPU affinity includes unavailable processors");
-    cpuAffinity.store(affinity, std::memory_order_release);
+    GetWorkerConfiguration().SetAffinity(affinity);
     return 0;
 }
 

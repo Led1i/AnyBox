@@ -4,6 +4,8 @@
 #include <bit>
 #include <iostream>
 
+void CheckWorkerAffinity();
+
 namespace {
 
 struct ReleaseFence {
@@ -65,6 +67,7 @@ void CheckFence() {
 int main() {
     try {
         CheckFence();
+        CheckWorkerAffinity();
         return 0;
     } catch (const std::exception& error) {
         std::cerr << error.what() << '\n';
