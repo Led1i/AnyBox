@@ -3,12 +3,12 @@
 
 #include <anybox/Types.hpp>
 #include <StorageTypes.hpp>
+#include <StorageStatistics.hpp>
 
 #include <cstdint>
 
 struct StorageQueueDescription;
 struct StorageQueueDescription1;
-struct StorageStatistics;
 struct ID3D12Fence;
 
 struct IStorageUnknown {

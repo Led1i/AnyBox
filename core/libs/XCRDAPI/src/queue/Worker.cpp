@@ -9,6 +9,7 @@ void AnyBox::Storage::Queue::run() {
     for (;;) {
         wake.wait(lock, [this] { return submitted != 0 || closing; });
         if (submitted == 0 && closing) {
+            statisticsRegistration.Close();
             closed = true;
             drained.notify_all();
             return;
@@ -24,9 +25,11 @@ void AnyBox::Storage::Queue::run() {
         try {
             if (auto* request = std::get_if<ReadOperation>(&operation)) read(*request);
             else if (auto* status = std::get_if<StatusOperation>(&operation)) {
+                GetCounters().priorities[static_cast<std::size_t>(description.description.priority + 1)].statusCount.fetch_add(1, std::memory_order_relaxed);
                 status->Complete(groupResult);
                 groupResult = 0;
             } else if (auto* signal = std::get_if<SignalOperation>(&operation)) {
+                GetCounters().priorities[static_cast<std::size_t>(description.description.priority + 1)].fenceCount.fetch_add(1, std::memory_order_relaxed);
                 auto result = signal->Complete();
                 if (result < 0) failure = result;
             } else if (auto* event = std::get_if<EventOperation>(&operation)) {

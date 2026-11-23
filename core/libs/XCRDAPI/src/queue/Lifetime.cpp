@@ -15,6 +15,7 @@ AnyBox::Storage::Queue::Queue(const StorageQueueDescription1& input) : descripti
     readEvent = Handle(CreateEventW(nullptr, TRUE, FALSE, nullptr));
     if (!readEvent.Get()) Windows::ThrowLastError("CreateEventW DirectStorage read");
     worker = std::jthread([this] { run(); });
+    statisticsRegistration.Open(description.description.priority);
 }
 
 AnyBox::Storage::Queue::~Queue() {

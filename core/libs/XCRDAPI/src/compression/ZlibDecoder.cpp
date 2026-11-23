@@ -1,4 +1,5 @@
 #include "ZlibDecoder.hpp"
+#include "../metrics/Memory.hpp"
 
 #include <libdeflate.h>
 
@@ -9,7 +10,12 @@ void AnyBox::Storage::ReleaseZlibDecoder::operator()(libdeflate_decompressor* de
     libdeflate_free_decompressor(decoder);
 }
 
-AnyBox::Storage::ZlibDecoder::ZlibDecoder() : decoder(libdeflate_alloc_decompressor()) {
+AnyBox::Storage::ZlibDecoder::ZlibDecoder() {
+    libdeflate_options options{};
+    options.sizeof_options = sizeof(options);
+    options.malloc_func = AllocateCodecMemory;
+    options.free_func = FreeCodecMemory;
+    decoder.reset(libdeflate_alloc_decompressor_ex(&options));
     if (!decoder) throw std::bad_alloc();
 }
 

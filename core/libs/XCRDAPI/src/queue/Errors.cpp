@@ -32,6 +32,7 @@ void AnyBox::Storage::Queue::recordError(const Operation& operation, std::int32_
         }
     }
     ++errorRecord.failureCount;
+    GetCounters().errors.fetch_add(1, std::memory_order_relaxed);
     if (!SetEvent(errorEvent.Get())) std::terminate();
 }
 

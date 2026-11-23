@@ -1,5 +1,6 @@
 #include "Tests.hpp"
 #include "../../src/staging/Pool.hpp"
+#include "../../src/metrics/Counters.hpp"
 
 #include <chrono>
 #include <future>
@@ -20,6 +21,7 @@ void AnyBox::Tests::CheckStaging() {
         ExpectException<std::logic_error>([&] { pool.SetSize(0); });
     }
 
+    auto stallsBefore = Storage::GetCounters().stagingStalls.load();
     std::optional<Storage::StagingLease> full(pool.Acquire(16 * 1024 * 1024));
     std::promise<void> started;
     std::promise<void> acquired;
@@ -36,6 +38,7 @@ void AnyBox::Tests::CheckStaging() {
     full.reset();
     auto finished = completion.wait_for(std::chrono::seconds(5));
     waiter.join();
+    Require(Storage::GetCounters().stagingStalls.load() == stallsBefore + 1, "Staging exhaustion was not counted exactly once");
     Require(blocked == std::future_status::timeout && finished == std::future_status::ready, "Staging leases do not wait for available capacity");
 
     pool.RegisterObject();

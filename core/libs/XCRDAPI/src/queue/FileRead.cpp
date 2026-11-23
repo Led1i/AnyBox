@@ -1,4 +1,5 @@
 #include "Queue.hpp"
+#include "../metrics/Requests.hpp"
 
 #include <limits>
 #include <stdexcept>
@@ -15,6 +16,7 @@ void AnyBox::Storage::Queue::readFile(ReadOperation& operation, std::span<std::b
     overlapped.hEvent = readEvent.Get();
     if (!ResetEvent(readEvent.Get())) Windows::ThrowLastError("ResetEvent DirectStorage read");
 
+    WorkStatistics statistics(WorkType::Storage);
     DWORD transferred = 0;
     auto result = ReadFile(operation.file.Get(), destination.data(), static_cast<DWORD>(destination.size()), &transferred, &overlapped);
     if (!result && GetLastError() != ERROR_IO_PENDING) Windows::ThrowLastError("ReadFile DirectStorage");

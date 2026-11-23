@@ -1,4 +1,5 @@
 #include "Queue.hpp"
+#include "../metrics/Requests.hpp"
 #include "../file/File.hpp"
 
 #include <limits>
@@ -28,6 +29,7 @@ void AnyBox::Storage::Queue::publish() {
 }
 
 void AnyBox::Storage::Queue::EnqueueRequest(const StorageRequest* request) {
+    RequestValidation validation;
     if (!request) throw std::invalid_argument("DirectStorage request is null");
     if ((request->options & ~((1ULL << 22) | 1)) != 0) throw std::invalid_argument("DirectStorage request transformation is not implemented");
     if (((request->options >> 22) & 1) != description.description.sourceType) throw std::invalid_argument("DirectStorage request source does not match its queue");
@@ -52,6 +54,7 @@ void AnyBox::Storage::Queue::EnqueueRequest(const StorageRequest* request) {
 }
 
 void AnyBox::Storage::Queue::EnqueueStatus(IStorageStatusArray* array, std::uint32_t index) {
+    RequestValidation validation;
     auto* status = dynamic_cast<StatusArray*>(array);
     if (!status) throw std::invalid_argument("DirectStorage status array does not belong to this runtime");
     std::unique_lock lock(mutex);
@@ -61,6 +64,7 @@ void AnyBox::Storage::Queue::EnqueueStatus(IStorageStatusArray* array, std::uint
 }
 
 void AnyBox::Storage::Queue::EnqueueSetEvent(void* event) {
+    RequestValidation validation;
     Handle borrowed(event);
     Handle owned;
     try {
@@ -86,6 +90,7 @@ void AnyBox::Storage::Queue::CancelRequestsWithTag(std::uint64_t mask, std::uint
 }
 
 void AnyBox::Storage::Queue::EnqueueSignal(ID3D12Fence* fence, std::uint64_t value) {
+    RequestValidation validation;
     SignalOperation operation(fence, value);
     std::unique_lock lock(mutex);
     requireSpace(lock);

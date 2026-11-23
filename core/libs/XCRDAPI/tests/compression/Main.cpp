@@ -4,6 +4,7 @@
 
 int main() {
     try {
+        AnyBox::Tests::CheckTrackedMemory();
         AnyBox::Tests::CheckStaging();
         AnyBox::Tests::CheckZlibDecoder();
         AnyBox::Tests::CheckCompressedMemory();

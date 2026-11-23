@@ -3,6 +3,8 @@
 
 #include "Operation.hpp"
 #include "../common/ReferenceCount.hpp"
+#include "../metrics/Memory.hpp"
+#include "../metrics/Lifetime.hpp"
 #include "../compression/ZlibDecoder.hpp"
 
 #include <StorageInterfaces.hpp>
@@ -17,7 +19,7 @@
 
 namespace AnyBox::Storage {
 
-class Queue final : public IStorageQueue {
+class Queue final : public IStorageQueue, public TrackedObject {
 public:
     explicit Queue(const StorageQueueDescription1& description);
     ~Queue();
@@ -45,21 +47,22 @@ private:
     void readFile(ReadOperation& operation, std::span<std::byte> destination);
     void decompress(std::span<const std::byte> source, std::span<std::byte> destination);
     StorageObjectRegistration registration;
+    QueueStatistics statisticsRegistration;
     ReferenceCount references{1};
     StorageQueueDescription1 description;
-    std::string name;
+    TrackedString<char> name;
     std::mutex mutex;
     std::condition_variable wake;
     std::condition_variable drained;
     std::condition_variable spaceAvailable;
-    std::vector<Operation> operations;
+    TrackedVector<Operation> operations;
     std::size_t head = 0;
     std::size_t count = 0;
     std::size_t submitted = 0;
     bool closing = false;
     bool closed = false;
     std::optional<ZlibDecoder> decoder;
-    std::unique_ptr<std::byte[]> overlapBuffer;
+    TrackedArray<std::byte> overlapBuffer;
     std::size_t overlapCapacity = 0;
     StorageErrorRecord errorRecord;
     Handle errorEvent;

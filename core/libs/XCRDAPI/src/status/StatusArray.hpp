@@ -3,6 +3,7 @@
 
 #include "Entry.hpp"
 #include "../common/ReferenceCount.hpp"
+#include "../metrics/Memory.hpp"
 
 #include <StorageInterfaces.hpp>
 
@@ -11,7 +12,7 @@
 
 namespace AnyBox::Storage {
 
-class StatusArray final : public IStorageStatusArray {
+class StatusArray final : public IStorageStatusArray, public TrackedObject {
 public:
     StatusArray(std::uint32_t capacity, const char* name);
     std::int32_t QueryInterface(const Guid& interfaceId, void** object) override;
@@ -24,8 +25,8 @@ public:
 private:
     ReferenceCount references{1};
     std::uint32_t capacity;
-    std::unique_ptr<StatusEntry[]> entries;
-    std::string name;
+    TrackedArray<StatusEntry> entries;
+    TrackedString<char> name;
 };
 
 }

@@ -1,6 +1,8 @@
 #ifndef ANYBOX_STORAGE_STAGING_POOL_HPP
 #define ANYBOX_STORAGE_STAGING_POOL_HPP
 
+#include "../metrics/Memory.hpp"
+
 #include <condition_variable>
 #include <cstddef>
 #include <cstdint>
@@ -43,8 +45,8 @@ private:
     static constexpr std::size_t chunkSize = 65536;
     std::mutex mutex;
     std::condition_variable available;
-    std::unique_ptr<std::byte[]> buffer;
-    std::vector<bool> occupied;
+    TrackedArray<std::byte> buffer;
+    TrackedVector<bool> occupied;
     std::size_t capacity = 0;
     std::size_t objects = 0;
     std::size_t leases = 0;

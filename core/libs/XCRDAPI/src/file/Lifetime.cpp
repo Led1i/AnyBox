@@ -10,6 +10,7 @@ AnyBox::Storage::File::File(const wchar_t* path) {
     this->path = path;
     handle = CreateFileW(path, GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_OVERLAPPED, nullptr);
     if (handle == INVALID_HANDLE_VALUE) Windows::ThrowLastError("CreateFileW DirectStorage");
+    statisticsRegistration.Open();
 }
 
 AnyBox::Storage::File::~File() {
@@ -41,6 +42,7 @@ void AnyBox::Storage::File::Close() {
     if (handle == INVALID_HANDLE_VALUE) return;
     if (!CloseHandle(handle)) Windows::ThrowLastError("CloseHandle DirectStorage file");
     handle = INVALID_HANDLE_VALUE;
+    statisticsRegistration.Close();
 }
 
 void* AnyBox::Storage::File::GetHandle() {

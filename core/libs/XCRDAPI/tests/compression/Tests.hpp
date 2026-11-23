@@ -26,6 +26,7 @@ struct CompressedData {
     }
 };
 
+void CheckTrackedMemory();
 void CheckStaging();
 void CheckZlibDecoder();
 void CheckCompressedMemory();

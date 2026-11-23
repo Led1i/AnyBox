@@ -4,7 +4,7 @@
 
 AnyBox::Storage::StatusArray::StatusArray(std::uint32_t capacity, const char* name) : capacity(capacity), name(name ? name : "") {
     if (capacity == 0) throw std::invalid_argument("DirectStorage status array capacity is zero");
-    entries = std::make_unique<StatusEntry[]>(capacity);
+    entries = MakeTrackedArray<StatusEntry>(capacity);
 }
 
 std::int32_t AnyBox::Storage::StatusArray::QueryInterface(const Guid& interfaceId, void** object) {

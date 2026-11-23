@@ -2,6 +2,8 @@
 #define ANYBOX_STORAGE_FILE_HPP
 
 #include "../common/ReferenceCount.hpp"
+#include "../metrics/Memory.hpp"
+#include "../metrics/Lifetime.hpp"
 #include "ReadLease.hpp"
 
 #include <StorageInterfaces.hpp>
@@ -14,7 +16,7 @@
 
 namespace AnyBox::Storage {
 
-class File final : public IStorageFile {
+class File final : public IStorageFile, public TrackedObject {
 public:
     explicit File(const wchar_t* path);
     ~File();
@@ -29,8 +31,9 @@ private:
     friend class ReadLease;
     void finishRead();
     StorageObjectRegistration registration;
+    FileStatistics statisticsRegistration;
     ReferenceCount references{1};
-    std::wstring path;
+    TrackedString<wchar_t> path;
     std::mutex mutex;
     std::condition_variable readsFinished;
     std::size_t pendingReads = 0;

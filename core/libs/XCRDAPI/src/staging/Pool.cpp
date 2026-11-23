@@ -1,4 +1,5 @@
 #include "Pool.hpp"
+#include "../metrics/Counters.hpp"
 
 #include <algorithm>
 #include <stdexcept>
@@ -12,8 +13,8 @@ void AnyBox::Storage::StagingPool::SetSize(std::uint32_t size) {
     if (size != 0 && (size < 16 * unit || size > 32 * unit || size % (4 * unit) != 0)) throw std::invalid_argument("Invalid DirectStorage staging buffer size");
     std::lock_guard lock(mutex);
     if (objects != 0 || leases != 0) throw std::logic_error("DirectStorage staging buffer cannot change while objects exist");
-    auto replacement = size ? std::make_unique_for_overwrite<std::byte[]>(size) : nullptr;
-    std::vector<bool> slots((size + chunkSize - 1) / chunkSize, false);
+    auto replacement = size ? MakeTrackedArray<std::byte>(size) : TrackedArray<std::byte>{};
+    TrackedVector<bool> slots((size + chunkSize - 1) / chunkSize, false);
     buffer = std::move(replacement);
     occupied.swap(slots);
     capacity = size;
@@ -24,6 +25,7 @@ AnyBox::Storage::StagingLease AnyBox::Storage::StagingPool::Acquire(std::size_t 
     if (size == 0 || size > capacity) throw std::length_error("DirectStorage request exceeds staging buffer capacity");
     auto count = (size + chunkSize - 1) / chunkSize;
     auto first = occupied.size();
+    bool stalled = false;
     available.wait(lock, [&] {
         std::size_t free = 0;
         for (std::size_t i = 0; i < occupied.size(); ++i) {
@@ -33,6 +35,8 @@ AnyBox::Storage::StagingLease AnyBox::Storage::StagingPool::Acquire(std::size_t 
                 return true;
             }
         }
+        if (!stalled) GetCounters().stagingStalls.fetch_add(1, std::memory_order_relaxed);
+        stalled = true;
         return false;
     });
     std::fill_n(occupied.begin() + first, count, true);
