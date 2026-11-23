@@ -2,6 +2,7 @@
 #define ANYBOX_STORAGE_INTERFACES_HPP
 
 #include <anybox/Types.hpp>
+#include <StorageTypes.hpp>
 
 #include <cstdint>
 
@@ -23,6 +24,20 @@ struct IStorageFile : IStorageUnknown {
 struct IStorageStatusArray : IStorageUnknown {
     virtual bool IsComplete(std::uint32_t index) = 0;
     virtual std::int32_t GetHResult(std::uint32_t index) = 0;
+};
+
+struct IStorageQueue : IStorageUnknown {
+    virtual void EnqueueRequest(const StorageRequest* request) = 0;
+    virtual void EnqueueStatus(IStorageStatusArray* array, std::uint32_t index) = 0;
+    virtual void EnqueueSignal(IStorageUnknown* fence, std::uint64_t value) = 0;
+    virtual void Submit() = 0;
+    virtual void CancelRequestsWithTag(std::uint64_t mask, std::uint64_t value) = 0;
+    virtual void Close() = 0;
+    virtual void* GetErrorEvent() = 0;
+    virtual void RetrieveErrorRecord(StorageErrorRecord* record) = 0;
+    virtual void Query(StorageQueueInformation* information) = 0;
+    virtual void EnqueueSetEvent(void* event) = 0;
+    virtual void Query1(StorageQueueInformation1* information) = 0;
 };
 
 struct IStorageFactory : IStorageUnknown {
