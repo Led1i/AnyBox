@@ -26,6 +26,7 @@ inline Region AllocateRegion(std::size_t size, DWORD allocationType, DWORD prote
 
 void CheckQuery();
 void CheckVirtualAllocation();
+void CheckAddressRanges();
 void CheckStatistics();
 void CheckStackStatistics();
 void CheckTransfer();

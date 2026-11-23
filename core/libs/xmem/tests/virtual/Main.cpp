@@ -6,6 +6,7 @@ int main() {
     try {
         AnyBox::Tests::CheckQuery();
         AnyBox::Tests::CheckVirtualAllocation();
+        AnyBox::Tests::CheckAddressRanges();
         AnyBox::Tests::CheckStatistics();
         AnyBox::Tests::CheckStackStatistics();
         AnyBox::Tests::CheckTransfer();
