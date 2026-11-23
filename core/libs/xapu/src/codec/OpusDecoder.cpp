@@ -57,3 +57,14 @@ void AnyBox::XApu::OpusDecoder::Reset() {
 std::uint32_t AnyBox::XApu::OpusDecoder::GetChannelCount() const {
     return channels;
 }
+
+void AnyBox::XApu::OpusDecoder::SetSampleRate(std::uint32_t rate) {
+    if (rate == sampleRate) return;
+    if (rate != 8000 && rate != 12000 && rate != 16000 && rate != 24000 && rate != 48000) throw std::invalid_argument("Unsupported native Opus sample rate");
+    CheckOpus(opus_decoder_init(decoder.get(), static_cast<opus_int32>(rate), static_cast<int>(channels)), "Opus sample rate initialization");
+    sampleRate = rate;
+}
+
+std::uint32_t AnyBox::XApu::OpusDecoder::GetSampleRate() const {
+    return sampleRate;
+}

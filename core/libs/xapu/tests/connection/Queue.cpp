@@ -28,7 +28,8 @@ void ExpectException(TCallable callable) {
     throw std::runtime_error("Expected XApu error was not raised");
 }
 
-void CheckQueue(std::uint32_t channels) {
+void CheckQueue(std::uint32_t channels, std::uint32_t sampleRate) {
+    auto frames = sampleRate / 50;
     XApuConnectionParameters parameters{1, 7, 2, 0x20000, 0, 1};
     XApuBuffer buffer{};
     XApuConnection* connection = nullptr;
@@ -57,11 +58,11 @@ void CheckQueue(std::uint32_t channels) {
 
     auto* output = reinterpret_cast<float*>(input + 4096);
     output[-1] = -99.0F;
-    output[960 * channels] = -99.0F;
+    std::fill_n(output, 960 * channels + 1, -99.0F);
     XApuDecodeCommand decode{};
     decode.command.kind = 3;
     decode.command.stream = 5;
-    decode.sampleRate = 48000.0F;
+    decode.sampleRate = static_cast<float>(sampleRate);
     decode.frameCount = 960;
     decode.inputSize = static_cast<std::uint32_t>(bytes);
     decode.input.Set(input);
@@ -79,18 +80,23 @@ void CheckQueue(std::uint32_t channels) {
     Require(result.command.kind == 1 && result.command.sequence == 37 && result.command.context.Get() == &parameters, "XApu activation result lost command identity");
     Require(XApuGetResultCount(connection, &dequeued) == 1 && dequeued == 1, "XApu dequeue counter changed");
     XApuDequeueResult(connection, &result);
-    Require(result.command.kind == 3 && result.error == 0 && result.frameCount == 960, "XApu decoding result is invalid");
+    Require(result.command.kind == 3 && result.error == 0 && result.frameCount == frames, "XApu decoding result is invalid");
     Require(result.input.Get() == input && result.inputSize == static_cast<std::uint32_t>(bytes), "XApu result input metadata changed");
-    Require(result.output.Get() == output && result.outputSize == decode.outputSize, "XApu result output metadata changed");
-    Require(result.sampleRate == 48000.0F, "XApu result sample rate changed from the title command");
-    Require(output[-1] == -99.0F && output[960 * channels] == -99.0F, "XApu PCM write overran its output");
+    Require(result.output.Get() == output && result.outputSize == frames * channels * sizeof(float), "XApu result output metadata changed");
+    Require(result.sampleRate == static_cast<float>(sampleRate), "XApu result sample rate changed from the title command");
+    Require(output[-1] == -99.0F && output[frames * channels] == -99.0F, "XApu PCM write overran its output");
 
-    AnyBox::XApu::OpusDecoder reference(channels);
-    std::vector<float> interleaved(960 * channels);
+    AnyBox::XApu::OpusDecoder reference(channels, sampleRate);
+    std::vector<float> interleaved(frames * channels);
     reference.Decode(std::as_bytes(std::span(input, static_cast<std::size_t>(bytes))), interleaved);
     for (std::size_t channel = 0; channel < channels; ++channel) {
-        for (std::size_t frame = 0; frame < 960; ++frame) Require(output[channel * 960 + frame] == interleaved[frame * channels + channel], "XApu PCM differs from the decoded packet");
+        for (std::size_t frame = 0; frame < frames; ++frame) Require(output[channel * frames + frame] == interleaved[frame * channels + channel], "XApu PCM differs from the decoded packet");
     }
+
+    auto alternateRate = sampleRate == 48000 ? 24000U : 48000U;
+    decode.sampleRate = static_cast<float>(alternateRate);
+    ExpectException<std::runtime_error>([&] { XApuEnqueueCommand(connection, &decode.command, nullptr); });
+    Require(XApuGetResultCount(connection, nullptr) == 0, "Unsupported XApu rate change queued a fabricated result");
 
     XApuCommand reset{};
     reset.kind = 5;
@@ -100,6 +106,7 @@ void CheckQueue(std::uint32_t channels) {
     XApuDequeueResult(connection, &result);
     XApuEnqueueCommand(connection, &decode.command, &submitted);
     XApuDequeueResult(connection, &result);
+    Require(result.sampleRate == static_cast<float>(alternateRate) && result.frameCount == alternateRate / 50, "XApu reset did not allow a new native sample rate");
     Require(XApuGetResultCount(connection, &dequeued) == 0 && dequeued == 4 && submitted == 4, "XApu cumulative counters reset with the stream");
     ExpectException<std::underflow_error>([&] { XApuDequeueResult(connection, &result); });
 
@@ -122,8 +129,10 @@ void CheckConnectionErrors();
 int main() {
     try {
         CheckConnectionErrors();
-        CheckQueue(1);
-        CheckQueue(2);
+        for (auto sampleRate : {8000U, 12000U, 16000U, 24000U, 48000U}) {
+            CheckQueue(1, sampleRate);
+            CheckQueue(2, sampleRate);
+        }
         return 0;
     } catch (const std::exception& error) {
         std::cerr << error.what() << '\n';

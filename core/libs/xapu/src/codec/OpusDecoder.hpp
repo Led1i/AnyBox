@@ -20,6 +20,8 @@ public:
     std::uint32_t Decode(std::span<const std::byte> packet, std::span<float> output);
     std::uint32_t GetFrameCount(std::span<const std::byte> packet) const;
     void Reset();
+    void SetSampleRate(std::uint32_t rate);
+    std::uint32_t GetSampleRate() const;
     std::uint32_t GetChannelCount() const;
 
 private:

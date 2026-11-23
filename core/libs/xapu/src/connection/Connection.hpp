@@ -26,6 +26,7 @@ private:
         std::vector<float> samples;
         std::uint32_t pending = 0;
         bool releasing = false;
+        bool decoded = false;
     };
     void activate(Stream& stream, const XApuActivateCommand& command);
     void decode(Stream& stream, const XApuDecodeCommand& command, XApuResult& result);

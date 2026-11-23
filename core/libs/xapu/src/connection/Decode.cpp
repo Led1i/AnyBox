@@ -8,7 +8,12 @@
 void AnyBox::XApu::Connection::decode(Stream& stream, const XApuDecodeCommand& command, XApuResult& result) {
     if (!std::isfinite(command.sampleRate) || !std::isfinite(command.ramp)) throw std::invalid_argument("XApu processing parameter is not finite");
     if (command.sampleRate <= 0.0F) throw std::invalid_argument("XApu sample rate must be positive");
-    if (command.sampleRate != 48000.0F || command.ramp != 0.0F) ANYBOX_NOT_IMPLEMENTED();
+    if (command.ramp != 0.0F || command.sampleRate > 48000.0F) ANYBOX_NOT_IMPLEMENTED();
+    auto rate = static_cast<std::uint32_t>(command.sampleRate);
+    if (static_cast<float>(rate) != command.sampleRate) ANYBOX_NOT_IMPLEMENTED();
+    if (rate != 8000 && rate != 12000 && rate != 16000 && rate != 24000 && rate != 48000) ANYBOX_NOT_IMPLEMENTED();
+    if (stream.decoded && rate != stream.decoder->GetSampleRate()) ANYBOX_NOT_IMPLEMENTED();
+    stream.decoder->SetSampleRate(rate);
 
     auto* input = command.input.Get();
     auto* output = command.output.Get();
@@ -26,6 +31,7 @@ void AnyBox::XApu::Connection::decode(Stream& stream, const XApuDecodeCommand& c
 
     auto decoded = stream.decoder->Decode(packet, stream.samples);
     if (decoded != frames) throw std::runtime_error("XApu decoded packet duration changed");
+    stream.decoded = true;
 
     auto* samples = static_cast<float*>(output);
     for (std::uint32_t channel = 0; channel < channels; ++channel) {

@@ -41,6 +41,7 @@ std::uint32_t AnyBox::XApu::Connection::Enqueue(const XApuCommand* command) {
         case 5:
             if (!stream.decoder) throw std::logic_error("XApu stream is not active");
             stream.decoder->Reset();
+            stream.decoded = false;
             break;
         default:
             ANYBOX_NOT_IMPLEMENTED();
@@ -60,6 +61,7 @@ void AnyBox::XApu::Connection::activate(Stream& stream, const XApuActivateComman
 
     auto decoder = std::make_unique<OpusDecoder>(command.channels);
     std::vector<float> samples(static_cast<std::size_t>(command.channels) * 5760);
+    stream.decoded = false;
     stream.decoder = std::move(decoder);
     stream.samples = std::move(samples);
 }
