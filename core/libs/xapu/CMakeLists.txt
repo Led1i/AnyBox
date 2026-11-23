@@ -1,3 +1,15 @@
 anybox_add_system_library(xapu src/Exports.cpp xapu.def)
+target_sources(xapu PRIVATE src/codec/OpusDecoder.cpp)
+target_link_libraries(xapu PRIVATE opus)
+
 target_include_directories(xapu PUBLIC include)
 anybox_add_exception_test(xapu)
+
+if(BUILD_TESTING)
+    add_executable(xapu_opus_tests tests/codec/Decoder.cpp src/codec/OpusDecoder.cpp)
+    target_link_libraries(xapu_opus_tests PRIVATE opus anybox_options)
+    target_include_directories(xapu_opus_tests PRIVATE src/codec)
+    set_target_properties(xapu_opus_tests PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${ANYBOX_RUNTIME_DIRECTORY}")
+    add_test(NAME xapu.opus COMMAND xapu_opus_tests)
+    set_tests_properties(xapu.opus PROPERTIES TIMEOUT 15)
+endif()
