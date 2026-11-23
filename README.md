@@ -14,6 +14,8 @@ Unimplemented functions throw a C++ exception. Cross-library stack unwinding and
 
 AnyBox uses standard C++20 and can be built with any conforming compiler targeting 64-bit Windows. MSVC or `clang-cl` with the MSVC runtime is recommended for ABI compatibility and correct stack unwinding of diagnostic C++ exceptions through title code.
 
+Initialize dependencies with `git submodule update --init --recursive` before configuring CMake. Third-party libraries require a C compiler from the same toolchain as the C++ compiler.
+
 ## Disclaimer
 
 The project is intended for interoperability, research and preservation. Game files, firmware, cryptographic keys and proprietary SDK libraries are not distributed with the project.

@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.25)
 
 set(CMAKE_MSVC_RUNTIME_LIBRARY MultiThreadedDLL)
 
-project(AnyBox VERSION 0.1.0 LANGUAGES CXX)
+project(AnyBox VERSION 0.1.0 LANGUAGES C CXX)
 
 if(NOT WIN32)
     message(FATAL_ERROR "AnyBox requires Windows")
@@ -32,6 +32,8 @@ set(ANYBOX_RUNTIME_DIRECTORY "${CMAKE_BINARY_DIR}/bin/$<CONFIG>")
 
 include(CTest)
 include(cmake/AnyBoxLibrary.cmake)
+
+add_subdirectory(3rdparty)
 
 add_subdirectory(core/common)
 add_subdirectory(core/libs)
