@@ -13,7 +13,7 @@ int main() {
         Require(AcpHalAllocateShapeContexts(&descriptor) == 0, "Empty SHAPE descriptor was rejected");
         for (auto* context : descriptor.contexts) Require(context == nullptr, "Empty SHAPE array allocated storage");
         ExpectException<std::logic_error>([&] { AcpHalAllocateShapeContexts(&descriptor); });
-        AcpHalReleaseShapeContexts();
+        Require(AcpHalReleaseShapeContexts() == 0, "SHAPE release failed");
         descriptor.counts = {357, 13, 21, 9, 350, 7};
         Require(AcpHalAllocateShapeContexts(&descriptor) == 0, "SHAPE context allocation failed");
         for (std::size_t i = 0; i < 6; ++i) {
@@ -26,7 +26,7 @@ int main() {
         auto saved = descriptor.contexts;
         ExpectException<std::logic_error>([&] { AcpHalAllocateShapeContexts(&descriptor); });
         Require(descriptor.contexts == saved, "Duplicate SHAPE allocation changed its output");
-        AcpHalReleaseShapeContexts();
+        Require(AcpHalReleaseShapeContexts() == 0, "SHAPE release failed");
         for (auto* context : saved) Require(!ApuIsVirtualAddressValid(context, 0), "SHAPE release retained live context storage");
         descriptor.counts[0] = 358;
         ExpectException<std::invalid_argument>([&] { AcpHalAllocateShapeContexts(&descriptor); });
@@ -35,7 +35,7 @@ int main() {
         descriptor.counts = {0, 4097, 0, 0, 0, 0};
         ExpectException<std::invalid_argument>([&] { AcpHalAllocateShapeContexts(&descriptor); });
         ExpectException<std::invalid_argument>([] { AcpHalAllocateShapeContexts(nullptr); });
-        AcpHalReleaseShapeContexts();
+        ExpectException<std::logic_error>([] { AcpHalReleaseShapeContexts(); });
         void* entireHeap = nullptr;
         Require(ApuAlloc(&entireHeap, nullptr, 0xFFF00, 256, 1) == 0, "SHAPE release leaked APU storage");
         ApuFree(entireHeap);

@@ -38,7 +38,7 @@ struct MappingChange {
 
 class Pool {
 public:
-    void Allocate(std::uint32_t flags, std::size_t count, std::uint64_t* frames);
+    void Allocate(std::uint64_t flags, std::size_t count, std::uint64_t* frames);
     void Free(std::span<const std::uint64_t> frames);
     void Map(std::span<void* const> addresses, const std::uint64_t* frames);
 

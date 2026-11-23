@@ -9,7 +9,7 @@ extern "C" {
 
 std::int32_t AcpHalAllocateShapeContexts(AcpHalShapeContexts* shapeContexts) noexcept(false);
 std::int32_t AcpHalCreate(IAcpHal** acpHal) noexcept(false);
-void AcpHalReleaseShapeContexts() noexcept(false);
+std::int32_t AcpHalReleaseShapeContexts() noexcept(false);
 std::int32_t ApuAlloc(void** allocation, std::uint32_t* apuAddress, std::uint32_t size, std::uint32_t alignment, std::uint32_t flags) noexcept(false);
 std::int32_t ApuCreateHeap(std::uint32_t size, std::uint32_t attributes) noexcept(false);
 void ApuFree(void* allocation) noexcept(false);

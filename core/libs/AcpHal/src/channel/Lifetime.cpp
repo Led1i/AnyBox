@@ -16,12 +16,13 @@ std::int32_t AnyBox::AcpHal::Channel::Connect(std::uint32_t commandCapacity, std
     return 0;
 }
 
-void AnyBox::AcpHal::Channel::Disconnect() {
+std::int32_t AnyBox::AcpHal::Channel::Disconnect() {
     std::lock_guard lock(mutex);
     if (!connected) throw std::logic_error("ACP channel is not connected");
     push({0x80, 0, 0, 0});
     connected = false;
     frameSamples = 0;
+    return 0;
 }
 
 void AnyBox::AcpHal::Channel::Release() {

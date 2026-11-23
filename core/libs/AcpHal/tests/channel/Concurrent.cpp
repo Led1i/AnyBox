@@ -36,6 +36,6 @@ void CheckConcurrentChannel() {
         Require(completed.insert(message.id).second, "Concurrent ACP completion was duplicated");
     }
     Require(*completed.begin() == 0 && *completed.rbegin() == 511, "Concurrent ACP completion identifier changed");
-    channel->Disconnect();
+    Require(channel->Disconnect() == 0, "ACP disconnect did not return success");
     channel->Release();
 }

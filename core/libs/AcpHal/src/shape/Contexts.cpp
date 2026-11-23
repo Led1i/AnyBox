@@ -60,8 +60,10 @@ std::int32_t AcpHalAllocateShapeContexts(AcpHalShapeContexts* shapeContexts) noe
     return 0;
 }
 
-void AcpHalReleaseShapeContexts() noexcept(false) {
+std::int32_t AcpHalReleaseShapeContexts() noexcept(false) {
     std::lock_guard lock(contextMutex);
+    if (!allocated) throw std::logic_error("SHAPE contexts do not exist");
     Release(ownedContexts);
     allocated = false;
+    return 0;
 }

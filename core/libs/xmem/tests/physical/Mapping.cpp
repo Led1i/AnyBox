@@ -43,17 +43,17 @@ int main() {
         XMemMapPhysicalPages(range, 2, frames.data());
         Require(range[0] == std::byte{0x31} && range[0x10000] == std::byte{0x42}, "Unmapping discarded physical page contents");
         XMemMapPhysicalPages(range, 2, nullptr);
-        XMemFreePhysicalPages(2, frames.data());
+        Require(XMemFreePhysicalPages(2, frames.data()) != 0, "Physical free did not return success");
         ExpectException<std::invalid_argument>([&] { XMemMapPhysicalPages(alias, 1, frames.data()); });
         ExpectException<std::invalid_argument>([&] { XMemFreePhysicalPages(2, frames.data()); });
         Require(VirtualFree(range, 0, MEM_RELEASE) != 0, "Physical first placeholder release failed");
         Require(VirtualFree(range + 0x10000, 0, MEM_RELEASE) != 0, "Physical second placeholder release failed");
         Require(VirtualFree(alias, 0, MEM_RELEASE) != 0, "Physical alias placeholder release failed");
         auto sentinel = frames;
-        ExpectException<std::invalid_argument>([&] { XMemAllocatePhysicalPages(0x80000000, &count, frames.data()); });
+        ExpectException<std::invalid_argument>([&] { XMemAllocatePhysicalPages(1ULL << 40, &count, frames.data()); });
         ExpectException<std::invalid_argument>([] { XMemAllocatePhysicalPages(0, nullptr, nullptr); });
         Require(frames == sentinel && count == 2, "Rejected physical allocation changed its outputs");
-        XMemFreePhysicalPages(0, nullptr);
+        Require(XMemFreePhysicalPages(0, nullptr) != 0, "Empty physical free did not return success");
         Require(XMemMapPhysicalPagesScatter(nullptr, 0, nullptr) != 0, "Empty scatter operation failed");
         return 0;
     } catch (const std::exception& error) {

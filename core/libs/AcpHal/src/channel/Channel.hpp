@@ -13,7 +13,7 @@ namespace AnyBox::AcpHal {
 class Channel final : public IAcpHal {
 public:
     std::int32_t Connect(std::uint32_t commandCapacity, std::uint32_t messageCapacity) override;
-    void Disconnect() override;
+    std::int32_t Disconnect() override;
     std::int32_t SubmitCommand(std::uint32_t type, std::uint64_t id, std::uint32_t frame, const void* data, std::uint32_t flags) override;
     bool PopMessage(AcpHalMessage* message) override;
     std::uint32_t GetNumMessages() override;

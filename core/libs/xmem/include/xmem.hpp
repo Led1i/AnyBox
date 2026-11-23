@@ -10,10 +10,10 @@ extern "C" {
 
 void* XMemAlloc(std::size_t size, std::uint64_t attributes) noexcept(false);
 void* XMemAllocDefault(std::size_t size, std::uint64_t attributes) noexcept(false);
-std::int32_t XMemAllocatePhysicalPages(std::uint32_t flags, std::size_t* pageCount, std::uint64_t* pageFrames) noexcept(false);
+std::int32_t XMemAllocatePhysicalPages(std::uint64_t flags, std::size_t* pageCount, std::uint64_t* pageFrames) noexcept(false);
 void XMemFree(void* allocation, std::uint64_t attributes) noexcept(false);
 void XMemFreeDefault(void* allocation, std::uint64_t attributes) noexcept(false);
-void XMemFreePhysicalPages(std::size_t pageCount, const std::uint64_t* pageFrames) noexcept(false);
+std::int32_t XMemFreePhysicalPages(std::size_t pageCount, const std::uint64_t* pageFrames) noexcept(false);
 std::int32_t XMemGetWorkingSetStatistics(std::uint32_t flags, XMemWorkingSetStatistics* statistics) noexcept(false);
 std::int32_t XMemIsToolsMemAvailable() noexcept(false);
 void* XMemMapPhysicalPages(void* address, std::size_t pageCount, const std::uint64_t* pageFrames) noexcept(false);

@@ -11,8 +11,8 @@ AnyBox::XMem::Section::~Section() {
     if (!CloseHandle(handle)) std::terminate();
 }
 
-void AnyBox::XMem::Pool::Allocate(std::uint32_t flags, std::size_t count, std::uint64_t* frames) {
-    if ((flags & ~0x380U) != 0) throw std::invalid_argument("Unsupported XMem physical allocation flags");
+void AnyBox::XMem::Pool::Allocate(std::uint64_t flags, std::size_t count, std::uint64_t* frames) {
+    if ((flags & ~0x380ULL) != 0) throw std::invalid_argument("Unsupported XMem physical allocation flags");
     if (count == 0 || !frames) throw std::invalid_argument("XMem physical allocation requires a count and output");
     if (count > std::numeric_limits<std::uint64_t>::max() / PhysicalPageSize) throw std::overflow_error("XMem physical allocation size overflows");
     auto size = static_cast<std::uint64_t>(count) * PhysicalPageSize;
