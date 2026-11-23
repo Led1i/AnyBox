@@ -30,4 +30,21 @@ void AnyBox::Tests::CheckAllocation() {
     std::memset(entireHeap, 0x5A, 0xFFF00);
     ApuFree(entireHeap);
     ApuFree(nullptr);
+
+    void* normal = nullptr;
+    void* shape = nullptr;
+    void* overflow = nullptr;
+    Require(ApuAlloc(&normal, nullptr, 0xFE000, 256, 1) == 0, "APU normal pool allocation failed");
+    ExpectException<std::bad_alloc>([&] { ApuAlloc(&overflow, nullptr, 0x4000, 256, 1); });
+    Require(ApuAlloc(&shape, nullptr, 0x180000, 256, 2) == 0, "Exhausted normal pool incorrectly blocked SHAPE allocation");
+    std::memset(normal, 0x37, 0xFE000);
+    std::memset(shape, 0x59, 0x180000);
+    auto normalAddress = ApuMapVirtualAddress(normal);
+    auto shapeAddress = ApuMapVirtualAddress(shape);
+    Require(normalAddress + 0xFE000 <= shapeAddress || shapeAddress + 0x180000 <= normalAddress, "APU pools overlap in bus address space");
+    Require(ApuMapApuAddress(normalAddress + 0xFDFFF) == static_cast<std::byte*>(normal) + 0xFDFFF, "Normal pool translation changed");
+    Require(ApuMapApuAddress(shapeAddress + 0x17FFFF) == static_cast<std::byte*>(shape) + 0x17FFFF, "SHAPE pool translation changed");
+    Require(static_cast<std::byte*>(normal)[0xFDFFF] == std::byte{0x37}, "SHAPE allocation overwrote the normal pool");
+    ApuFree(normal);
+    ApuFree(shape);
 }

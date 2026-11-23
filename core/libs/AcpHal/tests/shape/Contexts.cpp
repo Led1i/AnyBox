@@ -36,8 +36,19 @@ int main() {
         ExpectException<std::invalid_argument>([&] { AcpHalAllocateShapeContexts(&descriptor); });
         ExpectException<std::invalid_argument>([] { AcpHalAllocateShapeContexts(nullptr); });
         ExpectException<std::logic_error>([] { AcpHalReleaseShapeContexts(); });
+
+        descriptor.counts = {4096, 4096, 4096, 4096, 512, 3584};
+        Require(AcpHalAllocateShapeContexts(&descriptor) == 0, "Maximum SHAPE context configuration did not fit its own pool");
+        constexpr std::array<std::uint32_t, 6> strides{32, 160, 32, 16, 64, 32};
+        for (std::size_t index = 0; index < strides.size(); ++index) {
+            auto* bytes = static_cast<std::byte*>(descriptor.contexts[index]);
+            auto size = strides[index] * descriptor.counts[index];
+            Require(bytes[0] == std::byte{0} && bytes[size - 1] == std::byte{0}, "Maximum SHAPE context was not initialized");
+            Require(ApuMapApuAddress(descriptor.apuAddresses[index] + size - 1) == bytes + size - 1, "Maximum SHAPE context translation changed");
+        }
+        Require(AcpHalReleaseShapeContexts() == 0, "Maximum SHAPE context release failed");
         void* entireHeap = nullptr;
-        Require(ApuAlloc(&entireHeap, nullptr, 0xFFF00, 256, 1) == 0, "SHAPE release leaked APU storage");
+        Require(ApuAlloc(&entireHeap, nullptr, 0x228E00, 256, 2) == 0, "SHAPE release leaked storage from its own pool");
         ApuFree(entireHeap);
         return 0;
     } catch (const std::exception& error) {

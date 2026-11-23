@@ -3,13 +3,16 @@
 #include <cstddef>
 #include <cstring>
 #include <iostream>
+#include <string_view>
 
-int main() {
+int main(int argumentCount, char** arguments) {
     try {
         using AnyBox::Tests::Require;
-        Require(ApuCreateHeap(0x100000, 0x226E00) == 0, "APU heap could not use default XMem storage");
+        bool lazy = argumentCount == 2 && std::string_view(arguments[1]) == "--lazy";
+        bool defaultShape = argumentCount == 2 && std::string_view(arguments[1]) == "--default-shape";
+        if (!lazy) Require(ApuCreateHeap(0x100000, defaultShape ? 0 : 0x226E00) == 0, "APU pools could not be created");
         void* allocation = nullptr;
-        Require(ApuAlloc(&allocation, nullptr, 65536, 2048, 2) == 0, "APU allocation failed with default XMem storage");
+        Require(ApuAlloc(&allocation, nullptr, 65536, 2048, 2) == 0, "APU allocation failed with independent backing");
         Require(ApuIsVirtualAddressValid(allocation, 2048), "APU default heap allocation is invalid");
         std::memset(allocation, 0x6D, 65536);
         auto* bytes = static_cast<std::byte*>(allocation);
@@ -19,6 +22,11 @@ int main() {
             Require(bytes[i] == std::byte{0x6D}, "APU default heap contents changed");
         }
         ApuFree(allocation);
+        if (lazy) AnyBox::Tests::ExpectException<std::logic_error>([] { ApuCreateHeap(0x100000, 0); });
+        if (defaultShape) {
+            Require(ApuAlloc(&allocation, nullptr, 0x116000, 256, 2) == 0, "Default SHAPE pool size changed");
+            ApuFree(allocation);
+        }
         return 0;
     } catch (const std::exception& error) {
         std::cerr << error.what() << '\n';

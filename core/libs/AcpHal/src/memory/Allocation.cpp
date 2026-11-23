@@ -1,4 +1,4 @@
-#include "Heap.hpp"
+#include "Pool.hpp"
 
 #include <bit>
 #include <iterator>
@@ -7,15 +7,14 @@
 #include <limits>
 #include <stdexcept>
 
-void* AnyBox::AcpHal::Heap::Allocate(std::uint32_t size, std::uint32_t alignment, std::uint32_t flags) {
+void* AnyBox::AcpHal::Pool::Allocate(std::uint32_t size, std::uint32_t alignment) {
     if (size == 0) throw std::invalid_argument("APU allocation size must be nonzero");
     if (!std::has_single_bit(alignment) || alignment < 4 || alignment > 0x10000) throw std::invalid_argument("Unsupported APU alignment");
-    if (flags < 1 || flags > 2) throw std::invalid_argument("Unsupported APU allocation flags");
     alignment = std::max(alignment, 256U);
     if (size > std::numeric_limits<std::uint32_t>::max() - (alignment - 1)) throw std::overflow_error("APU allocation size overflows");
     size = (size + alignment - 1) & ~(alignment - 1);
     std::lock_guard lock(mutex);
-    auto* base = memory.load(std::memory_order_relaxed);
+    auto* base = memory.get();
     if (!base) throw std::logic_error("APU heap has not been created");
     auto baseValue = reinterpret_cast<std::uintptr_t>(base);
     for (auto it = blocks.begin(); it != blocks.end(); ++it) {
@@ -36,10 +35,10 @@ void* AnyBox::AcpHal::Heap::Allocate(std::uint32_t size, std::uint32_t alignment
     throw std::bad_alloc();
 }
 
-void AnyBox::AcpHal::Heap::Free(void* allocation) {
+void AnyBox::AcpHal::Pool::Free(void* allocation) {
     if (!allocation) return;
     std::lock_guard lock(mutex);
-    auto* base = memory.load(std::memory_order_relaxed);
+    auto* base = memory.get();
     if (!base) throw std::logic_error("APU heap has not been created");
     auto address = reinterpret_cast<std::uintptr_t>(allocation);
     auto baseValue = reinterpret_cast<std::uintptr_t>(base);

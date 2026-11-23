@@ -1,12 +1,12 @@
-#include "Heap.hpp"
+#include "Pool.hpp"
 
 #include <bit>
 #include <stdexcept>
 
-bool AnyBox::AcpHal::Heap::IsValid(const void* address, std::uint32_t alignment) const {
+bool AnyBox::AcpHal::Pool::IsValid(const void* address, std::uint32_t alignment) const {
     if (alignment == 0) alignment = 1;
     std::lock_guard lock(mutex);
-    auto* base = memory.load(std::memory_order_relaxed);
+    auto* base = memory.get();
     if (!base || !address) return false;
     auto value = reinterpret_cast<std::uintptr_t>(address);
     auto baseValue = reinterpret_cast<std::uintptr_t>(base);
@@ -20,10 +20,10 @@ bool AnyBox::AcpHal::Heap::IsValid(const void* address, std::uint32_t alignment)
     return false;
 }
 
-std::uint32_t AnyBox::AcpHal::Heap::ToApu(const void* address) const {
+std::uint32_t AnyBox::AcpHal::Pool::ToApu(const void* address) const {
     if (!address) return 0;
     std::lock_guard lock(mutex);
-    auto* base = memory.load(std::memory_order_relaxed);
+    auto* base = memory.get();
     if (!base) throw std::logic_error("APU heap has not been created");
     auto value = reinterpret_cast<std::uintptr_t>(address);
     auto baseValue = reinterpret_cast<std::uintptr_t>(base);
@@ -35,10 +35,10 @@ std::uint32_t AnyBox::AcpHal::Heap::ToApu(const void* address) const {
     throw std::invalid_argument("CPU address does not belong to a live APU allocation");
 }
 
-void* AnyBox::AcpHal::Heap::ToVirtual(std::uint32_t address) const {
+void* AnyBox::AcpHal::Pool::ToVirtual(std::uint32_t address) const {
     if (address == 0) return nullptr;
     std::lock_guard lock(mutex);
-    auto* base = memory.load(std::memory_order_relaxed);
+    auto* base = memory.get();
     if (!base) throw std::logic_error("APU heap has not been created");
     if (address < busBase || address - busBase >= memorySize) throw std::invalid_argument("APU address is outside the heap");
     auto offset = address - busBase;

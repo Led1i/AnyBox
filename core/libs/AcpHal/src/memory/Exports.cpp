@@ -14,8 +14,8 @@ std::int32_t ApuAlloc(void** allocation, std::uint32_t* apuAddress, std::uint32_
     return 0;
 }
 
-std::int32_t ApuCreateHeap(std::uint32_t size, std::uint32_t attributes) noexcept(false) {
-    AnyBox::AcpHal::GetHeap().Create(size, attributes);
+std::int32_t ApuCreateHeap(std::uint32_t normalSize, std::uint32_t shapeSize) noexcept(false) {
+    AnyBox::AcpHal::GetHeap().Create(normalSize, shapeSize);
     return 0;
 }
 
