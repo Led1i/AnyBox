@@ -1,3 +1,13 @@
+function(anybox_export_symbols target definitionFile)
+    get_filename_component(definitionPath "${definitionFile}" ABSOLUTE BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
+    if(MSVC)
+        target_link_options(${target} PRIVATE "/DEF:${definitionPath}")
+    else()
+        target_link_options(${target} PRIVATE "${definitionPath}")
+    endif()
+    set_property(TARGET ${target} APPEND PROPERTY LINK_DEPENDS "${definitionPath}")
+endfunction()
+
 function(anybox_add_system_library target)
     add_library(${target} SHARED ${ARGN})
     target_compile_definitions(${target} PRIVATE ANYBOX_LIBRARY_NAME="${target}.dll")
