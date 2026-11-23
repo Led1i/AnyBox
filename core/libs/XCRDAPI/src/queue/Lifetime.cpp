@@ -48,6 +48,7 @@ void AnyBox::Storage::Queue::Close() {
     std::unique_lock lock(mutex);
     if (closed) return;
     closing = true;
+    spaceAvailable.notify_all();
     submitted = count;
     wake.notify_one();
     drained.wait(lock, [this] { return closed; });

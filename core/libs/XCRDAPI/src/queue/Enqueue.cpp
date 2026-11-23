@@ -16,9 +16,9 @@ AnyBox::Storage::ReadLease RetainFile(const StorageRequest& request, std::uint64
 
 }
 
-void AnyBox::Storage::Queue::requireSpace() const {
+void AnyBox::Storage::Queue::requireSpace(std::unique_lock<std::mutex>& lock) {
+    spaceAvailable.wait(lock, [this] { return closing || count < operations.size(); });
     if (closing) throw std::logic_error("DirectStorage queue is closing");
-    if (count + (busy ? 1U : 0U) == operations.size()) throw std::overflow_error("DirectStorage queue is full");
 }
 
 void AnyBox::Storage::Queue::publish() {
@@ -42,8 +42,8 @@ void AnyBox::Storage::Queue::EnqueueRequest(const StorageRequest* request) {
     if (description.description.sourceType == 1 && request->sourceSize > maximum - reinterpret_cast<std::uintptr_t>(request->source)) throw std::overflow_error("DirectStorage source range overflows");
 
     ReadOperation operation{*request, RetainFile(*request, description.description.sourceType)};
-    std::lock_guard lock(mutex);
-    requireSpace();
+    std::unique_lock lock(mutex);
+    requireSpace(lock);
     operations[(head + count) % operations.size()].emplace<ReadOperation>(std::move(operation));
     publish();
 }
@@ -51,8 +51,8 @@ void AnyBox::Storage::Queue::EnqueueRequest(const StorageRequest* request) {
 void AnyBox::Storage::Queue::EnqueueStatus(IStorageStatusArray* array, std::uint32_t index) {
     auto* status = dynamic_cast<StatusArray*>(array);
     if (!status) throw std::invalid_argument("DirectStorage status array does not belong to this runtime");
-    std::lock_guard lock(mutex);
-    requireSpace();
+    std::unique_lock lock(mutex);
+    requireSpace(lock);
     operations[(head + count) % operations.size()].emplace<StatusOperation>(status, index);
     publish();
 }
@@ -67,8 +67,8 @@ void AnyBox::Storage::Queue::EnqueueSetEvent(void* event) {
         throw;
     }
     borrowed.Release();
-    std::lock_guard lock(mutex);
-    requireSpace();
+    std::unique_lock lock(mutex);
+    requireSpace(lock);
     operations[(head + count) % operations.size()].emplace<EventOperation>(EventOperation{std::move(owned)});
     publish();
 }

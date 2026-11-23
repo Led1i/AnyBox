@@ -37,7 +37,7 @@ public:
     void Query1(StorageQueueInformation1* information) override;
 
 private:
-    void requireSpace() const;
+    void requireSpace(std::unique_lock<std::mutex>& lock);
     void publish();
     void run();
     void read(ReadOperation& operation);
@@ -50,11 +50,11 @@ private:
     std::mutex mutex;
     std::condition_variable wake;
     std::condition_variable drained;
+    std::condition_variable spaceAvailable;
     std::vector<Operation> operations;
     std::size_t head = 0;
     std::size_t count = 0;
     std::size_t submitted = 0;
-    bool busy = false;
     bool closing = false;
     bool closed = false;
     std::optional<ZlibDecoder> decoder;

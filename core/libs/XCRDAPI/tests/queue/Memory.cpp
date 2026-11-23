@@ -2,6 +2,9 @@
 
 #include <array>
 #include <cstddef>
+#include <chrono>
+#include <future>
+#include <thread>
 
 void AnyBox::Tests::CheckMemoryQueue() {
     std::array<std::byte, 257> source;
@@ -35,12 +38,42 @@ void AnyBox::Tests::CheckMemoryQueue() {
 }
 
 void AnyBox::Tests::CheckQueueLimits() {
+    std::byte source{0x71};
+    std::array<std::byte, 129> received{};
     QueueFixture test(1);
-    StorageRequest empty{};
-    empty.options = 1ULL << 22;
-    for (std::size_t i = 0; i < 128; ++i) test.queue->EnqueueRequest(&empty);
-    ExpectException<std::overflow_error>([&] { test.queue->EnqueueRequest(&empty); });
+    StorageRequest request{};
+    request.options = 1ULL << 22;
+    request.source = &source;
+    request.sourceSize = 1;
+    request.destinationSize = 1;
+    for (std::size_t i = 0; i < 128; ++i) {
+        request.destination = &received[i];
+        test.queue->EnqueueRequest(&request);
+    }
+    request.destination = &received.back();
+    std::promise<void> started;
+    std::promise<void> enqueued;
+    auto start = started.get_future();
+    auto completion = enqueued.get_future();
+    std::exception_ptr enqueueError;
+    std::jthread producer([&] {
+        started.set_value();
+        try {
+            test.queue->EnqueueRequest(&request);
+        } catch (...) {
+            enqueueError = std::current_exception();
+        }
+        enqueued.set_value();
+    });
+    start.wait();
+    auto blocked = completion.wait_for(std::chrono::milliseconds(20));
+    test.queue->Submit();
+    auto finished = completion.wait_for(std::chrono::seconds(5));
+    producer.join();
+    if (enqueueError) std::rethrow_exception(enqueueError);
+    Require(blocked == std::future_status::timeout && finished == std::future_status::ready, "Full DirectStorage queue did not wait for Submit");
     test.queue->Close();
+    for (auto byte : received) Require(byte == source, "Backpressured request was lost");
     ExpectException<std::logic_error>([&] { test.queue->Submit(); });
     StorageQueueDescription invalid{1, 127, 0, {}, "Invalid"};
     void* output = nullptr;

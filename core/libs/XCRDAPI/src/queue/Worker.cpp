@@ -18,7 +18,7 @@ void AnyBox::Storage::Queue::run() {
         head = (head + 1) % operations.size();
         --count;
         --submitted;
-        busy = true;
+        spaceAvailable.notify_one();
         lock.unlock();
         try {
             if (auto* request = std::get_if<ReadOperation>(&operation)) read(*request);
@@ -37,6 +37,5 @@ void AnyBox::Storage::Queue::run() {
         }
         operation.emplace<std::monostate>();
         lock.lock();
-        busy = false;
     }
 }
