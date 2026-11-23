@@ -1,5 +1,5 @@
 anybox_add_system_library(xmem src/Capabilities.cpp src/Transfer.cpp src/allocation/Attributes.cpp src/allocation/Default.cpp src/allocation/Dispatch.cpp src/allocation/Heap.cpp src/allocation/TitleHooks.cpp src/virtual/Query.cpp src/virtual/Statistics.cpp xmem.def)
-target_sources(xmem PRIVATE src/virtual/Allocate.cpp src/virtual/Protection.cpp)
+target_sources(xmem PRIVATE src/virtual/Allocate.cpp src/virtual/Protection.cpp src/virtual/PageTables.cpp)
 target_sources(xmem PRIVATE src/physical/Allocation.cpp src/physical/Exports.cpp src/physical/Mapping.cpp src/physical/WindowsMapping.cpp)
 target_include_directories(xmem PUBLIC include)
 target_link_libraries(xmem PRIVATE psapi)

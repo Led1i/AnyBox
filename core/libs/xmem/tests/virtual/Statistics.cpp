@@ -21,7 +21,7 @@ void AnyBox::Tests::CheckStatistics() {
     auto before = statistics.gameUsed;
     {
         auto region = AllocateRegion(0x1000000, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
-        XMemGetWorkingSetStatistics(0x2000000A, &statistics);
+        XMemGetWorkingSetStatistics(0x20000001, &statistics);
         Require(statistics.gameUsed >= before + 0x1000000, "XMem did not observe committed host memory");
         Require(statistics.gameUsedPeak >= statistics.gameUsed, "XMem peak commit is below current commit");
     }
@@ -39,6 +39,28 @@ void AnyBox::Tests::CheckStatistics() {
             Require(guarded[i] == 0xA5A5A5A5A5A5A5A5ULL, "XMem statistics overran its versioned buffer");
         }
     }
+    for (auto flags : {0x20000000U, 0x20000002U, 0x20008002U}) {
+        XMemGetWorkingSetStatistics(flags, &statistics);
+        Require(statistics.gameLimit == 0 && statistics.gameUsed == 0 && statistics.gameUsedPeak == 0, "Unrequested game statistics were populated");
+        Require(statistics.toolsLimit == 0 && statistics.toolsUsed == 0, "Unavailable tools memory was populated");
+    }
+    XMemGetWorkingSetStatistics(0x20000010, &statistics);
+    auto pageTablesBefore = statistics.cpuPageTableSize;
+    Require(pageTablesBefore != 0 && pageTablesBefore % 4096 == 0, "XMem page table statistics are not page-sized");
+    {
+        auto region = AllocateRegion(0x2000000, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
+        XMemGetWorkingSetStatistics(0x20000010, &statistics);
+        Require(statistics.cpuPageTableSize >= pageTablesBefore + 15 * 4096, "XMem page table statistics did not observe new committed ranges");
+    }
+    auto pageTablesDuring = statistics.cpuPageTableSize;
+    XMemGetWorkingSetStatistics(0x20000010, &statistics);
+    Require(statistics.cpuPageTableSize < pageTablesDuring, "XMem page table statistics did not observe released ranges");
+    statistics.gameUsed = 0x571;
+    for (auto flags : {0x20000004U, 0x20000008U, 0x2000000AU}) {
+        ExpectException<std::runtime_error>([&] { XMemGetWorkingSetStatistics(flags, &statistics); });
+        Require(statistics.gameUsed == 0x571, "Unsupported statistics query changed its output");
+    }
+    ExpectException<std::invalid_argument>([&] { XMemGetWorkingSetStatistics(0x20000020, &statistics); });
     ExpectException<std::invalid_argument>([] { XMemGetWorkingSetStatistics(0, nullptr); });
     Require(output.before == 0x1A2B3C4D && output.after == 0x4D3C2B1A, "XMem statistics overran its output");
 }
