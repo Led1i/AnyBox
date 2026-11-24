@@ -25,6 +25,7 @@ public:
     VkImage GetHandle() const noexcept { return image; }
     VkDeviceSize GetAllocationSize() const noexcept { return allocationSize; }
     const ImageDescription& GetDescription() const noexcept { return description; }
+    Context& GetContext() const noexcept { return context; }
 
 private:
     void create();

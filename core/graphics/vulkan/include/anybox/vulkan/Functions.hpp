@@ -70,6 +70,8 @@ struct DeviceFunctions {
     PFN_vkBindImageMemory bindImageMemory;
     PFN_vkCmdClearColorImage clearColorImage;
     PFN_vkCmdCopyImageToBuffer copyImageToBuffer;
+    PFN_vkCreateImageView createImageView;
+    PFN_vkDestroyImageView destroyImageView;
 };
 
 template<class TFunction>

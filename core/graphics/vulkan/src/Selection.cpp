@@ -53,6 +53,8 @@ void AnyBox::Vulkan::Context::createDevice(std::uint32_t queueCount) {
     enabled.textureCompressionBC = features.features.textureCompressionBC;
     enabled.textureCompressionETC2 = features.features.textureCompressionETC2;
     enabled.textureCompressionASTC_LDR = features.features.textureCompressionASTC_LDR;
+    enabled.imageCubeArray = features.features.imageCubeArray;
+    cubeArrays = enabled.imageCubeArray != VK_FALSE;
     address.bufferDeviceAddressCaptureReplay = VK_FALSE;
     address.bufferDeviceAddressMultiDevice = VK_FALSE;
     std::vector<float> priorities(queueCount, 1.0f);

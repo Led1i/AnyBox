@@ -29,6 +29,7 @@ public:
     VkQueue GetQueue(std::uint32_t index) const;
     VkExternalBufferProperties GetExternalBufferProperties(VkBufferUsageFlags usage) const;
     VkImageFormatProperties GetImageFormatProperties(const VkPhysicalDeviceImageFormatInfo2& description) const;
+    bool SupportsCubeArrays() const noexcept { return cubeArrays; }
     VkExternalSemaphoreProperties GetD3D12FenceProperties() const;
     const AdapterLuid& GetAdapterLuid() const noexcept { return adapterLuid; }
     void Submit(std::uint32_t queueIndex, const VkSubmitInfo& submission, VkFence fence = VK_NULL_HANDLE);
@@ -56,5 +57,6 @@ private:
     std::vector<VkQueue> queues;
     std::unique_ptr<std::mutex[]> queueMutexes;
     AdapterLuid adapterLuid{};
+    bool cubeArrays = false;
 };
 }

@@ -61,5 +61,7 @@ void AnyBox::Vulkan::Context::loadDeviceFunctions() {
     ANYBOX_VULKAN_FUNCTION(bindImageMemory, vkBindImageMemory);
     ANYBOX_VULKAN_FUNCTION(clearColorImage, vkCmdClearColorImage);
     ANYBOX_VULKAN_FUNCTION(copyImageToBuffer, vkCmdCopyImageToBuffer);
+    ANYBOX_VULKAN_FUNCTION(createImageView, vkCreateImageView);
+    ANYBOX_VULKAN_FUNCTION(destroyImageView, vkDestroyImageView);
 #undef ANYBOX_VULKAN_FUNCTION
 }
