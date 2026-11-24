@@ -51,3 +51,6 @@ anybox_add_glslang()
 include("${CMAKE_CURRENT_SOURCE_DIR}/../cmake/Zydis.cmake")
 
 anybox_add_zydis()
+
+include("${CMAKE_CURRENT_SOURCE_DIR}/../cmake/AddrLib.cmake")
+anybox_add_addrlib()

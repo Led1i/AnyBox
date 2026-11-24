@@ -20,3 +20,7 @@
 [submodule "3rdparty/zydis"]
 	path = 3rdparty/zydis
 	url = https://github.com/zyantific/zydis.git
+[submodule "3rdparty/mesa"]
+	path = 3rdparty/mesa
+	url = https://gitlab.freedesktop.org/mesa/mesa.git
+	shallow = true
