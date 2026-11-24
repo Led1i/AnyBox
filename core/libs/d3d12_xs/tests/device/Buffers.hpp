@@ -2,6 +2,7 @@
 
 #include "Tests.hpp"
 #include <memory>
+#include <span>
 
 namespace AnyBox::Graphics::Tests {
 struct ResourceDeleter {
@@ -18,4 +19,5 @@ struct NativeBuffers {
 
 NativeBuffers CreateNativeBuffers(Device* device);
 void VerifyReadback(ID3D12Resource* resource);
+void CheckSharedBufferTransfer(Device* device, ID3D12Resource* resource, std::span<std::byte> memory);
 }

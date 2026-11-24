@@ -59,6 +59,7 @@ public:
     static HRESULT CreateRootSignature(Device* self, std::uint32_t nodeMask, const void* data, std::size_t size, const Guid& interfaceId, void** signature);
     static HRESULT GetDeviceRemovedReason(Device* self);
     static LUID GetAdapterLuid(Device* self);
+    static HRESULT CreatePlacedResourceLayoutX(Device* self, std::uintptr_t address, const D3D12_RESOURCE_DESC1* description, D3D12_BARRIER_LAYOUT layout, const D3D12_CLEAR_VALUE* clearValue, const Guid& interfaceId, void** resource);
     static HRESULT SetFrameIntervalX(Device* self, void* output, std::uint32_t intervalMicroseconds, std::uint32_t periodicity, std::uint32_t flags);
     static HRESULT ScheduleFrameEventX(Device* self, std::uint32_t type, std::uint32_t offsetMicroseconds, const FrameAncillary* ancillary, std::uint32_t flags);
     static HRESULT WaitFrameEventX(Device* self, std::uint32_t type, std::uint32_t timeoutMilliseconds, const FrameAncillary* ancillary, std::uint32_t flags, std::uint64_t* token);

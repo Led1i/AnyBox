@@ -43,4 +43,5 @@ void CheckFrameEvents(Device* device);
 void CheckFrameAncillary(Device* device);
 void CheckUnsupportedDeviceMethods(Device* device);
 void CheckPhysicalHeap(Device* device);
+void CheckPlacedBuffer(Device* device);
 }
