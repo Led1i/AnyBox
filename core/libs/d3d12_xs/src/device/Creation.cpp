@@ -1,5 +1,6 @@
 #include "Device.hpp"
 #include "../host/Library.hpp"
+#include "../memory/Configuration.hpp"
 #include <d3d12_xs.hpp>
 #include <anybox/Unimplemented.hpp>
 #include <memory>
@@ -26,8 +27,7 @@ std::int32_t D3D12XboxCreateDevice(IGraphicsUnknown* adapter, const D3D12XboxCre
     AnyBox::Graphics::CheckGraphicsResult(result, "D3D12CreateDevice");
     if (!host) throw std::runtime_error("D3D12CreateDevice returned no interface");
     std::unique_ptr<ID3D12Device, DeviceDeleter> ownedHost(static_cast<ID3D12Device*>(host));
-    auto wrapper = std::make_unique<AnyBox::Graphics::Device>(ownedHost.get(), *parameters);
-    ownedHost.release();
-    *device = wrapper.release();
+    AnyBox::Graphics::EnsureGraphicsMemoryConfigured();
+    *device = AnyBox::Graphics::AcquireDevice(ownedHost.get(), *parameters);
     return static_cast<std::int32_t>(result);
 }

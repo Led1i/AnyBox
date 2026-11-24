@@ -36,8 +36,11 @@ public:
     static std::uint32_t AddRef(Device* self);
     static std::uint32_t Release(Device* self);
     ID3D12Device* GetHost() const noexcept { return host; }
+    bool Matches(const D3D12XboxCreateDeviceParameters& value) const noexcept;
+    static std::uint32_t TryAddRef(Device* self);
     static std::uint32_t GetNodeCount(Device* self);
     static D3D12_HEAP_PROPERTIES GetCustomHeapProperties(Device* self, std::uint32_t nodeMask, D3D12_HEAP_TYPE type);
+    static HRESULT CreateCommandQueue(Device* self, const D3D12_COMMAND_QUEUE_DESC* description, const Guid& interfaceId, void** queue);
 
 private:
     const DeviceTable* vtable;
@@ -48,4 +51,6 @@ private:
 
 static_assert(std::is_standard_layout_v<Device>);
 static_assert(sizeof(DeviceMethod) == 8);
+Device* AcquireDevice(ID3D12Device* host, const D3D12XboxCreateDeviceParameters& parameters);
+void ForgetDevice(Device* device);
 }

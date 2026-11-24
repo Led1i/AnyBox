@@ -1,5 +1,6 @@
 #include "Tests.hpp"
 #include <d3d12_xs.hpp>
+#include <xmem.hpp>
 
 int main() {
     return AnyBox::Tests::Run([] {
@@ -20,10 +21,16 @@ int main() {
         Reject<std::invalid_argument>([&] { D3D12XboxCreateDevice(nullptr, &parameters, unsupported, &output); });
         Require(!output, "Rejected graphics device creation changed its output");
         Require(D3D12XboxCreateDevice(nullptr, &parameters, XboxDeviceId, &output) == 0 && output, "Xbox graphics device creation failed");
+        XMemWorkingSetStatistics statistics{};
+        XMemGetWorkingSetStatistics(0x20000000, &statistics);
+        Require(statistics.gpuPageTableSize == 0x1400000, "Device creation did not initialize its default graphics memory budget");
         auto* device = static_cast<Device*>(output);
         auto query = Method<decltype(&Device::QueryInterface)>(device, 0);
         auto addRef = Method<decltype(&Device::AddRef)>(device, 1);
         auto release = Method<decltype(&Device::Release)>(device, 2);
+        void* repeated = nullptr;
+        Require(D3D12XboxCreateDevice(nullptr, &parameters, XboxDeviceId, &repeated) == 0 && repeated == device, "Repeated graphics creation changed the device identity");
+        Require(release(static_cast<Device*>(repeated)) == 1, "Repeated graphics creation did not own a reference");
         Require(addRef(device) == 2 && release(device) == 1, "Graphics device reference counting changed");
         void* identity = nullptr;
         Require(query(device, UnknownId, &identity) == 0 && identity == device, "Graphics device IUnknown identity changed");
@@ -33,7 +40,8 @@ int main() {
         Reject<std::invalid_argument>([&] { query(device, unsupported, &identity); });
         Require(!identity, "Rejected graphics interface retained a stale pointer");
         CheckProperties(device);
-        auto unavailable = Method<void (*)(void*, ...)>(device, 8);
+        CheckQueues(device);
+        auto unavailable = Method<void (*)(void*, ...)>(device, 127);
         Reject<std::runtime_error>([&] { unavailable(device, nullptr, nullptr, nullptr); });
         Require(release(device) == 0, "Graphics device final reference was not released");
     });

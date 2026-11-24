@@ -1,4 +1,5 @@
 #include <d3d12_xs.hpp>
+#include "Configuration.hpp"
 #include <xmem.hpp>
 #include <anybox/Unimplemented.hpp>
 #include <cstring>
@@ -29,7 +30,8 @@ struct GraphicsMemory {
 };
 }
 
-std::int32_t D3D12ConfigureVirtualMemoryX(D3D12VirtualMemoryConfiguration* configuration) noexcept(false) {
+namespace {
+std::int32_t ConfigureMemory(D3D12VirtualMemoryConfiguration* configuration, bool retainExisting) {
     if (!configuration) throw std::invalid_argument("D3D12 virtual memory configuration is null");
     if ((configuration->flags & ~1u) != 0 || configuration->pageTablePageCount > 33) throw std::invalid_argument("Invalid D3D12 virtual memory configuration");
     if (configuration->flags != 0) ANYBOX_NOT_IMPLEMENTED();
@@ -38,7 +40,7 @@ std::int32_t D3D12ConfigureVirtualMemoryX(D3D12VirtualMemoryConfiguration* confi
     if (memory.configuration) {
         const auto& previous = *memory.configuration;
         auto previousPages = previous.pageTablePageCount != 0 ? previous.pageTablePageCount : 5;
-        if ((configuration->pageTablePageCount != 0 && configuration->pageTablePageCount != previousPages) || configuration->framePreserveBufferSize != previous.framePreserveBufferSize) throw std::logic_error("D3D12 virtual memory has already been configured differently");
+        if (!retainExisting && ((configuration->pageTablePageCount != 0 && configuration->pageTablePageCount != previousPages) || configuration->framePreserveBufferSize != previous.framePreserveBufferSize)) throw std::logic_error("D3D12 virtual memory has already been configured differently");
         configuration->backendData = previous.backendData;
         return 0x10000000;
     }
@@ -55,4 +57,12 @@ std::int32_t D3D12ConfigureVirtualMemoryX(D3D12VirtualMemoryConfiguration* confi
     memory.configuration = result;
     *configuration = result;
     return 0x10000000;
+}
+}
+
+std::int32_t D3D12ConfigureVirtualMemoryX(D3D12VirtualMemoryConfiguration* configuration) noexcept(false) { return ConfigureMemory(configuration, false); }
+
+void AnyBox::Graphics::EnsureGraphicsMemoryConfigured() {
+    D3D12VirtualMemoryConfiguration configuration{};
+    ConfigureMemory(&configuration, true);
 }

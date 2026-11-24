@@ -10,8 +10,8 @@ inline void Require(bool condition, const char* message) {
     if (!condition) throw std::runtime_error(message);
 }
 
-template<class TFunction>
-TFunction Method(Device* device, std::size_t slot) {
+template<class TFunction, class TObject>
+TFunction Method(TObject* device, std::size_t slot) {
     const DeviceTable* table;
     std::memcpy(&table, device, sizeof(table));
     TFunction result;
@@ -29,4 +29,5 @@ void Reject(TCallable&& callable) {
 }
 
 void CheckProperties(Device* device);
+void CheckQueues(Device* device);
 }
