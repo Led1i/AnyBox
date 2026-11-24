@@ -11,6 +11,9 @@ std::vector<std::byte> AnyBox::Relinker::Tests::Fixture(std::span<const std::uin
     Put<std::uint16_t>(bytes, 0x98, 0x20B);
     Put<std::uint32_t>(bytes, 0xA8, 0x1000);
     Put<std::uint64_t>(bytes, 0xB0, 0x140000000ULL);
+    Put<std::uint32_t>(bytes, 0xB8, 4096);
+    Put<std::uint32_t>(bytes, 0xBC, 512);
+    Put<std::uint32_t>(bytes, 0xD0, 12288);
     Put<std::uint32_t>(bytes, 0xD4, 512);
     Put<std::uint32_t>(bytes, 0x104, 16);
     Put<std::uint32_t>(bytes, 0x120, 0x2000);

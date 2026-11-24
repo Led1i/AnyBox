@@ -68,5 +68,8 @@ std::span<const std::byte> AnyBox::Relinker::Image::Code(std::uint32_t address) 
 
 void AnyBox::Relinker::Image::Finalize() {
     std::fill_n(bytes.begin() + static_cast<std::ptrdiff_t>(optionalHeader + 64), 4, std::byte{});
-    if (directoryCount > 4) std::fill_n(bytes.begin() + static_cast<std::ptrdiff_t>(optionalHeader + 112 + 4 * 8), 8, std::byte{});
+    if (directoryCount > 4) {
+        std::fill_n(bytes.begin() + static_cast<std::ptrdiff_t>(optionalHeader + 112 + 4 * 8), 8, std::byte{});
+        directories[4] = {};
+    }
 }

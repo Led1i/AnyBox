@@ -16,5 +16,11 @@ struct LoweredFunction {
     std::vector<FunctionRange> ranges;
 };
 
-LoweredFunction LowerImmediateInsert(const DecodedInstruction& instruction);
+struct LoweringSite {
+    std::uint32_t address;
+    std::uint8_t length;
+    LoweredFunction function;
+};
+
+LoweredFunction LowerImmediateInsert(const DecodedInstruction& instruction, std::uint8_t stackSize = 40);
 }

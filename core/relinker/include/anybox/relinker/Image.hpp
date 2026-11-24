@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Binary.hpp"
+#include "Lowering.hpp"
 #include <array>
 #include <cstdint>
 #include <vector>
@@ -28,6 +29,8 @@ public:
     std::vector<std::uint32_t> EntryPoints() const;
     std::unordered_set<std::uint32_t> ImportSlots() const;
     bool IsReadOnly(std::uint32_t address, std::size_t size) const noexcept;
+    std::uint64_t GetStackAllocation(std::uint32_t address) const;
+    void AppendLowerings(std::span<const LoweringSite> sites);
     void Finalize();
 
 private:

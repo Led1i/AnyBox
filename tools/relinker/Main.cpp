@@ -26,8 +26,9 @@ int main(int argc, char** argv) {
         output.write(reinterpret_cast<const char*>(data.data()), static_cast<std::streamsize>(data.size()));
         output.close();
         if (!output) throw std::runtime_error("Cannot write relinker output");
-        std::cout << "Decoded " << result.instructionCount << " instructions; lowered " << result.writebackAddresses.size() << " CLWB instructions\n";
+        std::cout << "Decoded " << result.instructionCount << " instructions; lowered " << result.writebackAddresses.size() << " CLWB and " << result.insertAddresses.size() << " INSERTQ instructions\n";
         for (auto address : result.writebackAddresses) std::cout << "CLFLUSH RVA 0x" << std::hex << address << '\n';
+        for (auto address : result.insertAddresses) std::cout << "SSE2 INSERTQ RVA 0x" << std::hex << address << '\n';
         return 0;
     } catch (const std::exception& error) {
         std::cerr << error.what() << '\n';

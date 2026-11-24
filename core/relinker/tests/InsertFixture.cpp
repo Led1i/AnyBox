@@ -3,7 +3,7 @@
 #include <cstring>
 
 namespace {
-std::vector<std::byte> Wrapper() {
+std::vector<std::byte> Wrapper(void* target) {
     std::vector<std::byte> code;
     auto bytes = [&](std::initializer_list<std::uint8_t> data) { for (auto value : data) code.push_back(static_cast<std::byte>(value)); };
     auto displacement = [&](std::uint32_t value) {
@@ -23,8 +23,10 @@ std::vector<std::byte> Wrapper() {
     bytes({0x9D, 0x9C, 0x58, 0x48, 0x89, 0x81});
     displacement(416);
     for (unsigned reg = 0; reg < 16; ++reg) vector(reg, reg * 16, true);
-    bytes({0xE8});
-    displacement(1024 - static_cast<std::uint32_t>(code.size()) - 4);
+    bytes({0x48, 0xB8});
+    auto targetBytes = std::as_bytes(std::span(&target, 1));
+    code.insert(code.end(), targetBytes.begin(), targetBytes.end());
+    bytes({0xFF, 0xD0});
     bytes({0x9C, 0x58, 0x48, 0x89, 0x81});
     displacement(424);
     for (unsigned reg = 0; reg < 16; ++reg) vector(reg, reg * 16, false);
@@ -46,12 +48,25 @@ AnyBox::Relinker::Tests::InsertFixture::~InsertFixture() {
 }
 
 void AnyBox::Relinker::Tests::InsertFixture::Run(const LoweredFunction& function, InsertState& state) {
-    auto wrapper = Wrapper();
+    auto wrapper = Wrapper(static_cast<std::byte*>(memory) + 1024);
     Require(function.code.size() <= 4096 - 1024, "INSERTQ helper exceeds the executable test allocation");
     DWORD old = 0;
     if (!VirtualProtect(memory, 4096, PAGE_READWRITE, &old)) Windows::ThrowLastError("Write INSERTQ lowering test code");
     std::memcpy(memory, wrapper.data(), wrapper.size());
     std::memcpy(static_cast<std::byte*>(memory) + 1024, function.code.data(), function.code.size());
+    invoke(state);
+}
+
+void AnyBox::Relinker::Tests::InsertFixture::RunAt(void* target, InsertState& state) {
+    auto wrapper = Wrapper(target);
+    DWORD old = 0;
+    if (!VirtualProtect(memory, 4096, PAGE_READWRITE, &old)) Windows::ThrowLastError("Write INSERTQ lowering test wrapper");
+    std::memcpy(memory, wrapper.data(), wrapper.size());
+    invoke(state);
+}
+
+void AnyBox::Relinker::Tests::InsertFixture::invoke(InsertState& state) {
+    DWORD old = 0;
     if (!VirtualProtect(memory, 4096, PAGE_EXECUTE_READ, &old)) Windows::ThrowLastError("Protect INSERTQ lowering test code");
     if (!FlushInstructionCache(GetCurrentProcess(), memory, 4096)) Windows::ThrowLastError("Flush INSERTQ lowering test code");
     using Function = void (*)(InsertState*);

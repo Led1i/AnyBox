@@ -45,6 +45,7 @@ void AnyBox::Relinker::Tests::CheckInsert() {
         position += instruction.native.length;
     }
     CheckInsertUnwind(function);
+    CheckInsertUnwind(LowerImmediateInsert(InsertInstruction(0, 0, 8, 24), 32));
     try { LowerImmediateInsert(InsertInstruction(0, 1, 0, 1)); }
     catch (const std::invalid_argument&) { return; }
     throw std::runtime_error("Undefined overflowing INSERTQ field was accepted");

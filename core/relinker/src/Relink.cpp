@@ -9,6 +9,7 @@ AnyBox::Relinker::RelinkResult AnyBox::Relinker::Relink(Image& image, const Cpu&
     RelinkResult result;
     auto entries = image.EntryPoints();
     auto imports = image.ImportSlots();
+    std::vector<LoweringSite> lowerings;
     std::uint64_t unresolvedCount = 0;
     std::uint32_t firstUnresolved = 0;
     std::vector<std::uint8_t> visited(image.GetBytes().size());
@@ -40,11 +41,23 @@ AnyBox::Relinker::RelinkResult AnyBox::Relinker::Relink(Image& image, const Cpu&
             }
             if (!cpu.Supports(instruction) || (forceCacheWriteback && instruction.native.mnemonic == ZYDIS_MNEMONIC_CLWB)) {
                 auto replacement = decoder.LowerWriteback(instruction, code);
-                if (!replacement) cpu.Require(instruction, address);
-                auto bytes = std::span(replacement->bytes).first(replacement->length);
-                cpu.Require(decoder.Decode(bytes), address);
-                std::ranges::copy(bytes, image.GetBytes().begin() + static_cast<std::ptrdiff_t>(offset));
-                result.writebackAddresses.push_back(address);
+                if (replacement) {
+                    auto bytes = std::span(replacement->bytes).first(replacement->length);
+                    cpu.Require(decoder.Decode(bytes), address);
+                    std::ranges::copy(bytes, image.GetBytes().begin() + static_cast<std::ptrdiff_t>(offset));
+                    result.writebackAddresses.push_back(address);
+                } else if (instruction.native.mnemonic == ZYDIS_MNEMONIC_INSERTQ) {
+                    auto allocation = image.GetStackAllocation(address);
+                    if (allocation % 8 != 0) throw std::runtime_error("PE lowering call site has an unsupported stack alignment");
+                    auto function = LowerImmediateInsert(instruction, static_cast<std::uint8_t>(32 + (allocation & 8)));
+                    for (std::size_t position = 0; position < function.code.size();) {
+                        auto emitted = decoder.Decode(std::span(function.code).subspan(position));
+                        cpu.Require(emitted, address);
+                        position += emitted.native.length;
+                    }
+                    lowerings.push_back({address, length, std::move(function)});
+                    result.insertAddresses.push_back(address);
+                } else cpu.Require(instruction, address);
             }
             if (category == ZYDIS_CATEGORY_UNCOND_BR || category == ZYDIS_CATEGORY_RET || instruction.native.mnemonic == ZYDIS_MNEMONIC_INT3 || instruction.native.mnemonic == ZYDIS_MNEMONIC_UD2) break;
             if (address > UINT32_MAX - length) throw std::runtime_error("PE instruction address overflows");
@@ -63,6 +76,7 @@ AnyBox::Relinker::RelinkResult AnyBox::Relinker::Relink(Image& image, const Cpu&
             if (ZYAN_SUCCESS(ZydisDecoderDecodeInstruction(&scanner, nullptr, code.data() + index, code.size() - index, &candidate)) && candidate.mnemonic == ZYDIS_MNEMONIC_CLWB) throw std::runtime_error("Unclassified CLWB at PE RVA " + std::to_string(section.address + index));
         }
     }
+    image.AppendLowerings(lowerings);
     if (!result.writebackAddresses.empty()) image.Finalize();
     return result;
 }

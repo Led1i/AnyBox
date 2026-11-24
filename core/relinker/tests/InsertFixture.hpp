@@ -19,9 +19,11 @@ public:
     InsertFixture(const InsertFixture&) = delete;
     InsertFixture& operator=(const InsertFixture&) = delete;
     void Run(const LoweredFunction& function, InsertState& state);
+    void RunAt(void* target, InsertState& state);
 
 private:
     void* memory = nullptr;
+    void invoke(InsertState& state);
 };
 
 DecodedInstruction InsertInstruction(unsigned destination, unsigned source, unsigned length, unsigned index);
