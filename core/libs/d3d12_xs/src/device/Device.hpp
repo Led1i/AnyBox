@@ -6,6 +6,7 @@
 #include <d3d12.h>
 #include "../object/Properties.hpp"
 #include "Interfaces.hpp"
+#include "../frame/Configuration.hpp"
 #include <array>
 #include <atomic>
 #include <cstring>
@@ -54,6 +55,11 @@ public:
     static HRESULT CreateRootSignature(Device* self, std::uint32_t nodeMask, const void* data, std::size_t size, const Guid& interfaceId, void** signature);
     static HRESULT GetDeviceRemovedReason(Device* self);
     static LUID GetAdapterLuid(Device* self);
+    static HRESULT SetFrameIntervalX(Device* self, void* output, std::uint32_t intervalMicroseconds, std::uint32_t periodicity, std::uint32_t flags);
+    FrameConfiguration GetFrameConfiguration() const {
+        std::scoped_lock lock(frameMutex);
+        return frameConfiguration;
+    }
 
 private:
     friend class DxgiDevice;
@@ -64,6 +70,8 @@ private:
     D3D12XboxCreateDeviceParameters parameters;
     std::mutex dxgiMutex;
     DxgiDevice* dxgiDevice = nullptr;
+    mutable std::mutex frameMutex;
+    FrameConfiguration frameConfiguration;
 };
 
 static_assert(std::is_standard_layout_v<Device>);

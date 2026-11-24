@@ -31,6 +31,7 @@ AnyBox::Graphics::DeviceTable MakeTable(std::index_sequence<TSlots...>) {
     result[43] = MethodAddress(&Device::GetAdapterLuid);
     result[48] = MethodAddress(&Device::CreateCommandQueueX);
     result[73] = MethodAddress(&Device::CreateCommandListX);
+    result[78] = MethodAddress(&Device::SetFrameIntervalX);
     return result;
 }
 }

@@ -37,4 +37,5 @@ void CheckRoots(Device* device);
 void CheckSynchronization(Device* device);
 void CheckInlineCommands(Device* device);
 void CheckDxgi(Device* device);
+void CheckFrameConfiguration(Device* device);
 }
