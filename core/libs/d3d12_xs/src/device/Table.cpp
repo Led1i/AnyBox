@@ -28,6 +28,7 @@ AnyBox::Graphics::DeviceTable MakeTable(std::index_sequence<TSlots...>) {
     result[15] = MethodAddress(&Device::GetDescriptorHandleIncrementSize);
     result[16] = MethodAddress(&Device::CreateRootSignature);
     result[18] = MethodAddress(&Device::CreateShaderResourceView);
+    result[19] = MethodAddress(&Device::CreateUnorderedAccessView);
     result[26] = MethodAddress(&Device::GetCustomHeapProperties);
     result[36] = MethodAddress(&Device::CreateFence);
     result[37] = MethodAddress(&Device::GetDeviceRemovedReason);
