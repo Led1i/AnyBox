@@ -33,4 +33,5 @@ void CheckQueues(Device* device);
 void CheckFences(Device* device);
 void CheckAllocators(Device* device);
 void CheckLists(Device* device);
+void CheckRoots(Device* device);
 }

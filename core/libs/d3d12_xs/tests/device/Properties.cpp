@@ -19,6 +19,10 @@ void AnyBox::Graphics::Tests::CheckProperties(Device* device) {
     void* native = nullptr;
     Require(create(nullptr, D3D_FEATURE_LEVEL_12_0, HostId, &native) == 0 && native, "Reference D3D12 device creation failed");
     std::unique_ptr<ID3D12Device, Release> host(static_cast<ID3D12Device*>(native));
+    auto luid = Method<decltype(&Device::GetAdapterLuid)>(device, 43)(device);
+    auto expectedLuid = host->GetAdapterLuid();
+    Require(luid.LowPart == expectedLuid.LowPart && luid.HighPart == expectedLuid.HighPart, "Adapter identity changed across the Xbox ABI");
+    Require(Method<decltype(&Device::GetDeviceRemovedReason)>(device, 37)(device) == host->GetDeviceRemovedReason(), "Graphics device removal status differs from the host");
     auto count = Method<decltype(&Device::GetNodeCount)>(device, 7);
     Require(count(device) == host->GetNodeCount() && count(device) > 0, "Xbox graphics node count differs from its host");
     auto heap = Method<decltype(&Device::GetCustomHeapProperties)>(device, 26);

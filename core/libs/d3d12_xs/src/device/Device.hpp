@@ -49,6 +49,9 @@ public:
     static HRESULT CreateCommandAllocator(Device* self, D3D12_COMMAND_LIST_TYPE type, const Guid& interfaceId, void** allocator);
     static HRESULT CreateCommandList(Device* self, std::uint32_t nodeMask, D3D12_COMMAND_LIST_TYPE type, void* allocator, void* initialState, const Guid& interfaceId, void** list);
     static HRESULT CreateCommandListX(Device* self, const XboxListDescription* description, void* allocator, void* initialState, const Guid& interfaceId, void** list);
+    static HRESULT CreateRootSignature(Device* self, std::uint32_t nodeMask, const void* data, std::size_t size, const Guid& interfaceId, void** signature);
+    static HRESULT GetDeviceRemovedReason(Device* self);
+    static LUID GetAdapterLuid(Device* self);
 
 private:
     const DeviceTable* vtable;
