@@ -16,8 +16,10 @@ public:
     std::uint64_t GetAddress() const noexcept { return reinterpret_cast<std::uintptr_t>(reservation); }
     const Descriptor::Texture2DDescription& GetDescription() const noexcept { return description; }
     VkImageView GetView(const Descriptor::ImageWords& words);
+    VkImageView GetStorageView(const Descriptor::ImageWords& words);
 
 private:
+    VkImageView getView(const Descriptor::ImageWords& words, bool storage);
     AddressSpace& addresses;
     Vulkan::Image image;
     Descriptor::Texture2DDescription description;

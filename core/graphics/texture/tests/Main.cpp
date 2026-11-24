@@ -22,7 +22,7 @@ int main() {
             image.extent = {256, 256, 1};
             image.mipLevels = 9;
             image.arrayLayers = 6;
-            image.usage = VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+            image.usage = VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_STORAGE_BIT;
             Descriptor::Texture2DDescription description{256, 256, 6, 9, 56, 27};
             Texture::Resource resource(addresses, context, image, description, 2359296);
             releasedAddress = resource.GetAddress();
@@ -37,6 +37,11 @@ int main() {
             auto handle = resource.GetView(words);
             auto copied = words;
             if (!handle || resource.GetView(copied) != handle) throw std::runtime_error("Copied texture descriptor did not resolve to its cached GPU view");
+            auto storage = Descriptor::EncodeStorageTexture2D(description, {releasedAddress, 2, 1, 1});
+            auto storageHandle = resource.GetStorageView(storage);
+            if (!storageHandle || resource.GetStorageView(storage) != storageHandle) throw std::runtime_error("Storage texture descriptor did not resolve to its cached GPU view");
+            Reject<std::invalid_argument>([&] { resource.GetView(storage); });
+            Reject<std::invalid_argument>([&] { resource.GetStorageView(words); });
             auto invalid = words;
             invalid[0] += 1;
             Reject<std::invalid_argument>([&] { resource.GetView(invalid); });

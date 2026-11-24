@@ -2,6 +2,16 @@
 #include <array>
 
 VkImageView AnyBox::Texture::Resource::GetView(const Descriptor::ImageWords& words) {
+    return getView(words, false);
+}
+
+VkImageView AnyBox::Texture::Resource::GetStorageView(const Descriptor::ImageWords& words) {
+    if ((image.GetDescription().usage & VK_IMAGE_USAGE_STORAGE_BIT) == 0) throw std::invalid_argument("Texture GPU image has no storage usage");
+    return getView(words, true);
+}
+
+VkImageView AnyBox::Texture::Resource::getView(const Descriptor::ImageWords& words, bool storage) {
+    if (((words[5] & 0x400000) == 0) != storage) throw std::invalid_argument("Texture descriptor usage does not match its requested GPU view");
     std::scoped_lock lock(viewMutex);
     auto found = views.find(words);
     if (found != views.end()) return found->second->GetHandle();
@@ -26,7 +36,12 @@ VkImageView AnyBox::Texture::Resource::GetView(const Descriptor::ImageWords& wor
         source.componentMapping |= selector << (component * 3);
         components[component] = swizzles[selector];
     }
-    if (Descriptor::EncodeTexture2D(description, source) != words) throw std::runtime_error("Texture descriptor fields do not match their registered resource");
+    if (storage) {
+        if (source.mipCount != 1) throw std::invalid_argument("Storage texture view must select one mip level");
+        Descriptor::StorageViewDescription selected{source.address, source.firstMip, source.firstLayer, source.layerCount};
+        if (Descriptor::EncodeStorageTexture2D(description, selected) != words) throw std::runtime_error("Storage texture descriptor fields do not match their registered resource");
+        components.fill(VK_COMPONENT_SWIZZLE_IDENTITY);
+    } else if (Descriptor::EncodeTexture2D(description, source) != words) throw std::runtime_error("Texture descriptor fields do not match their registered resource");
 
     Vulkan::ImageViewDescription view;
     view.type = VK_IMAGE_VIEW_TYPE_2D_ARRAY;
