@@ -12,6 +12,7 @@ include(CTest)
 include(cmake/AnyBoxLibrary.cmake)
 
 add_subdirectory(3rdparty)
+include(cmake/OpusCompatibility.cmake)
 
 add_subdirectory(core/common)
 add_subdirectory(core/codecs)
