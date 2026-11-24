@@ -7,6 +7,7 @@
 #include <limits>
 
 void CheckXmaBuffers(IAcpHal& channel, AcpHalShapeContexts& descriptor);
+void CheckXmaLoops(IAcpHal& channel, AcpHalShapeContexts& descriptor);
 
 namespace {
 void Submit(IAcpHal& channel, std::uint32_t type, const void* data) {
@@ -76,6 +77,7 @@ int main() {
             }
         }
         CheckXmaBuffers(*channel, descriptor);
+        CheckXmaLoops(*channel, descriptor);
         channel->Disconnect();
         AcpHalMessage message{};
         channel->PopMessage(&message);

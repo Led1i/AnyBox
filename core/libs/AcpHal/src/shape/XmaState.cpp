@@ -21,7 +21,7 @@ void AnyBox::AcpHal::XmaContext::set(std::size_t word, std::uint32_t shift, std:
 
 void AnyBox::AcpHal::XmaContext::validate() const {
     if (get(1, 29, 1) + 1 != channels || get(1, 27, 3) != rateIndex) throw std::logic_error("Active XMA stream format changed");
-    if (get(0, 12, 255) != 0 || get(1, 12, 255) != 0) ANYBOX_NOT_IMPLEMENTED();
+    if (get(1, 14, 7) != 0) ANYBOX_NOT_IMPLEMENTED();
     if (get(1, 20, 15) != 4 || get(1, 30, 1) != 0 || get(9, 30, 3) != 0) ANYBOX_NOT_IMPLEMENTED();
     if (get(2, 26, 63) != 0 || get(3, 26, 63) != 0) throw std::runtime_error("XMA context contains a decoder error");
     for (std::size_t index = 10; index < words.size(); ++index) if (words[index] != 0) ANYBOX_NOT_IMPLEMENTED();

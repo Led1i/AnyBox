@@ -5,9 +5,10 @@ target_sources(AcpHal PRIVATE src/channel/Commands.cpp src/channel/Lifetime.cpp 
 target_sources(AcpHal PRIVATE src/memory/Range.cpp)
 target_sources(AcpHal PRIVATE src/shape/Commands.cpp src/shape/XmaState.cpp src/shape/XmaInput.cpp src/shape/XmaOutput.cpp)
 target_link_libraries(AcpHal PRIVATE anybox_xma)
+target_sources(AcpHal PRIVATE src/shape/XmaLoops.cpp)
 
 if(BUILD_TESTING)
-    add_executable(acphal_xma_tests tests/shape/Xma.cpp tests/shape/XmaBuffers.cpp)
+    add_executable(acphal_xma_tests tests/shape/Xma.cpp tests/shape/XmaBuffers.cpp tests/shape/XmaLoops.cpp)
     target_link_libraries(acphal_xma_tests PRIVATE AcpHal)
     set_target_properties(acphal_xma_tests PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${ANYBOX_RUNTIME_DIRECTORY}")
     add_test(NAME acphal.xma COMMAND acphal_xma_tests)

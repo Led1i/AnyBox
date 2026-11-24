@@ -27,7 +27,7 @@ void AnyBox::AcpHal::XmaContext::Process() {
     auto output = GetHeap().GetMemory(words[7], static_cast<std::size_t>(capacity) * 256);
     auto available = availableBlocks();
     while (available != 0) {
-        if (framePosition == 512 && !readFrame()) return;
+        if (framePosition >= frameLimit && !readFrame()) return;
         auto write = get(0, 27, 31);
         writeBlock(output, write);
         set(0, 27, 31, (write + 1) % capacity);

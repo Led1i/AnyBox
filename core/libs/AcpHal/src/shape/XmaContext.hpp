@@ -17,6 +17,8 @@ private:
     void advancePacket(std::uint32_t nextPacket, std::uint32_t packetCount);
     void writeBlock(std::span<std::byte> output, std::uint32_t writeBlock);
     void validate() const;
+    void validateLoop(std::uint32_t buffer, std::uint32_t packetCount) const;
+    void configureFrame(bool loopEnd);
     std::uint32_t get(std::size_t word, std::uint32_t shift, std::uint32_t mask) const;
     void set(std::size_t word, std::uint32_t shift, std::uint32_t mask, std::uint32_t value);
     std::uint32_t availableBlocks() const;
@@ -24,6 +26,10 @@ private:
     std::uint32_t channels;
     std::uint32_t rateIndex;
     std::uint32_t framePosition = 512;
+    std::uint32_t frameLimit = 512;
+    std::uint32_t pendingSkip = 0;
+    std::uint32_t frameSourceOffset = 0;
+    std::uint32_t frameSourceBuffer = 0;
     std::uint32_t skippedPackets = 0;
     Codecs::XmaFrameDecoder decoder;
     Codecs::XmaFrameAssembler assembler;
