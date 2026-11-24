@@ -22,6 +22,8 @@ public:
     static void SetMarker(Queue* self, std::uint32_t metadata, const void* data, std::uint32_t size);
     static void BeginEvent(Queue* self, std::uint32_t metadata, const void* data, std::uint32_t size);
     static void EndEvent(Queue* self);
+    static HRESULT Signal(Queue* self, void* fence, std::uint64_t value);
+    static HRESULT Wait(Queue* self, void* fence, std::uint64_t value);
 
 private:
     const DeviceTable* vtable;

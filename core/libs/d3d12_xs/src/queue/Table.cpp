@@ -22,6 +22,8 @@ AnyBox::Graphics::DeviceTable MakeTable(std::index_sequence<TSlots...>) {
     result[11] = MethodAddress(&Queue::SetMarker);
     result[12] = MethodAddress(&Queue::BeginEvent);
     result[13] = MethodAddress(&Queue::EndEvent);
+    result[14] = MethodAddress(&Queue::Signal);
+    result[15] = MethodAddress(&Queue::Wait);
     result[16] = MethodAddress(&Queue::GetTimestampFrequency);
     result[17] = MethodAddress(&Queue::GetClockCalibration);
     result[18] = MethodAddress(&Queue::GetDescription);

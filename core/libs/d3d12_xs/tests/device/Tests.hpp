@@ -30,4 +30,5 @@ void Reject(TCallable&& callable) {
 
 void CheckProperties(Device* device);
 void CheckQueues(Device* device);
+void CheckFences(Device* device);
 }
