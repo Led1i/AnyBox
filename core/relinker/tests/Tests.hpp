@@ -10,4 +10,5 @@ void CheckExecution();
 void CheckImages();
 void CheckCpu();
 void CheckControlFlow();
+void CheckInsert();
 }
