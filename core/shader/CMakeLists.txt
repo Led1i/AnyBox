@@ -30,6 +30,7 @@ target_include_directories(anybox_dxil PUBLIC include)
 
 add_library(anybox_dxil_lowering STATIC src/dxil/lowering/Scalar.cpp src/dxil/lowering/Integer.cpp src/dxil/lowering/Compare.cpp src/dxil/lowering/Cast.cpp)
 target_sources(anybox_dxil_lowering PRIVATE src/dxil/lowering/Function.cpp src/dxil/lowering/Flow.cpp src/dxil/lowering/Phi.cpp)
+target_sources(anybox_dxil_lowering PRIVATE src/dxil/lowering/FlowOrder.cpp)
 target_sources(anybox_dxil_lowering PRIVATE src/dxil/lowering/WideBinary.cpp src/dxil/lowering/WideCompare.cpp)
 target_sources(anybox_dxil_lowering PRIVATE src/dxil/lowering/Intrinsic.cpp)
 target_sources(anybox_dxil_lowering PRIVATE src/dxil/lowering/GlobalLoad.cpp)

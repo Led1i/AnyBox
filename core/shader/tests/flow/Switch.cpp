@@ -1,7 +1,30 @@
 #include "Fixture.hpp"
 #include "Fixtures.hpp"
+#include <unordered_map>
+
+namespace {
+void CheckOrder() {
+    FlowTests::Fixture fixture;
+    auto* entry = fixture.Block();
+    auto* first = fixture.Block();
+    auto* second = fixture.Block();
+    auto* other = fixture.Block();
+    auto* selection = fixture.Emit<LLVMBC::SwitchInst>(entry, fixture.Constant(1), other, 2);
+    selection->addCase(fixture.Constant(0), first);
+    selection->addCase(fixture.Constant(1), second);
+    for (auto* block : {first, second, other}) fixture.Emit<LLVMBC::ReturnInst>(block, nullptr);
+    auto output = fixture.Lower();
+    std::unordered_map<const ShaderRecompiler::IrBlock*, std::size_t> positions;
+    for (auto* block : output.BlockOrder()) positions.emplace(block, positions.size());
+    for (auto* block : output.BlockOrder()) {
+        Fixtures::Require(output.Metadata().blockInfo.at(positions.at(block)).id == block->Id());
+        if (block->Predecessors().size() == 1) Fixtures::Require(positions.at(block->Predecessors().front()) < positions.at(block));
+    }
+}
+}
 
 void FlowTests::CheckSwitches() {
+    CheckOrder();
     for (unsigned selector = 0; selector < 16; ++selector) {
         Fixture fixture;
         auto* entry = fixture.Block();

@@ -83,5 +83,6 @@ void FunctionLowering::Run(const LLVMBC::Function& function) {
     locals.Prepare(function);
     for (auto* source : order) emitBlock(*source);
     connectPhis();
+    orderBlocks();
     ValidateProgram(program, true);
 }

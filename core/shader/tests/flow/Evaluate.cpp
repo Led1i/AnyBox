@@ -41,7 +41,9 @@ std::vector<std::uint32_t> FlowTests::Evaluate(const ShaderRecompiler::IrProgram
                 default: throw std::runtime_error("Test execution encountered an unexpected IR opcode");
             }
         }
-        const auto& info = program.Metadata().blockInfo.at(current->Id());
+        auto position = std::ranges::find(program.BlockOrder(), current);
+        if (position == program.BlockOrder().end()) throw std::runtime_error("Test execution found no block metadata");
+        const auto& info = program.Metadata().blockInfo.at(static_cast<std::size_t>(position - program.BlockOrder().begin()));
         if (info.terminator.kind == TerminatorKind::Return) {
             std::vector<std::uint32_t> output;
             for (const auto& block : program.Blocks()) {
@@ -53,7 +55,9 @@ std::vector<std::uint32_t> FlowTests::Evaluate(const ShaderRecompiler::IrProgram
         }
         auto target = info.terminator.kind == TerminatorKind::Branch || read(info.condition) ? info.terminator.trueBlock : info.terminator.falseBlock;
         predecessor = current;
-        current = program.Blocks().at(target).get();
+        auto destination = std::ranges::find_if(program.Metadata().blockInfo, [&](const auto& block) { return block.id == target; });
+        if (destination == program.Metadata().blockInfo.end()) throw std::runtime_error("Test execution found no branch target");
+        current = program.BlockOrder().at(static_cast<std::size_t>(destination - program.Metadata().blockInfo.begin()));
     }
     throw std::runtime_error("Test execution exceeded its step limit");
 }

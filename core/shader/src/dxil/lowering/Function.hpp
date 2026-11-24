@@ -34,6 +34,7 @@ private:
     void branch(IrBlock& source, IrBlock& target);
     void conditional(IrBlock& source, IrValue& condition, IrBlock& trueTarget, IrBlock& falseTarget);
     void connectPhis();
+    void orderBlocks();
     ShaderRecompiler::IrProgram& program;
     ShaderRecompiler::IrBuilder builder;
     ScalarLowering scalar;
