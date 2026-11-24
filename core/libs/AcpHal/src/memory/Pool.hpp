@@ -6,6 +6,7 @@
 #include <list>
 #include <memory>
 #include <mutex>
+#include <span>
 
 namespace AnyBox::AcpHal {
 
@@ -19,6 +20,7 @@ public:
     bool IsValid(const void* address, std::uint32_t alignment) const;
     std::uint32_t ToApu(const void* address) const;
     void* ToVirtual(std::uint32_t address) const;
+    std::span<std::byte> GetMemory(std::uint32_t address, std::size_t size) const;
 
 private:
     struct Block {
