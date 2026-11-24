@@ -1,5 +1,6 @@
 #include <anybox/shader/NativeCompute.hpp>
 #include "Optimize.hpp"
+#include "ScratchWrites.hpp"
 #include <Translation/InstructionTranslator.hpp>
 #include <Optimization/SsaBuilder.hpp>
 #include <Recompiler.hpp>
@@ -49,7 +50,8 @@ AnyBox::Shader::NativeComputeTranslation AnyBox::Shader::LowerNativeCompute(cons
     options.float32FlushToZero = target.float32FlushToZero;
     options.float32FlushDeclared = supports(spv::CapabilityDenormFlushToZero);
     options.float32DenormPreserve = target.float32DenormPreserve;
-    result.program = InstructionTranslator{}.Translate(frontend.GetDecoded(), frontend.GetGraph(), options);
+    auto adjusted = RemoveUnusedScratchWrites(frontend.GetDecoded());
+    result.program = InstructionTranslator{}.Translate(adjusted ? *adjusted : frontend.GetDecoded(), frontend.GetGraph(), options);
     SsaBuilder{}.Rewrite(result.program);
     OptimizeNativeProgram(result.program, input.waveSize);
     return result;
