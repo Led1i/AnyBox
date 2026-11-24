@@ -26,4 +26,13 @@ struct TextureViewDescription {
 };
 
 ImageWords EncodeTexture2D(const Texture2DDescription& texture, const TextureViewDescription& view);
+
+struct StorageViewDescription {
+    std::uint64_t address;
+    std::uint32_t mip;
+    std::uint32_t firstLayer;
+    std::uint32_t layerCount;
+};
+
+ImageWords EncodeStorageTexture2D(const Texture2DDescription& texture, const StorageViewDescription& view);
 }
