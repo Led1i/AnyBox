@@ -36,7 +36,7 @@ void AnyBox::Graphics::Tests::CheckInlineCommands(Device* device) {
         Require(!list->IsClosed(), "Unknown inline command stream was accepted");
         auto top = Method<decltype(&CommandList::SyncTopOfPipeX)>(list, 131);
         Reject<std::runtime_error>([&] { top(list, 0xC380, 0x20000, 0, (std::uint64_t{1} << 48) - 256); });
-        SetWritePointer(list, reinterpret_cast<std::uint32_t*>(reinterpret_cast<std::uintptr_t>(limit) + 4));
+        SetWritePointer(list, reinterpret_cast<std::uint32_t*>(reinterpret_cast<std::uintptr_t>(limit) + 65 * 4));
         Reject<std::logic_error>([&] { close(list); });
         SetWritePointer(list, begin);
         Require(close(list) == 0, "Empty inline command stream close failed");

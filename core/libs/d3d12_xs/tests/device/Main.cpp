@@ -59,6 +59,8 @@ int main(int argc, char** argv) {
             CheckAllocators(device);
             CheckLists(device);
             CheckRoots(device);
+            CheckComputeRoots(device);
+            CheckComputeInline(device);
             CheckPipelines(device);
             CheckSynchronization(device);
             CheckPhysicalHeap(device);

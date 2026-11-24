@@ -1,9 +1,10 @@
 #include "List.hpp"
+#include "Compute.hpp"
 #include <stdexcept>
 
 HRESULT AnyBox::Graphics::CommandList::Close(CommandList* self) {
     if (self->IsClosed()) throw std::logic_error("Command list is already closed");
-    self->validateGuestCommands();
+    self->flushGuestCommands();
     auto result = self->host->Close();
     CheckGraphicsResult(result, "ID3D12GraphicsCommandList::Close");
     self->state |= closedBit;
@@ -23,6 +24,8 @@ HRESULT AnyBox::Graphics::CommandList::Reset(CommandList* self, void* allocator,
     Allocator::Release(self->allocator);
     self->allocator = next;
     self->state &= ~closedBit;
+    delete self->compute;
+    self->compute = nullptr;
     self->resetGuestCommands();
     return result;
 }

@@ -7,6 +7,8 @@
 #include <vector>
 
 namespace AnyBox::Graphics::Tests {
+void CheckComputeRoots(Device* device);
+void CheckComputeInline(Device* device);
 inline void Require(bool condition, const char* message) {
     if (!condition) throw std::runtime_error(message);
 }
