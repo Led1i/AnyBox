@@ -22,6 +22,7 @@ void ExpectException(TCallable&& callable) {
 }
 
 void CheckDefaultHeap();
+void CheckGraphicsHeap();
 void CheckHeapErrors();
 void CheckHeapConcurrency();
 

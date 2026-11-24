@@ -7,7 +7,7 @@
 #include <new>
 
 void AnyBox::Tests::CheckHeapErrors() {
-    ExpectException<std::invalid_argument>([] { XMemAlloc(16, 1ULL << 33); });
+    ExpectException<std::invalid_argument>([] { XMemAlloc(16, 1ULL << 34); });
     ExpectException<std::invalid_argument>([] { XMemAlloc(16, 3ULL << 14); });
     ExpectException<std::invalid_argument>([] { XMemAlloc(16, 10ULL << 29); });
     ExpectException<std::bad_alloc>([] { XMemAlloc(std::numeric_limits<std::size_t>::max(), 0); });

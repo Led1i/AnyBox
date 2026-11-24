@@ -4,7 +4,7 @@
 #include <stdexcept>
 
 AnyBox::XMem::AllocationAttributes AnyBox::XMem::DecodeAttributes(std::uint64_t attributes) {
-    if ((attributes >> 33) != 0) throw std::invalid_argument("Unsupported XMem allocation attribute bits");
+    if ((attributes >> 34) != 0) throw std::invalid_argument("Unsupported XMem allocation attribute bits");
     auto pageSize = static_cast<std::uint32_t>((attributes >> 14) & 3);
     auto memoryType = static_cast<std::uint32_t>((attributes >> 29) & 15);
     if (pageSize == 3 || memoryType > 9) throw std::invalid_argument("Invalid XMem allocation memory type or page size");

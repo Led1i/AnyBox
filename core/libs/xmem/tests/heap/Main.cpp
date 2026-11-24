@@ -5,6 +5,7 @@
 int main() {
     try {
         AnyBox::Tests::CheckDefaultHeap();
+        AnyBox::Tests::CheckGraphicsHeap();
         AnyBox::Tests::CheckHeapErrors();
         AnyBox::Tests::CheckHeapConcurrency();
         return 0;
