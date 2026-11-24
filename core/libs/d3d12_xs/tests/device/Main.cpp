@@ -52,6 +52,7 @@ int main(int argc, char** argv) {
         Require(!identity, "Rejected graphics interface retained a stale pointer");
         try {
             CheckProperties(device);
+            CheckAllocation(device);
             CheckQueues(device);
             CheckFences(device);
             CheckAllocators(device);
