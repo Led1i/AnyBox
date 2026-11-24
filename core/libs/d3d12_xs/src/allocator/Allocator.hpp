@@ -1,0 +1,32 @@
+#pragma once
+
+#include "../device/Device.hpp"
+
+namespace AnyBox::Graphics {
+inline constexpr Guid AllocatorId{0x6102DEE4, 0xAF59, 0x4B09, {0xB9, 0x99, 0xB4, 0x4D, 0x73, 0xF0, 0x9B, 0x24}};
+const DeviceTable& GetAllocatorTable();
+
+class Allocator : public ObjectProperties<Allocator> {
+public:
+    Allocator(ID3D12CommandAllocator* host, Device* device, D3D12_COMMAND_LIST_TYPE type);
+    ~Allocator();
+    ID3D12CommandAllocator* GetHost() const noexcept { return host; }
+    D3D12_COMMAND_LIST_TYPE GetType() const noexcept { return type; }
+    static Allocator* From(void* object);
+    static bool Supports(const Guid& interfaceId) noexcept;
+    static HRESULT QueryInterface(Allocator* self, const Guid& interfaceId, void** object);
+    static std::uint32_t AddRef(Allocator* self);
+    static std::uint32_t Release(Allocator* self);
+    static HRESULT GetDevice(Allocator* self, const Guid& interfaceId, void** device);
+    static HRESULT Reset(Allocator* self);
+
+private:
+    const DeviceTable* vtable;
+    std::atomic<std::uint32_t> references{1};
+    ID3D12CommandAllocator* host;
+    Device* device;
+    D3D12_COMMAND_LIST_TYPE type;
+};
+
+static_assert(std::is_standard_layout_v<Allocator>);
+}

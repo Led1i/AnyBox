@@ -45,6 +45,7 @@ public:
     static HRESULT CreateFence(Device* self, std::uint64_t initialValue, D3D12_FENCE_FLAGS flags, const Guid& interfaceId, void** fence);
     static HRESULT CreateCommandQueueX(Device* self, const XboxQueueDescription* description, const Guid& interfaceId, void** queue);
     void ReleaseQueueSelection(std::uint32_t selection) noexcept;
+    static HRESULT CreateCommandAllocator(Device* self, D3D12_COMMAND_LIST_TYPE type, const Guid& interfaceId, void** allocator);
 
 private:
     const DeviceTable* vtable;
