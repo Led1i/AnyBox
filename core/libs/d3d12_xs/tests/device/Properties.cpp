@@ -25,6 +25,12 @@ void AnyBox::Graphics::Tests::CheckProperties(Device* device) {
     Require(Method<decltype(&Device::GetDeviceRemovedReason)>(device, 37)(device) == host->GetDeviceRemovedReason(), "Graphics device removal status differs from the host");
     auto count = Method<decltype(&Device::GetNodeCount)>(device, 7);
     Require(count(device) == host->GetNodeCount() && count(device) > 0, "Xbox graphics node count differs from its host");
+    auto increment = Method<decltype(&Device::GetDescriptorHandleIncrementSize)>(device, 15);
+    for (auto type : {D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER, D3D12_DESCRIPTOR_HEAP_TYPE_RTV, D3D12_DESCRIPTOR_HEAP_TYPE_DSV}) {
+        Require(increment(device, type) == host->GetDescriptorHandleIncrementSize(type), "Xbox descriptor increment differs from its host heap type");
+    }
+    Reject<std::invalid_argument>([&] { increment(device, D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES); });
+    Reject<std::invalid_argument>([&] { increment(device, static_cast<D3D12_DESCRIPTOR_HEAP_TYPE>(-1)); });
     auto heap = Method<decltype(&Device::GetCustomHeapProperties)>(device, 26);
     for (auto type : {D3D12_HEAP_TYPE_DEFAULT, D3D12_HEAP_TYPE_UPLOAD, D3D12_HEAP_TYPE_READBACK}) {
         auto actual = heap(device, 1, type);

@@ -24,6 +24,7 @@ AnyBox::Graphics::DeviceTable MakeTable(std::index_sequence<TSlots...>) {
     result[8] = MethodAddress(&Device::CreateCommandQueue);
     result[9] = MethodAddress(&Device::CreateCommandAllocator);
     result[12] = MethodAddress(&Device::CreateCommandList);
+    result[15] = MethodAddress(&Device::GetDescriptorHandleIncrementSize);
     result[16] = MethodAddress(&Device::CreateRootSignature);
     result[26] = MethodAddress(&Device::GetCustomHeapProperties);
     result[36] = MethodAddress(&Device::CreateFence);
