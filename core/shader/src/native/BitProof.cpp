@@ -48,6 +48,17 @@ bool Subset(const IrValue* value, const IrValue* limit, unsigned depth, unsigned
     if (value->Opcode() == IrOpcode::BitwiseOr32) return Subset(value->Argument(0), limit, depth - 1, steps) && Subset(value->Argument(1), limit, depth - 1, steps);
     return false;
 }
+
+bool BallotImplies(const IrValue* word, const IrValue* condition, unsigned depth, unsigned& steps) {
+    if (steps == 0 || depth == 0) return false;
+    --steps;
+    word = word->Resolve();
+    if (word->Opcode() == IrOpcode::BitwiseAnd32 && word->ArgumentCount() == 2) return BallotImplies(word->Argument(0), condition, depth - 1, steps) || BallotImplies(word->Argument(1), condition, depth - 1, steps);
+    if (word->Opcode() == IrOpcode::BitwiseOr32 && word->ArgumentCount() == 2) return BallotImplies(word->Argument(0), condition, depth - 1, steps) && BallotImplies(word->Argument(1), condition, depth - 1, steps);
+    if (word->Opcode() != IrOpcode::CompositeExtractU32x4 || word->ArgumentCount() != 2 || !Constant(word->Argument(1), 0)) return false;
+    auto* ballot = word->Argument(0)->Resolve();
+    return ballot->Opcode() == IrOpcode::Ballot && ballot->ArgumentCount() == 1 && ballot->Argument(0)->Resolve() == condition->Resolve();
+}
 }
 
 bool AnyBox::Shader::NativeBitPredicateImplies(const ShaderRecompiler::IrValue* mask, const ShaderRecompiler::IrValue* condition, unsigned& steps) {
@@ -60,4 +71,13 @@ bool AnyBox::Shader::NativeBitPredicateImplies(const ShaderRecompiler::IrValue* 
         if (!sourceMask || !targetMask || *sourceMask != *targetMask) return false;
     }
     return Subset(source->word, target->word, 64, steps);
+}
+
+bool AnyBox::Shader::NativeBallotPredicateImplies(const ShaderRecompiler::IrValue* mask, const ShaderRecompiler::IrValue* condition, std::uint32_t waveSize, unsigned& steps) {
+    if (waveSize != 32) return false;
+    auto source = Predicate(mask);
+    if (!source) return false;
+    auto selector = LaneMask(source->selector);
+    if (!selector || (*selector != 31 && *selector != UINT32_MAX)) return false;
+    return BallotImplies(source->word, condition, 64, steps);
 }

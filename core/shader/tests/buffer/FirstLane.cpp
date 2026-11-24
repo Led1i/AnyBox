@@ -6,9 +6,10 @@
 #include <array>
 
 namespace {
-ShaderRecompiler::IrProgram Make(bool optimize, bool bits, bool selectedMask) {
+ShaderRecompiler::IrProgram Make(bool optimize, bool bits, bool selectedMask, bool ballotMask) {
     using namespace ShaderRecompiler;
     IrProgram program;
+    program.SetWaveSize(32);
     auto& entry = program.CreateBlock();
     auto& header = program.CreateBlock();
     auto& body = program.CreateBlock();
@@ -32,12 +33,14 @@ ShaderRecompiler::IrProgram Make(bool optimize, bool bits, bool selectedMask) {
     IrBuilder builder(program);
     builder.SetInsertionPoint(entry);
     auto& lane = builder.Emit(IrOpcode::LaneId, IrType::U32, {});
-    auto bit = [&](std::uint32_t word) -> IrValue& {
+    auto bit = [&](IrValue& word) -> IrValue& {
         auto& selector = builder.BitwiseAnd(builder.Emit(IrOpcode::LaneId, IrType::U32, {}), builder.Constant(31));
-        return builder.INotEqual(builder.BitwiseAnd(builder.ShiftRightLogical(builder.Constant(word), selector), builder.Constant(1)), builder.Constant(0));
+        return builder.INotEqual(builder.BitwiseAnd(builder.ShiftRightLogical(word, selector), builder.Constant(1)), builder.Constant(0));
     };
-    auto& eligible = bits ? bit(0xFFFF0000) : builder.LogicalNot(builder.ULessThan(lane, builder.Constant(16)));
-    auto& base = bits ? bit(0xFF0F0000) : eligible;
+    auto& eligible = bits ? bit(builder.Constant(0xFFFF0000U)) : builder.LogicalNot(builder.ULessThan(lane, builder.Constant(16)));
+    auto& entryBallot = builder.Emit(IrOpcode::Ballot, IrType::Vec4U32, {&eligible});
+    auto& ballotBits = builder.BitwiseAnd(builder.CompositeExtract(entryBallot, 0), builder.Constant(0xFF0F0000U));
+    auto& base = ballotMask ? bit(ballotBits) : bits ? bit(builder.Constant(0xFF0F0000U)) : eligible;
     auto& selector = builder.INotEqual(builder.BitwiseAnd(lane, builder.Constant(1)), builder.Constant(0));
     auto& narrower = builder.LogicalAnd(base, builder.UGreaterThan(lane, builder.Constant(19)));
     auto& initial = selectedMask ? builder.Select(selector, narrower, base) : base;
@@ -68,11 +71,12 @@ ShaderRecompiler::IrProgram Make(bool optimize, bool bits, bool selectedMask) {
 }
 
 void BufferTests::CheckFirstLaneGpu(AnyBox::Vulkan::Context& context) {
-    for (unsigned variant = 0; variant < 4; ++variant) {
+    for (unsigned variant = 0; variant < 5; ++variant) {
         bool bits = (variant & 1) != 0;
         bool selectedMask = (variant & 2) != 0;
+        bool ballotMask = variant == 4;
         for (bool optimize : {false, true}) {
-            auto program = Make(optimize, bits, selectedMask);
+            auto program = Make(optimize, bits, selectedMask, ballotMask);
             ShaderRecompiler::ShaderComputeInputInfo input;
             input.threadsNum[0] = 32;
             input.threadsNum[1] = input.threadsNum[2] = 1;
@@ -81,7 +85,7 @@ void BufferTests::CheckFirstLaneGpu(AnyBox::Vulkan::Context& context) {
             std::array<std::uint32_t, 32> expected;
             expected.fill(UINT32_MAX);
             for (unsigned lane = 0; lane < 32; ++lane) {
-                bool active = ((bits ? 0xFF0F0000U : 0xFFFF0000U) & (1U << lane)) != 0;
+                bool active = (((bits || ballotMask) ? 0xFF0F0000U : 0xFFFF0000U) & (1U << lane)) != 0;
                 if (selectedMask && (lane & 1) != 0 && lane <= 19) active = false;
                 if (active) expected[lane] = (lane + 1) << 5;
             }
