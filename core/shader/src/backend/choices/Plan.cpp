@@ -13,7 +13,7 @@ std::size_t AnyBox::Shader::PlanDescriptorChoices(ShaderRecompiler::IrProgram& p
             if (!choice) continue;
             IrBuilder builder(program);
             builder.SetInsertionPoint(*block);
-            auto previous = block->Instructions().empty() ? block->Instructions().end() : std::prev(block->Instructions().end());
+            auto previous = std::prev(block->Instructions().end());
             auto& base = builder.Emit(IrOpcode::GetAddressResource, IrType::AddressResource, {choice->reads[0][0].low, choice->reads[0][0].high});
             auto& offset = builder.Select(*choice->condition, builder.Constant(choice->reads[0][0].offset), builder.Constant(choice->reads[0][1].offset));
             for (std::size_t word = 0; word < choice->words; ++word) {

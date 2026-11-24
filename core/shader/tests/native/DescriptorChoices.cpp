@@ -119,4 +119,12 @@ void CheckDescriptorChoices() {
     builder.SetInsertionPoint(*barrier.yes);
     (void)builder.Emit(IrOpcode::Barrier, IrType::Void, {});
     Require(AnyBox::Shader::PlanDescriptorChoices(barrier.program) == 0);
+    Fixture shared(IrOpcode::GetImageResource, 8);
+    IrBuilder sharedBuilder(shared.program);
+    sharedBuilder.SetInsertionPoint(*shared.yes);
+    (void)sharedBuilder.Emit(IrOpcode::ReferenceU32, IrType::Void, {shared.firstRead});
+    Require(AnyBox::Shader::PlanDescriptorChoices(shared.program) == 0);
+    Fixture hole(IrOpcode::GetImageResource, 8);
+    hole.program.Resources().memoryInfo.at(1).offset += 4;
+    Require(AnyBox::Shader::PlanDescriptorChoices(hole.program) == 0);
 }
