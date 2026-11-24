@@ -1,14 +1,17 @@
 #include "Device.hpp"
+#include <algorithm>
 #include <limits>
 #include <stdexcept>
 
 AnyBox::Graphics::Device::Device(ID3D12Device* host, const D3D12XboxCreateDeviceParameters& parameters) : vtable(&GetDeviceTable()), host(host), parameters(parameters) { host->AddRef(); }
 AnyBox::Graphics::Device::~Device() { host->Release(); }
 
+bool AnyBox::Graphics::Device::Supports(const Guid& interfaceId) noexcept { return interfaceId == UnknownId || interfaceId == ObjectId || std::ranges::find(DeviceInterfaces, interfaceId) != DeviceInterfaces.end(); }
+
 std::int32_t AnyBox::Graphics::Device::QueryInterface(Device* self, const Guid& interfaceId, void** object) {
     if (!object) throw std::invalid_argument("Graphics device interface output is null");
     *object = nullptr;
-    if (interfaceId != XboxDeviceId && interfaceId != UnknownId && interfaceId != ObjectId) throw std::invalid_argument("Unsupported graphics device interface");
+    if (!Supports(interfaceId)) throw std::invalid_argument("Unsupported graphics device interface");
     AddRef(self);
     *object = self;
     return 0;

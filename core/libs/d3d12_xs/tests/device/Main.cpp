@@ -37,6 +37,12 @@ int main() {
         Require(release(static_cast<Device*>(identity)) == 1, "Graphics device interface did not own a reference");
         Require(query(device, XboxDeviceId, &identity) == 0 && identity == device, "Xbox graphics device identity changed");
         Require(release(static_cast<Device*>(identity)) == 1, "Xbox device interface did not own a reference");
+        for (const auto& id : DeviceInterfaces) {
+            Require(query(device, id, &identity) == 0 && identity == device, "Base device interface changed its COM identity");
+            Require(release(static_cast<Device*>(identity)) == 1, "Base device interface did not own a reference");
+            Require(D3D12XboxCreateDevice(nullptr, &parameters, id, &identity) == 0 && identity == device, "Base device creation returned a foreign identity");
+            Require(release(static_cast<Device*>(identity)) == 1, "Base device creation did not own a reference");
+        }
         Reject<std::invalid_argument>([&] { query(device, unsupported, &identity); });
         Require(!identity, "Rejected graphics interface retained a stale pointer");
         CheckProperties(device);

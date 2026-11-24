@@ -5,6 +5,7 @@
 #include <anybox/platform/Windows.hpp>
 #include <d3d12.h>
 #include "../object/Properties.hpp"
+#include "Interfaces.hpp"
 #include <array>
 #include <atomic>
 #include <cstring>
@@ -22,8 +23,6 @@ DeviceMethod MethodAddress(TFunction function) {
     return result;
 }
 
-inline constexpr Guid XboxDeviceId{0x5405C344, 0xD457, 0x444E, {0xB4, 0xDD, 0x23, 0x66, 0xE4, 0x5A, 0xEE, 0x39}};
-inline constexpr Guid UnknownId{0, 0, 0, {0xC0, 0, 0, 0, 0, 0, 0, 0x46}};
 const DeviceTable& GetDeviceTable();
 struct XboxQueueDescription;
 struct XboxListDescription;
@@ -34,6 +33,7 @@ class Device : public ObjectProperties<Device> {
 public:
     Device(ID3D12Device* host, const D3D12XboxCreateDeviceParameters& parameters);
     ~Device();
+    static bool Supports(const Guid& interfaceId) noexcept;
     static std::int32_t QueryInterface(Device* self, const Guid& interfaceId, void** object);
     static std::uint32_t AddRef(Device* self);
     static std::uint32_t Release(Device* self);
