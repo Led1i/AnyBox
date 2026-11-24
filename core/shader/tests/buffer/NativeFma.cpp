@@ -8,7 +8,7 @@
 #include <cmath>
 
 namespace {
-AnyBox::Shader::ComputeCompilation Compile(unsigned modifier, bool clamp) {
+AnyBox::Shader::ComputeCompilation Compile(unsigned modifier, bool clamp, bool ieee) {
     auto data = Fixtures::MakeComputeProgram();
     Fixtures::Set(data, 0x13C, 32);
     Fixtures::Set(data, 0x140, 1);
@@ -23,18 +23,18 @@ AnyBox::Shader::ComputeCompilation Compile(unsigned modifier, bool clamp) {
     Fixtures::Require(frontend.GetDecoded().instructions.at(5).rawWords[0] == code[6]);
     auto state = AnyBox::Graphics::Container::ReadNativeComputeState(data);
     auto target = BufferTests::Target();
-    auto translated = AnyBox::Shader::LowerNativeCompute(frontend, state, ShaderRecompiler::ShaderFloatMode{0xC0, true, false, false}, target);
+    auto translated = AnyBox::Shader::LowerNativeCompute(frontend, state, ShaderRecompiler::ShaderFloatMode{0xC0, true, ieee, false}, target);
     Fixtures::Require(translated.program.Blocks().size() == frontend.GetGraph().blocks.size() + 1);
     return AnyBox::Shader::CompileCompute(translated.program, translated.input, target, {0, 0, 0, 128});
 }
 
-std::uint32_t Expected(const std::array<std::uint32_t, 3>& words, unsigned modifier, bool clamp) {
+std::uint32_t Expected(const std::array<std::uint32_t, 3>& words, unsigned modifier, bool clamp, bool ieee) {
     auto lhs = std::bit_cast<float>(words[0]);
     auto rhs = std::bit_cast<float>(words[1]);
     auto addend = std::bit_cast<float>(words[2]);
     auto value = lhs == 0 || rhs == 0 ? std::fma(0.0f, 0.0f, addend) : std::fma(lhs, rhs, addend);
     constexpr std::array scales{1.0f, 2.0f, 4.0f, 0.5f};
-    value *= scales.at(modifier);
+    if (!ieee) value *= scales.at(modifier);
     if (clamp) value = std::isnan(value) || value <= 0 ? 0 : std::min(value, 1.0f);
     return std::bit_cast<std::uint32_t>(value);
 }
@@ -44,13 +44,15 @@ void BufferTests::CheckNativeFma(AnyBox::Vulkan::Context& context) {
     constexpr std::array<std::array<std::uint32_t, 3>, 8> cases{{{0x3F800001, 0x3F7FFFFE, 0xBF800000}, {0x3F800001, 0x3F800001, 0xBF800002}, {0, 0x7F800000, 0x3F000000}, {0xFF800000, 0, 0xBF000000}, {0, 0x7FC12345, 0x3F000000}, {0x7FC12345, 0x80000000, 0xBF000000}, {0x3FC00000, 0x40000000, 0xBF800000}, {0xBFC00000, 0x40000000, 0x3F800000}}};
     for (unsigned modifier = 0; modifier < 4; ++modifier) {
         for (bool clamp : {false, true}) {
-            auto shader = Compile(modifier, clamp);
-            for (const auto& words : cases) {
-                std::array<std::uint32_t, 16> input{};
-                std::copy(words.begin(), words.end(), input.begin());
-                std::array<std::uint32_t, 32> expected;
-                expected.fill(Expected(words, modifier, clamp));
-                RunGpu(context, shader, expected, {1, 1, 1}, std::as_bytes(std::span(input)));
+            for (bool ieee : {false, true}) {
+                auto shader = Compile(modifier, clamp, ieee);
+                for (const auto& words : cases) {
+                    std::array<std::uint32_t, 16> input{};
+                    std::copy(words.begin(), words.end(), input.begin());
+                    std::array<std::uint32_t, 32> expected;
+                    expected.fill(Expected(words, modifier, clamp, ieee));
+                    RunGpu(context, shader, expected, {1, 1, 1}, std::as_bytes(std::span(input)));
+                }
             }
         }
     }
