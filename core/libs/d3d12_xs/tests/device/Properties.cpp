@@ -28,7 +28,14 @@ void AnyBox::Graphics::Tests::CheckProperties(Device* device) {
         Require(actual.Type == expected.Type && actual.CPUPageProperty == expected.CPUPageProperty && actual.MemoryPoolPreference == expected.MemoryPoolPreference, "Xbox graphics heap properties differ from the host");
         Require(actual.CreationNodeMask == expected.CreationNodeMask && actual.VisibleNodeMask == expected.VisibleNodeMask, "Xbox graphics heap node masks differ from the host");
     }
+    if (count(device) == 1) {
+        auto actual = heap(device, 0, D3D12_HEAP_TYPE_UPLOAD);
+        auto expected = host->GetCustomHeapProperties(0, D3D12_HEAP_TYPE_UPLOAD);
+        Require(actual.Type == expected.Type && actual.CreationNodeMask == expected.CreationNodeMask && actual.VisibleNodeMask == expected.VisibleNodeMask, "Single-node heap mask zero changed its host semantics");
+    }
     Reject<std::invalid_argument>([&] { heap(device, 1, static_cast<D3D12_HEAP_TYPE>(0)); });
+    Reject<std::invalid_argument>([&] { heap(device, 1, D3D12_HEAP_TYPE_CUSTOM); });
+    Reject<std::invalid_argument>([&] { heap(device, 3, D3D12_HEAP_TYPE_DEFAULT); });
     auto setName = Method<decltype(&Device::SetName)>(device, 6);
     Require(setName(device, L"AnyBox graphics ABI test") == 0, "Graphics device naming failed");
     Reject<std::invalid_argument>([&] { setName(device, nullptr); });

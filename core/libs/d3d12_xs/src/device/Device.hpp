@@ -4,6 +4,7 @@
 #include <anybox/Types.hpp>
 #include <anybox/platform/Windows.hpp>
 #include <d3d12.h>
+#include "../object/Properties.hpp"
 #include <array>
 #include <atomic>
 #include <cstring>
@@ -27,17 +28,14 @@ const DeviceTable& GetDeviceTable();
 GUID NativeGuid(const Guid& value);
 void CheckGraphicsResult(HRESULT result, const char* operation);
 
-class Device {
+class Device : public ObjectProperties<Device> {
 public:
     Device(ID3D12Device* host, const D3D12XboxCreateDeviceParameters& parameters);
     ~Device();
     static std::int32_t QueryInterface(Device* self, const Guid& interfaceId, void** object);
     static std::uint32_t AddRef(Device* self);
     static std::uint32_t Release(Device* self);
-    static HRESULT GetPrivateData(Device* self, const Guid& key, std::uint32_t* size, void* data);
-    static HRESULT SetPrivateData(Device* self, const Guid& key, std::uint32_t size, const void* data);
-    static HRESULT SetPrivateDataInterface(Device* self, const Guid& key, const IUnknown* object);
-    static HRESULT SetName(Device* self, const wchar_t* name);
+    ID3D12Device* GetHost() const noexcept { return host; }
     static std::uint32_t GetNodeCount(Device* self);
     static D3D12_HEAP_PROPERTIES GetCustomHeapProperties(Device* self, std::uint32_t nodeMask, D3D12_HEAP_TYPE type);
 
