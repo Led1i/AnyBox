@@ -1,6 +1,7 @@
 #include "../device/Device.hpp"
 #include "../resource/Resource.hpp"
 #include "RawBuffer.hpp"
+#include "TextureViews.hpp"
 #include <anybox/Unimplemented.hpp>
 
 void AnyBox::Graphics::Device::CreateShaderResourceView(Device* self, void* resource, const D3D12_SHADER_RESOURCE_VIEW_DESC* description, std::uint64_t destination) {
@@ -9,7 +10,11 @@ void AnyBox::Graphics::Device::CreateShaderResourceView(Device* self, void* reso
     if (resource) {
         auto* object = Resource::From(resource, self);
         const auto& metadata = object->GetMetadata();
-        if (metadata.Dimension != D3D12_RESOURCE_DIMENSION_BUFFER || !description) ANYBOX_NOT_IMPLEMENTED();
+        if (metadata.Dimension != D3D12_RESOURCE_DIMENSION_BUFFER) {
+            CreateTextureShaderView(*object, description, destination);
+            return;
+        }
+        if (!description) ANYBOX_NOT_IMPLEMENTED();
         if (description->ViewDimension != D3D12_SRV_DIMENSION_BUFFER || description->Format != DXGI_FORMAT_R32_TYPELESS || description->Buffer.Flags != D3D12_BUFFER_SRV_FLAG_RAW) ANYBOX_NOT_IMPLEMENTED();
         if (description->Buffer.StructureByteStride != 0) throw std::invalid_argument("Xbox raw shader view cannot have a structure stride");
         if ((metadata.Flags & D3D12_RESOURCE_FLAG_DENY_SHADER_RESOURCE) != 0) throw std::invalid_argument("Xbox resource does not allow shader resource views");

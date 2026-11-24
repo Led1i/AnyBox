@@ -12,6 +12,7 @@
 #include <cstring>
 #include <mutex>
 #include <type_traits>
+#include <anybox/texture/AddressSpace.hpp>
 
 namespace AnyBox::Vulkan { class Context; class Buffer; }
 
@@ -48,6 +49,7 @@ public:
     static std::uint32_t Release(Device* self);
     ID3D12Device* GetHost() const noexcept { return host; }
     Vulkan::Context& GetGpuContext() const noexcept { return *gpuContext; }
+    Texture::AddressSpace& GetTextureAddresses() noexcept { return textureAddresses; }
     bool Matches(const D3D12XboxCreateDeviceParameters& value) const noexcept;
     static std::uint32_t TryAddRef(Device* self);
     static std::uint32_t GetNodeCount(Device* self);
@@ -94,6 +96,7 @@ private:
     Vulkan::Context* gpuContext = nullptr;
     Vulkan::Buffer* nullConstantBuffer = nullptr;
     std::uint64_t nullConstantAddress = 0;
+    Texture::AddressSpace textureAddresses;
 };
 
 static_assert(std::is_standard_layout_v<Device>);

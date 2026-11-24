@@ -1,6 +1,7 @@
 #include "Tests.hpp"
 #include "../../src/resource/Resource.hpp"
 #include <anybox/vulkan/Image.hpp>
+#include "TextureViews.hpp"
 
 void AnyBox::Graphics::Tests::CheckCommittedTextures(Device* device) {
     auto create = Method<decltype(&Device::CreateCommittedResource3)>(device, 127);
@@ -39,7 +40,10 @@ void AnyBox::Graphics::Tests::CheckCommittedTextures(Device* device) {
     void* mapped = resource.get();
     Reject<std::runtime_error>([&] { map(resource.get(), 0, nullptr, &mapped); });
     Require(!mapped, "Rejected texture mapping retained a stale output");
+    auto textureAddress = resource->GetTexture().GetAddress();
+    CheckTextureShaderViews(device, resource.get());
     resource.reset();
+    Reject<std::out_of_range>([&] { device->GetTextureAddresses().Resolve(textureAddress); });
 
     properties.Type = D3D12_HEAP_TYPE_UPLOAD;
     Reject<std::runtime_error>(invoke);

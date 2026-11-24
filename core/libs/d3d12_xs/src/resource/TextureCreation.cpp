@@ -20,12 +20,13 @@ std::unique_ptr<AnyBox::Graphics::TextureBacking> AnyBox::Graphics::CreateTextur
     if (description.Layout != D3D12_TEXTURE_LAYOUT_UNKNOWN) throw std::runtime_error("Committed texture explicit layout is not implemented");
     D3D12_RESOURCE_DESC base{};
     std::memcpy(&base, &description, offsetof(D3D12_RESOURCE_DESC, Flags) + sizeof(base.Flags));
-    ComputeTextureAllocation(base);
+    auto allocation = ComputeTextureAllocation(base);
     CheckLayout(description, layout);
     if (clearValue && ((description.Flags & D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET) == 0 || clearValue->Format != description.Format)) throw std::invalid_argument("Committed texture clear value is incompatible with its description");
 
     Vulkan::ImageDescription image;
-    image.format = TextureFormat(description.Format);
+    auto format = TextureFormat(description.Format);
+    image.format = format.format;
     image.extent = {static_cast<std::uint32_t>(description.Width), description.Height, 1};
     image.mipLevels = description.MipLevels;
     image.arrayLayers = description.DepthOrArraySize;
@@ -33,5 +34,6 @@ std::unique_ptr<AnyBox::Graphics::TextureBacking> AnyBox::Graphics::CreateTextur
     if ((description.Flags & D3D12_RESOURCE_FLAG_DENY_SHADER_RESOURCE) == 0) image.usage |= VK_IMAGE_USAGE_SAMPLED_BIT;
     if ((description.Flags & D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET) != 0) image.usage |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
     if ((description.Flags & D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS) != 0) image.usage |= VK_IMAGE_USAGE_STORAGE_BIT;
-    return std::unique_ptr<TextureBacking>(new TextureBacking{Vulkan::Image(device->GetGpuContext(), image), properties, flags, layout});
+    Descriptor::Texture2DDescription guest{image.extent.width, image.extent.height, image.arrayLayers, image.mipLevels, format.hardwareFormat, ComputeTextureSwizzleMode(base)};
+    return std::unique_ptr<TextureBacking>(new TextureBacking{Texture::Resource(device->GetTextureAddresses(), device->GetGpuContext(), image, guest, allocation.SizeInBytes), properties, flags, layout});
 }

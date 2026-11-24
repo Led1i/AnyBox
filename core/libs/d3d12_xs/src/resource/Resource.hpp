@@ -22,7 +22,11 @@ public:
     }
     Vulkan::Image& GetGpuImage() const {
         if (!texture) throw std::logic_error("Buffer resource has no Vulkan image");
-        return texture->image;
+        return texture->allocation.GetImage();
+    }
+    Texture::Resource& GetTexture() const {
+        if (!texture) throw std::logic_error("Buffer resource has no texture backing");
+        return texture->allocation;
     }
     static bool Supports(const Guid& interfaceId) noexcept;
     static Resource* From(void* value, Device* owner);

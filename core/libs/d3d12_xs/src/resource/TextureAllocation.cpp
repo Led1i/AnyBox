@@ -29,6 +29,10 @@ std::uint32_t SwizzleMode(const D3D12_RESOURCE_DESC& description, std::uint32_t 
 }
 }
 
+std::uint32_t AnyBox::Graphics::ComputeTextureSwizzleMode(const D3D12_RESOURCE_DESC& description) {
+    return SwizzleMode(description, BitsPerPixel(description.Format));
+}
+
 D3D12_RESOURCE_ALLOCATION_INFO AnyBox::Graphics::ComputeTextureAllocation(const D3D12_RESOURCE_DESC& description) {
     if (description.Dimension != D3D12_RESOURCE_DIMENSION_TEXTURE2D) throw std::runtime_error("Texture allocation dimension is not implemented");
     if (description.Width == 0 || description.Width > 16384 || description.Height == 0 || description.Height > 16384 || description.DepthOrArraySize == 0 || description.DepthOrArraySize > 2048) throw std::invalid_argument("Texture allocation dimensions are invalid");
