@@ -6,13 +6,13 @@ AnyBox is a compatibility layer for running Xbox Series X|S executables natively
 
 Initial development. No applications confirmed to run fully.
 
-Seven system libraries with a total of 39 functions required by the test title and its bundled libraries have been added and build successfully. Launch has been tested with the title's executable.
+Seven system libraries with a total of 39 functions required by the test app and its bundled libraries have been added and build successfully. Launch has been tested with the test app's executable.
 
-Unimplemented functions throw a C++ exception. Cross-library stack unwinding and destructor execution are verified by tests. The title reaches an unimplemented function and terminates with an unhandled MSVC-compatible C++ exception; its call stack is visible in the debugger. Destructor execution during unwinding through the title's code has not been verified.
+Unimplemented functions throw a C++ exception. Cross-library stack unwinding and destructor execution are verified by tests. The test app reaches an unimplemented function and terminates with an unhandled MSVC-compatible C++ exception; its call stack is visible in the debugger. Destructor execution during unwinding through the test app's code has not been verified.
 
 ## Building
 
-AnyBox uses standard C++20 and can be built with any conforming compiler targeting 64-bit Windows. MSVC or `clang-cl` with the MSVC runtime is recommended for ABI compatibility and correct stack unwinding of diagnostic C++ exceptions through title code.
+AnyBox uses standard C++20 and can be built with any conforming compiler targeting 64-bit Windows. MSVC or `clang-cl` with the MSVC runtime is recommended for ABI compatibility and correct stack unwinding of diagnostic C++ exceptions through test app code.
 
 Initialize dependencies with `git submodule update --init --recursive` before configuring CMake. Third-party libraries require a C compiler from the same toolchain as the C++ compiler.
 
