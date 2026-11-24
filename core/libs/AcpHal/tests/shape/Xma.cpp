@@ -8,6 +8,7 @@
 
 void CheckXmaBuffers(IAcpHal& channel, AcpHalShapeContexts& descriptor);
 void CheckXmaLoops(IAcpHal& channel, AcpHalShapeContexts& descriptor);
+void CheckXmaWork(IAcpHal& channel, AcpHalShapeContexts& descriptor);
 
 namespace {
 void Submit(IAcpHal& channel, std::uint32_t type, const void* data) {
@@ -66,7 +67,7 @@ int main() {
     try {
         ApuCreateHeap(0x100000, 0x226E00);
         AcpHalShapeContexts descriptor{};
-        descriptor.counts[4] = 1;
+        descriptor.counts[4] = 2;
         AcpHalAllocateShapeContexts(&descriptor);
         IAcpHal* channel = nullptr;
         AcpHalCreate(&channel);
@@ -78,6 +79,7 @@ int main() {
         }
         CheckXmaBuffers(*channel, descriptor);
         CheckXmaLoops(*channel, descriptor);
+        CheckXmaWork(*channel, descriptor);
         channel->Disconnect();
         AcpHalMessage message{};
         channel->PopMessage(&message);

@@ -19,6 +19,8 @@ class XmaFrameDecoder {
 public:
     XmaFrameDecoder(std::uint32_t sampleRate, std::uint32_t channels);
     ~XmaFrameDecoder();
+    XmaFrameDecoder(XmaFrameDecoder&&) noexcept = default;
+    XmaFrameDecoder& operator=(XmaFrameDecoder&&) noexcept = default;
     XmaFrame Decode(std::span<const std::byte> source, std::uint8_t firstBit, std::uint32_t bitCount);
     void Reset();
 

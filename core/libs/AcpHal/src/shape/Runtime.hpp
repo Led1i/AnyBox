@@ -13,6 +13,7 @@ struct ShapeRuntime {
     std::array<void*, 5> allocations{};
     AcpHalShapeContexts descriptor{};
     std::vector<std::unique_ptr<XmaContext>> decoders;
+    std::uint64_t sequence = 0;
     bool allocated = false;
 };
 

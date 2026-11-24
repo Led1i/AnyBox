@@ -22,6 +22,7 @@ void AnyBox::AcpHal::XmaContext::writeBlock(std::span<std::byte> output, std::ui
 
 void AnyBox::AcpHal::XmaContext::Process() {
     validate();
+    validateWork();
     if (get(1, 31, 1) == 0) return;
     auto capacity = get(0, 22, 31);
     auto output = GetHeap().GetMemory(words[7], static_cast<std::size_t>(capacity) * 256);

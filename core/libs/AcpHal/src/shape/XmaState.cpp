@@ -8,9 +8,11 @@ namespace {
 constexpr std::array<std::uint32_t, 4> SampleRates{24000, 32000, 44100, 48000};
 }
 
-AnyBox::AcpHal::XmaContext::XmaContext(std::span<std::uint32_t, 16> words) : words(words), channels(((words[1] >> 29) & 1) + 1), rateIndex((words[1] >> 27) & 3), decoder(SampleRates[rateIndex], channels) {
+AnyBox::AcpHal::XmaContext::XmaContext(std::span<std::uint32_t, 16> words, std::uint32_t index, std::uint64_t& sequence, std::optional<Codecs::XmaFrameDecoder> previous) : words(words), channels(((words[1] >> 29) & 1) + 1), rateIndex((words[1] >> 27) & 3), index(index), sequence(sequence), decoder(std::move(previous)) {
     validate();
     GetHeap().GetMemory(words[8], 512);
+    if (decoder) publishState();
+    else decoder.emplace(SampleRates[rateIndex], channels);
 }
 
 std::uint32_t AnyBox::AcpHal::XmaContext::get(std::size_t word, std::uint32_t shift, std::uint32_t mask) const { return (words[word] >> shift) & mask; }

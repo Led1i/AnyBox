@@ -57,7 +57,8 @@ bool AnyBox::AcpHal::XmaContext::readFrame() {
         }
         if (result.frame.empty()) continue;
 
-        frame = decoder.Decode(result.frame, 0, result.frameBitCount);
+        frame = decoder->Decode(result.frame, 0, result.frameBitCount);
+        publishState();
         configureFrame(loopEnd);
         if (framePosition < frameLimit) return true;
     }
