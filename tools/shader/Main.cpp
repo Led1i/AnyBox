@@ -1,4 +1,5 @@
 #include <anybox/shader/Inspection.hpp>
+#include "Audit.hpp"
 #include <anybox/shader/Resources.hpp>
 #include <anybox/shader/Compute.hpp>
 #include <array>
@@ -11,7 +12,8 @@
 
 int main(int argc, char** argv) {
     try {
-        if (argc != 3 || (std::string_view(argv[1]) != "--inspect" && std::string_view(argv[1]) != "--bindings" && std::string_view(argv[1]) != "--compute")) throw std::invalid_argument("Usage: anybox_shader <--inspect|--bindings|--compute> <shader.dxbc>");
+        if (argc == 2 && std::string_view(argv[1]) == "--audit-stream") return AnyBox::Shader::Tools::AuditStream();
+        if (argc != 3 || (std::string_view(argv[1]) != "--inspect" && std::string_view(argv[1]) != "--bindings" && std::string_view(argv[1]) != "--compute")) throw std::invalid_argument("Usage: anybox_shader <--inspect|--bindings|--compute> <shader.dxbc> | --audit-stream");
         std::ifstream input(std::filesystem::path(argv[2]), std::ios::binary | std::ios::ate);
         if (!input) throw std::runtime_error("Cannot open shader input");
         auto size = input.tellg();
