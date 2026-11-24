@@ -32,3 +32,4 @@ endfunction()
 anybox_add_zlib()
 
 include("${CMAKE_CURRENT_SOURCE_DIR}/../cmake/FFmpeg.cmake")
+add_subdirectory(Vulkan-Headers EXCLUDE_FROM_ALL)

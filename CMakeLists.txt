@@ -37,4 +37,5 @@ add_subdirectory(3rdparty)
 
 add_subdirectory(core/common)
 add_subdirectory(core/codecs)
+add_subdirectory(core/graphics)
 add_subdirectory(core/libs)
