@@ -9,7 +9,7 @@
 #include <vector>
 
 namespace BufferTests {
-void RunGpu(AnyBox::Vulkan::Context& context, const AnyBox::Shader::Dxil::ComputeCompilation& shader, std::span<const std::uint32_t> expected, const std::array<std::uint32_t, 3>& groups, std::span<const std::byte> inputData) {
+void RunGpu(AnyBox::Vulkan::Context& context, const AnyBox::Shader::Dxil::ComputeCompilation& shader, std::span<const std::uint32_t> expected, const std::array<std::uint32_t, 3>& groups, std::span<const std::byte> inputData, std::span<const std::uint32_t> userData) {
     namespace Abi = ShaderRecompiler::BdaAbi;
     using namespace AnyBox::Vulkan;
     if (!context.SupportsByteStorage()) throw std::runtime_error("DXIL BDA test requires Vulkan byte storage support");
@@ -45,6 +45,12 @@ void RunGpu(AnyBox::Vulkan::Context& context, const AnyBox::Shader::Dxil::Comput
     barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
     context.GetFunctions().pipelineBarrier(buffer, VK_PIPELINE_STAGE_HOST_BIT, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, 0, 1, &barrier, 0, nullptr, 0, nullptr);
     std::vector<std::byte> constants(shader.bindings.pushConstantSizeBytes);
+    const auto& registers = shader.bindings.layout.userDataRegisters;
+    if (!registers.empty() && !shader.bindings.layout.UsesPushData()) throw std::runtime_error("GPU argument test requires inline shader data");
+    for (std::size_t index = 0; index < registers.size(); ++index) {
+        if (registers[index] >= userData.size() || (index + 1) * 4 > constants.size()) throw std::runtime_error("GPU test user data is incomplete");
+        std::memcpy(constants.data() + index * 4, &userData[registers[index]], 4);
+    }
     pipeline.Dispatch(buffer, constants, groups, sets);
     barrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
     barrier.dstAccessMask = VK_ACCESS_HOST_READ_BIT;

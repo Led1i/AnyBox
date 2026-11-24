@@ -50,13 +50,16 @@ public:
         store(output, 15 * payload, 15, values);
         block->add_instruction(context.construct<LLVMBC::ReturnInst>(nullptr));
     }
-    ShaderRecompiler::IrProgram Lower() {
+    const std::vector<AnyBox::Shader::BufferBinding>& GetBindings() const { return layout->GetBindings(); }
+    ShaderRecompiler::IrProgram Lower() { return Lower(bindings, 0); }
+    ShaderRecompiler::IrProgram Lower(AnyBox::Shader::Dxil::IResourceBindings& arguments, std::uint32_t userRegisterCount) {
         auto& context = source.Context();
         auto* type = context.construct<LLVMBC::FunctionType>(context, LLVMBC::Type::getVoidTy(context), LLVMBC::Vector<LLVMBC::Type*>{});
         auto* function = context.construct<LLVMBC::Function>(type, 1024, source.Module());
         function->set_basic_blocks({block});
         ShaderRecompiler::IrProgram output;
-        AnyBox::Shader::Dxil::FunctionLowering(output, *layout, bindings).Run(*function);
+        output.Resources().userDataCount = userRegisterCount;
+        AnyBox::Shader::Dxil::FunctionLowering(output, *layout, arguments).Run(*function);
         return output;
     }
 

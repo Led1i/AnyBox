@@ -2,6 +2,8 @@
 #include "Fixtures.hpp"
 #include <anybox/ExceptionTest.hpp>
 
+void CheckBufferArguments();
+
 namespace {
 void CheckBinding(unsigned category, unsigned stride) {
     ResourceTests::Fixture fixture;
@@ -32,6 +34,7 @@ void CheckInvalid(unsigned stride, unsigned firstRegister, unsigned count) {
 int main() {
     return AnyBox::Tests::Run([] {
         ResourceTests::CheckComputeEntries();
+        CheckBufferArguments();
         for (unsigned category : {0u, 1u}) {
             CheckBinding(category, 0);
             CheckBinding(category, 32);

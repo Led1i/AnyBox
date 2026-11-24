@@ -21,6 +21,7 @@ struct BufferBinding {
     bool globallyCoherent = false;
     bool hasCounter = false;
     bool rasterizerOrdered = false;
+    bool operator==(const BufferBinding&) const = default;
 };
 
 std::vector<BufferBinding> ReadDxilBufferBindings(std::span<const std::byte> code);
