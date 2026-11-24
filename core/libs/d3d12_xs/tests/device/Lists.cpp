@@ -48,9 +48,19 @@ void CheckList(AnyBox::Graphics::Device* device, D3D12_COMMAND_LIST_TYPE type, s
         auto complete = Method<decltype(&Fence::SetEventOnCompletion)>(fence, 9);
         std::array<void*, 20> batch;
         batch.fill(list);
+        Reject<std::runtime_error>([&] { execute(queue, 2, batch.data()); });
         for (auto count : {1U, 20U}) {
+            if (count > 1) {
+                for (std::size_t index = 1; index < count; ++index) {
+                    Require(createList(device, 0, type, allocator, nullptr, interfaceId, &output) == 0 && output, "Batch command list creation failed");
+                    auto* additional = static_cast<CommandList*>(output);
+                    Require(close(additional) == 0, "Batch command list close failed");
+                    batch[index] = additional;
+                }
+            }
             execute(queue, count, batch.data());
             Require(signal(queue, fence, count) == 0 && complete(fence, count, nullptr) == 0, "Submitted command lists did not finish on the GPU");
+            for (std::size_t index = 1; index < count; ++index) Require(release(static_cast<CommandList*>(batch[index])) == 0, "Batch command list was not released");
             Require(Method<decltype(&Allocator::Reset)>(allocator, 8)(allocator) == 0 && reset(list, allocator, nullptr) == 0, "Completed command list could not be reused");
             Require(list->GetCreationFlags() == flags, "Reset changed Xbox command list creation flags");
             Reject<std::logic_error>([&] { execute(queue, 1, batch.data()); });
