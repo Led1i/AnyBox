@@ -2,6 +2,7 @@
 #include "Fixtures.hpp"
 #include "ComputeCompiler.hpp"
 #include "Target.hpp"
+#include "TransferFixture.hpp"
 #include <spirv/unified1/spirv.hpp>
 
 namespace BufferTests { void CheckGpu(const AnyBox::Shader::Dxil::ComputeCompilation& shader, std::uint32_t expected); }
@@ -42,4 +43,5 @@ void BufferTests::CheckSpirv() {
     CheckPackedField(28, 0xBEBB);
     CheckPackedField(30, 0xC4C1);
     CheckThreads();
+    CheckTransfers();
 }

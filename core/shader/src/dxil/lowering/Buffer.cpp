@@ -19,6 +19,14 @@ bool BufferLowering::Emit(const LLVMBC::CallInst& instruction, ScalarLowering& s
         return true;
     }
     unsigned bits;
+    if (identifier == "dx.op.rawBufferStore.i16" || identifier == "dx.op.rawBufferStore.i32" || identifier == "dx.op.rawBufferStore.i64") {
+        bits = identifier == "dx.op.rawBufferStore.i16" ? 16 : identifier == "dx.op.rawBufferStore.i32" ? 32 : 64;
+        if (!stores.contains(&instruction)) {
+            store(instruction, bits, scalar);
+            stores.insert(&instruction);
+        }
+        return true;
+    }
     if (identifier == "dx.op.rawBufferLoad.i16") bits = 16;
     else if (identifier == "dx.op.rawBufferLoad.i32") bits = 32;
     else if (identifier == "dx.op.rawBufferLoad.i64") bits = 64;

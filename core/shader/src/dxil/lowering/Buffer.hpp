@@ -4,6 +4,7 @@
 #include <IntermediateRepresentation/IrBuilder.hpp>
 #include <array>
 #include <unordered_map>
+#include <unordered_set>
 
 namespace AnyBox::Shader::Dxil {
 class ScalarLowering;
@@ -27,13 +28,30 @@ public:
 
 private:
     using IrValue = ShaderRecompiler::IrValue;
+    struct Access {
+        const BufferBinding& binding;
+        BufferAddress view;
+        IrValue& offset;
+        IrValue* structureOffset;
+    };
+    struct Component {
+        IrValue& address;
+        IrValue& active;
+    };
     void load(const LLVMBC::CallInst& instruction, unsigned bits, ScalarLowering& scalar);
+    void store(const LLVMBC::CallInst& instruction, unsigned bits, ScalarLowering& scalar);
+    Access resolve(const LLVMBC::CallInst& instruction, ScalarLowering& scalar, bool write);
+    Component component(const Access& access, unsigned bits, unsigned index);
+    static std::uint32_t constant(const LLVMBC::CallInst& instruction, unsigned index, unsigned bits);
+    ShaderRecompiler::MemoryFlags memory(unsigned bits, bool coherent);
     IrValue& read(IrValue& address, IrValue& active, unsigned bits, bool coherent);
+    void write(IrValue& address, IrValue& active, IrValue& value, unsigned bits, bool coherent);
     ShaderRecompiler::IrProgram& program;
     ShaderRecompiler::IrBuilder& builder;
     const ResourceLayout& layout;
     IResourceBindings& bindings;
     std::unordered_map<const LLVMBC::Value*, ResourceHandle> handles;
     std::unordered_map<const LLVMBC::Value*, std::array<IrValue*, 5>> aggregates;
+    std::unordered_set<const LLVMBC::Value*> stores;
 };
 }
