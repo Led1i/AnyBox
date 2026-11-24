@@ -1,11 +1,10 @@
 # About
 
-AnyBox is a compatibility layer for running Xbox Series X|S executables natively on Windows. Part of [AnyPS5](https://github.com/boykopovar/AnyPS5) ecosystem. AnyBox uses the [RDNA shader recompiler from AnyPS5 core](https://github.com/boykopovar/AnyPS5/tree/main/core/shader/recompiler), built from a pinned submodule with AnyBox platform and storage adapters. Xbox shader pipeline integration is in development.
+AnyBox is a compatibility layer for running Xbox Series X|S executables natively on Windows. Part of [AnyPS5](https://github.com/boykopovar/AnyPS5) ecosystem. AnyBox uses the [RDNA shader recompiler from AnyPS5 core](https://github.com/boykopovar/AnyPS5/tree/main/core/shader/recompiler), built from a pinned submodule with AnyBox platform and storage adapters.
 
 ## Status
 
-Graphics support is in development. The test app has not been confirmed to run fully.
-
+Xbox shader pipeline integration is in development. The test app does not render a frame yet. It currently reaches graphics initialization and compute pipeline creation.
 Work on full shader support is in progress.
 
 Seven system libraries have been created. Implementations exist for 37 exported functions; three exports remain stubs. Some implemented functions still have unsupported modes. Launch has been tested with the test app's executable.
