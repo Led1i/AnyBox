@@ -24,3 +24,9 @@
 	path = 3rdparty/mesa
 	url = https://gitlab.freedesktop.org/mesa/mesa.git
 	shallow = true
+[submodule "3rdparty/anyps5"]
+	path = 3rdparty/anyps5
+	url = https://github.com/boykopovar/AnyPS5.git
+[submodule "3rdparty/SPIRV-Headers"]
+	path = 3rdparty/SPIRV-Headers
+	url = https://github.com/KhronosGroup/SPIRV-Headers.git
