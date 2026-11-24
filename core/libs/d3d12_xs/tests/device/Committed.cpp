@@ -43,6 +43,7 @@ void AnyBox::Graphics::Tests::CheckCommittedTextures(Device* device) {
     Require(!mapped, "Rejected texture mapping retained a stale output");
     auto textureAddress = resource->GetTexture().GetAddress();
     CheckTextureShaderViews(device, resource.get());
+    CheckTextureUnorderedViews(device, resource.get());
     CheckRenderTargets(device, resource.get());
     resource.reset();
     Reject<std::out_of_range>([&] { device->GetTextureAddresses().Resolve(textureAddress); });

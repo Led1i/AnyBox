@@ -36,7 +36,7 @@ void AnyBox::Graphics::Tests::CheckNullUnorderedViews(Device* device) {
     }
     Reject<std::invalid_argument>([&] { create(device, nullptr, nullptr, nullptr, 0); });
     Reject<std::invalid_argument>([&] { create(device, nullptr, nullptr, nullptr, address + 1); });
-    Reject<std::runtime_error>([&] { create(device, reinterpret_cast<void*>(1), nullptr, nullptr, address); });
+    Reject<std::invalid_argument>([&] { create(device, reinterpret_cast<void*>(1), nullptr, nullptr, address); });
 
     D3D12_DESCRIPTOR_HEAP_DESC heapDescription{D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 1, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE, 0};
     void* output = nullptr;

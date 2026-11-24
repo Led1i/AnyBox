@@ -4,4 +4,5 @@
 
 namespace AnyBox::Graphics::Tests {
 void CheckTextureShaderViews(Device* device, Resource* resource);
+void CheckTextureUnorderedViews(Device* device, Resource* resource);
 }
