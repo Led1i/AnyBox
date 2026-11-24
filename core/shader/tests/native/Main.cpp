@@ -4,8 +4,11 @@
 #include <RdnaDecoder/RdnaInstructionDecoder.hpp>
 #include <utility>
 
+void CheckNativeCompute();
+
 int main() {
     return AnyBox::Tests::Run([] {
+        CheckNativeCompute();
         using namespace Fixtures;
         auto data = MakeNativeProgram();
         AnyBox::Shader::NativeFrontend frontend(data);

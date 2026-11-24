@@ -33,6 +33,18 @@ std::vector<std::byte> Fixtures::PackNativeProgram(std::span<const std::byte> da
     return output;
 }
 
+std::vector<std::byte> Fixtures::MakeComputeProgram() {
+    auto data = MakeNativeProgram();
+    Set(data, 0x100, 6);
+    Set(data, 0x104, 0xC0);
+    Set(data, 0x10C, 513);
+    Set(data, 0x138, (2 << 15) | (2 << 11) | 0x380 | 8);
+    Set(data, 0x13C, 4);
+    Set(data, 0x140, 2);
+    Set(data, 0x144, 2);
+    return data;
+}
+
 std::vector<std::byte> Fixtures::MakeNativeContainer(std::span<const std::byte> first, std::span<const std::byte> second) {
     std::vector<std::byte> program(72);
     Set(program, 0, 0x50066);
