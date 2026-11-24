@@ -1,4 +1,4 @@
-#include "ComputeCompiler.hpp"
+#include <anybox/shader/ComputeCompiler.hpp>
 #include <Optimization/ConstantFolder.hpp>
 #include <Optimization/DeadCodeEliminator.hpp>
 #include <Optimization/ResourceTracker.hpp>
@@ -7,19 +7,19 @@
 #include <algorithm>
 #include <limits>
 
-AnyBox::Shader::Dxil::ComputeCompilation AnyBox::Shader::Dxil::CompileCompute(ShaderRecompiler::IrProgram& program, const ShaderRecompiler::ShaderComputeInputInfo& input, const ShaderRecompiler::SpirvTargetOptions& target, const ShaderRecompiler::BindingLayout& layout) {
+AnyBox::Shader::ComputeCompilation AnyBox::Shader::CompileCompute(ShaderRecompiler::IrProgram& program, const ShaderRecompiler::ShaderComputeInputInfo& input, const ShaderRecompiler::SpirvTargetOptions& target, const ShaderRecompiler::BindingLayout& layout) {
     using namespace ShaderRecompiler;
-    if (program.Resources().stage != IrShaderStage::Unknown && program.Resources().stage != IrShaderStage::Compute) throw std::invalid_argument("DXIL compute compilation received a different shader stage");
-    if (input.waveSize != 32 && input.waveSize != 64) throw std::invalid_argument("DXIL compute wave size is invalid");
-    if (input.hostSubgroupSize != target.subgroupSize) throw std::invalid_argument("DXIL compute input and target subgroup sizes do not match");
-    if (std::ranges::any_of(input.threadsNum, [](auto size) { return size == 0; })) throw std::invalid_argument("DXIL compute workgroup dimensions must be nonzero");
-    if (input.ldsSizeDwords > std::numeric_limits<std::uint32_t>::max() / 4) throw std::invalid_argument("DXIL compute shared memory size overflows its byte representation");
-    if (program.Resources().srtPlanComplete || program.Resources().resourceTrackingComplete || program.Metadata().shaderInfoComplete || program.Metadata().bindingLayoutComplete) throw std::logic_error("DXIL compute compilation requires an unplanned program");
+    if (program.Resources().stage != IrShaderStage::Unknown && program.Resources().stage != IrShaderStage::Compute) throw std::invalid_argument("Compute compilation received a different shader stage");
+    if (input.waveSize != 32 && input.waveSize != 64) throw std::invalid_argument("Compute wave size is invalid");
+    if (input.hostSubgroupSize != target.subgroupSize) throw std::invalid_argument("Compute input and target subgroup sizes do not match");
+    if (std::ranges::any_of(input.threadsNum, [](auto size) { return size == 0; })) throw std::invalid_argument("Compute workgroup dimensions must be nonzero");
+    if (input.ldsSizeDwords > std::numeric_limits<std::uint32_t>::max() / 4) throw std::invalid_argument("Compute shared memory size overflows its byte representation");
+    if (program.Resources().srtPlanComplete || program.Resources().resourceTrackingComplete || program.Metadata().shaderInfoComplete || program.Metadata().bindingLayoutComplete) throw std::logic_error("Compute compilation requires an unplanned program");
 
     program.Resources().stage = IrShaderStage::Compute;
     program.SetWaveSize(input.waveSize);
     program.Info().sharedMemoryBytes = input.ldsSizeDwords * 4;
-    if (program.Info().scratchDwords != 0 && input.scratchSizeDwords != 0 && program.Info().scratchDwords != input.scratchSizeDwords) throw std::invalid_argument("DXIL local storage and compute scratch sizes do not match");
+    if (program.Info().scratchDwords != 0 && input.scratchSizeDwords != 0 && program.Info().scratchDwords != input.scratchSizeDwords) throw std::invalid_argument("Local storage and compute scratch sizes do not match");
     if (program.Info().scratchDwords == 0) program.Info().scratchDwords = input.scratchSizeDwords;
     ValidateProgram(program, true);
     for (const auto& block : program.Blocks()) {

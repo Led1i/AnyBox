@@ -18,7 +18,7 @@ void BufferTests::CheckLocals(AnyBox::Vulkan::Context& context) {
         LocalFixture fixture;
         auto program = fixture.Lower();
         Fixtures::Require(program.Info().scratchDwords == 580);
-        auto shader = AnyBox::Shader::Dxil::CompileCompute(program, Input(), Target(), {0, 0, 0, 128});
+        auto shader = AnyBox::Shader::CompileCompute(program, Input(), Target(), {0, 0, 0, 128});
         Fixtures::Require(shader.info.scratchPoolSlotDwords == 0 && shader.bindings.layout.descriptors.size() == 2);
         std::uint32_t scratch = 0;
         bool functionStorage = false;
@@ -49,7 +49,7 @@ void BufferTests::CheckLocals(AnyBox::Vulkan::Context& context) {
     {
         LocalFixture fixture({}, true);
         auto program = fixture.Lower();
-        auto shader = AnyBox::Shader::Dxil::CompileCompute(program, Input(), Target(), {0, 0, 0, 128});
+        auto shader = AnyBox::Shader::CompileCompute(program, Input(), Target(), {0, 0, 0, 128});
         std::vector<std::uint32_t> expected(64 * 3);
         bool fault = false;
         try { RunGpu(context, shader, expected, {2, 1, 1}); }

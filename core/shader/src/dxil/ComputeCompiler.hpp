@@ -1,13 +1,8 @@
 #pragma once
 
-#include <SpirvBackend/SpirvEmitter.hpp>
+#include <anybox/shader/ComputeCompiler.hpp>
 
 namespace AnyBox::Shader::Dxil {
-struct ComputeCompilation {
-    std::vector<std::uint32_t> code;
-    ShaderRecompiler::CompiledBindingLayout bindings;
-    ShaderRecompiler::SpirvEmitInfo info;
-};
-
-ComputeCompilation CompileCompute(ShaderRecompiler::IrProgram& program, const ShaderRecompiler::ShaderComputeInputInfo& input, const ShaderRecompiler::SpirvTargetOptions& target, const ShaderRecompiler::BindingLayout& layout);
+using AnyBox::Shader::ComputeCompilation;
+using AnyBox::Shader::CompileCompute;
 }

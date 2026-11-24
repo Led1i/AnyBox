@@ -77,7 +77,7 @@ public:
         ShaderComputeInputInfo info;
         info.threadsNum[0] = info.threadsNum[1] = info.threadsNum[2] = 1;
         info.waveSize = info.hostSubgroupSize = 32;
-        auto shader = AnyBox::Shader::Dxil::CompileCompute(program, info, Target(), {0, 0, 0, 128});
+        auto shader = AnyBox::Shader::CompileCompute(program, info, Target(), {0, 0, 0, 128});
         RunGpu(context, shader, expected, {1, 1, 1}, std::as_bytes(input));
     }
 

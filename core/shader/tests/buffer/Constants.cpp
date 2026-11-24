@@ -9,7 +9,7 @@ void BufferTests::CheckConstants(AnyBox::Vulkan::Context& context) {
         ShaderRecompiler::ShaderComputeInputInfo input;
         input.threadsNum[0] = input.threadsNum[1] = input.threadsNum[2] = 1;
         input.waveSize = input.hostSubgroupSize = 32;
-        auto shader = AnyBox::Shader::Dxil::CompileCompute(program, input, Target(), {0, 0, 0, 128});
+        auto shader = AnyBox::Shader::CompileCompute(program, input, Target(), {0, 0, 0, 128});
         std::array<std::uint32_t, 60> expected{};
         auto bytes = std::as_writable_bytes(std::span(expected));
         for (unsigned kind = 0; kind < 3; ++kind) {

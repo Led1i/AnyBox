@@ -22,7 +22,7 @@ void CheckPackedField(AnyBox::Vulkan::Context& context, unsigned offset, std::ui
     ShaderComputeInputInfo input;
     input.threadsNum[0] = input.threadsNum[1] = input.threadsNum[2] = 1;
     input.waveSize = input.hostSubgroupSize = 32;
-    auto result = AnyBox::Shader::Dxil::CompileCompute(program, input, target, {0, 0, 0, 128});
+    auto result = AnyBox::Shader::CompileCompute(program, input, target, {0, 0, 0, 128});
     Fixtures::Require(result.code.size() >= 5 && result.code[0] == 0x07230203);
     bool physicalAddress = false;
     for (std::size_t offset = 5; offset < result.code.size();) {

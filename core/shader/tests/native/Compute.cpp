@@ -1,4 +1,6 @@
 #include <anybox/shader/NativeCompute.hpp>
+#include <anybox/shader/ComputeCompiler.hpp>
+#include "../buffer/Target.hpp"
 #include "NativeFixtures.hpp"
 #include "Recompiler.hpp"
 #include <array>
@@ -9,8 +11,7 @@ void CheckNativeCompute() {
     auto data = MakeComputeProgram();
     auto state = AnyBox::Graphics::Container::ReadNativeComputeState(data);
     NativeFrontend frontend(data);
-    ShaderRecompiler::SpirvTargetOptions target{};
-    target.subgroupSize = 32;
+    auto target = BufferTests::Target();
     ShaderRecompiler::ShaderFloatMode mode{0xC0, true, true, false};
     auto result = LowerNativeCompute(frontend, state, mode, target);
     Require(result.input.threadsNum[0] == 4 && result.input.threadsNum[1] == 2 && result.input.threadsNum[2] == 2);
@@ -19,6 +20,8 @@ void CheckNativeCompute() {
     Require(result.input.groupId[0] && result.input.groupId[1] && result.input.groupId[2]);
     Require(result.input.ldsSizeDwords == 256 && !result.input.tgSizeEn);
     Require(result.program.Info().sharedMemoryBytes == 1024 && result.program.Resources().userDataCount == 4);
+    auto compiled = CompileCompute(result.program, result.input, target, {0, 0, 0, 128});
+    Require(compiled.code.size() >= 5 && compiled.code.front() == 0x07230203);
     for (unsigned count = 0; count <= 16; ++count) {
         for (unsigned ids = 0; ids < 3; ++ids) {
             auto selected = state;

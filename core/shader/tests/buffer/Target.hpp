@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ComputeCompiler.hpp"
+#include <anybox/shader/ComputeCompiler.hpp>
 #include <spirv/unified1/spirv.hpp>
 
 namespace AnyBox::Vulkan { class Context; }
@@ -19,6 +19,6 @@ inline ShaderRecompiler::SpirvTargetOptions Target() {
     return target;
 }
 
-void RunGpu(AnyBox::Vulkan::Context& context, const AnyBox::Shader::Dxil::ComputeCompilation& shader, std::span<const std::uint32_t> expected, const std::array<std::uint32_t, 3>& groups, std::span<const std::byte> inputData = {});
+void RunGpu(AnyBox::Vulkan::Context& context, const AnyBox::Shader::ComputeCompilation& shader, std::span<const std::uint32_t> expected, const std::array<std::uint32_t, 3>& groups, std::span<const std::byte> inputData = {});
 void CheckThreads(AnyBox::Vulkan::Context& context);
 }

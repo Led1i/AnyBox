@@ -11,7 +11,7 @@ void BufferTests::CheckTransfers(AnyBox::Vulkan::Context& context) {
             ShaderComputeInputInfo input;
             input.threadsNum[0] = input.threadsNum[1] = input.threadsNum[2] = 1;
             input.waveSize = input.hostSubgroupSize = 32;
-            auto shader = AnyBox::Shader::Dxil::CompileCompute(program, input, Target(), {0, 0, 0, 128});
+            auto shader = AnyBox::Shader::CompileCompute(program, input, Target(), {0, 0, 0, 128});
             auto payload = bits / 2;
             std::vector<std::uint32_t> expected(15 * payload / 4, UINT32_MAX);
             auto bytes = std::as_writable_bytes(std::span(expected));

@@ -9,7 +9,7 @@ void BufferTests::CheckFloatTransfers(AnyBox::Vulkan::Context& context) {
         ShaderComputeInputInfo inputInfo;
         inputInfo.threadsNum[0] = inputInfo.threadsNum[1] = inputInfo.threadsNum[2] = 1;
         inputInfo.waveSize = inputInfo.hostSubgroupSize = 32;
-        auto shader = AnyBox::Shader::Dxil::CompileCompute(program, inputInfo, Target(), {0, 0, 0, 128});
+        auto shader = AnyBox::Shader::CompileCompute(program, inputInfo, Target(), {0, 0, 0, 128});
         std::array<std::uint32_t, 16> input{};
         input[12] = 0x80000000;
         input[13] = 0x7FC12345;

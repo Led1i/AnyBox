@@ -54,7 +54,7 @@ void BufferTests::CheckThreads(AnyBox::Vulkan::Context& gpu) {
     input.threadsNum[0] = 4;
     input.threadsNum[1] = input.threadsNum[2] = 2;
     input.waveSize = input.hostSubgroupSize = 32;
-    auto shader = AnyBox::Shader::Dxil::CompileCompute(program, input, Target(), {0, 0, 0, 128});
+    auto shader = AnyBox::Shader::CompileCompute(program, input, Target(), {0, 0, 0, 128});
     std::vector<std::uint32_t> expected;
     for (unsigned z = 0; z < 4; ++z) {
         for (unsigned y = 0; y < 4; ++y) {
