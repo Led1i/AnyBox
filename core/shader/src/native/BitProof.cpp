@@ -1,4 +1,5 @@
 #include "BitProof.hpp"
+#include "MaskFlow.hpp"
 #include <optional>
 
 namespace {
@@ -35,25 +36,51 @@ std::optional<std::uint32_t> AnyBox::Shader::ReadNativeLaneMask(const ShaderReco
     return std::nullopt;
 }
 
+bool AnyBox::Shader::NativeLowHalf(const ShaderRecompiler::IrValue* value) {
+    using namespace ShaderRecompiler;
+    value = value->Resolve();
+    return value->Opcode() == IrOpcode::ULessThan32 && value->ArgumentCount() == 2 && value->Argument(0)->Resolve()->Opcode() == IrOpcode::LaneId && Constant(value->Argument(1), 32);
+}
+
 namespace {
 using namespace ShaderRecompiler;
+using namespace AnyBox::Shader;
 
-bool Subset(const IrValue* value, const IrValue* limit, unsigned depth, unsigned& steps) {
+bool Subset(const IrProgram& program, const IrValue* value, const IrValue* limit, unsigned depth, unsigned& steps) {
     if (steps == 0) return false;
     --steps;
     value = value->Resolve();
     limit = limit->Resolve();
     if (value == limit || Constant(value, 0) || Constant(limit, UINT32_MAX)) return true;
     if (value->Type() == IrType::U32 && limit->Type() == IrType::U32 && value->HasImmediate() && limit->HasImmediate()) return (value->ImmediateU32() & ~limit->ImmediateU32()) == 0;
-    if (depth == 0 || value->ArgumentCount() != 2) return false;
-    if (value->Opcode() == IrOpcode::BitwiseAnd32) return Subset(value->Argument(0), limit, depth - 1, steps) || Subset(value->Argument(1), limit, depth - 1, steps);
-    if (value->Opcode() == IrOpcode::BitwiseOr32) return Subset(value->Argument(0), limit, depth - 1, steps) && Subset(value->Argument(1), limit, depth - 1, steps);
-    return false;
+    if (depth == 0) return false;
+    if (value->Opcode() == IrOpcode::BitwiseAnd32 && value->ArgumentCount() == 2) return Subset(program, value->Argument(0), limit, depth - 1, steps) || Subset(program, value->Argument(1), limit, depth - 1, steps);
+    if (value->Opcode() == IrOpcode::BitwiseOr32 && value->ArgumentCount() == 2) return Subset(program, value->Argument(0), limit, depth - 1, steps) && Subset(program, value->Argument(1), limit, depth - 1, steps);
+    if (value->Opcode() == IrOpcode::SelectU32 && value->ArgumentCount() == 3 && limit->Opcode() == IrOpcode::SelectU32 && limit->ArgumentCount() == 3) {
+        bool same = value->Argument(0)->Resolve() == limit->Argument(0)->Resolve() || (NativeLowHalf(value->Argument(0)) && NativeLowHalf(limit->Argument(0)));
+        if (same) return Subset(program, value->Argument(1), limit->Argument(1), depth - 1, steps) && Subset(program, value->Argument(2), limit->Argument(2), depth - 1, steps);
+    }
+    if (!value->IsPhi() || value->ArgumentCount() == 0 || value->ArgumentCount() != value->PhiBlockCount()) return false;
+    auto* header = value->Parent();
+    if (!limit->HasImmediate() && (limit->Parent() == nullptr || limit->Parent() == header || !MaskDominates(program, limit->Parent(), header))) return false;
+    bool entered = false;
+    bool repeated = false;
+    for (std::size_t index = 0; index < value->ArgumentCount(); ++index) {
+        auto* incoming = value->Argument(index)->Resolve();
+        if (MaskDominates(program, header, value->PhiBlock(index))) {
+            if (!MaskNarrows(incoming, value, IrOpcode::BitwiseAnd32, depth - 1, steps)) return false;
+            repeated = true;
+        } else {
+            if (!Subset(program, incoming, limit, depth - 1, steps)) return false;
+            entered = true;
+        }
+    }
+    return entered && repeated;
 }
 
 }
 
-bool AnyBox::Shader::NativeBitPredicateImplies(const ShaderRecompiler::IrValue* mask, const ShaderRecompiler::IrValue* condition, unsigned& steps) {
+bool AnyBox::Shader::NativeBitPredicateImplies(const ShaderRecompiler::IrProgram& program, const ShaderRecompiler::IrValue* mask, const ShaderRecompiler::IrValue* condition, unsigned& steps) {
     auto source = ReadNativeBitPredicate(mask);
     auto target = ReadNativeBitPredicate(condition);
     if (!source || !target) return false;
@@ -62,5 +89,5 @@ bool AnyBox::Shader::NativeBitPredicateImplies(const ShaderRecompiler::IrValue* 
         auto targetMask = ReadNativeLaneMask(target->selector);
         if (!sourceMask || !targetMask || *sourceMask != *targetMask) return false;
     }
-    return Subset(source->word, target->word, 64, steps);
+    return Subset(program, source->word, target->word, 64, steps);
 }

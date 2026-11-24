@@ -30,9 +30,11 @@ void AddOutput(NativeMaskTests::Fixture& fixture) {
 }
 
 void BufferTests::CheckBallotLoopGpu(AnyBox::Vulkan::Context& context) {
-    for (std::uint32_t waveSize : {32u, 64u}) {
+    for (unsigned variant = 0; variant < 4; ++variant) {
+        std::uint32_t waveSize = (variant & 1) != 0 ? 64 : 32;
+        bool bitWords = (variant & 2) != 0;
         for (bool optimize : {false, true}) {
-            NativeMaskTests::Fixture fixture(waveSize, NativeMaskTests::Mode::Narrow);
+            NativeMaskTests::Fixture fixture(waveSize, NativeMaskTests::Mode::Narrow, bitWords);
             AddOutput(fixture);
             if (optimize) Fixtures::Require(AnyBox::Shader::SimplifyFirstLaneGuards(fixture.program) == 1);
             ShaderRecompiler::ShaderComputeInputInfo input;
@@ -42,7 +44,10 @@ void BufferTests::CheckBallotLoopGpu(AnyBox::Vulkan::Context& context) {
             input.hostSubgroupSize = 32;
             auto shader = AnyBox::Shader::CompileCompute(fixture.program, input, Target(), {0, 0, 0, 128});
             std::vector<std::uint32_t> expected(waveSize, UINT32_MAX);
-            for (unsigned lane = 9; lane < waveSize; ++lane) expected[lane] = (lane + 1) << 5;
+            for (unsigned lane = 0; lane < waveSize; ++lane) {
+                bool active = bitWords ? ((0xFF00FFFFFFFFFE00ULL >> lane) & 1) != 0 : lane > 8;
+                if (active) expected[lane] = (lane + 1) << 5;
+            }
             RunGpu(context, shader, expected, {1, 1, 1});
         }
     }

@@ -13,7 +13,7 @@ struct Fixture {
     ShaderRecompiler::IrValue* value = nullptr;
     ShaderRecompiler::IrValue* chosen = nullptr;
 
-    Fixture(std::uint32_t waveSize, Mode mode) {
+    Fixture(std::uint32_t waveSize, Mode mode, bool bitWords = false) {
         using namespace ShaderRecompiler;
         program.SetWaveSize(waveSize);
         auto& entry = program.CreateBlock();
@@ -39,10 +39,20 @@ struct Fixture {
         IrBuilder builder(program);
         builder.SetInsertionPoint(entry);
         auto& lane = builder.Emit(IrOpcode::LaneId, IrType::U32, {});
-        auto& condition = builder.UGreaterThan(lane, builder.Constant(8));
+        auto& lowBits = builder.Constant(0xFFFFFE00U);
+        auto& highBits = builder.Constant(0xFF00FFFFU);
+        auto& initialHalf = builder.ULessThan(lane, builder.Constant(32));
+        auto& initialWord = waveSize == 64 ? builder.Select(initialHalf, lowBits, highBits) : lowBits;
+        auto& initialSelector = builder.BitwiseAnd(lane, builder.Constant(31));
+        auto& bitCondition = builder.INotEqual(builder.BitwiseAnd(builder.ShiftRightLogical(initialWord, initialSelector), builder.Constant(1)), builder.Constant(0));
+        auto& condition = bitWords ? bitCondition : builder.UGreaterThan(lane, builder.Constant(8));
         auto& initial = builder.Emit(IrOpcode::Ballot, IrType::Vec4U32, {mode == Mode::UnguardedWords ? &builder.ConstantBool(true) : &condition});
-        auto& lowInitial = builder.CompositeExtract(initial, 0);
-        auto& highInitial = builder.CompositeExtract(initial, 1);
+        auto* lowInitial = &builder.CompositeExtract(initial, 0);
+        auto* highInitial = &builder.CompositeExtract(initial, 1);
+        if (bitWords) {
+            lowInitial = mode == Mode::UnguardedWords ? &builder.Constant(UINT32_MAX) : &lowBits;
+            highInitial = mode == Mode::UnguardedWords ? &builder.Constant(UINT32_MAX) : &highBits;
+        }
         builder.SetInsertionPoint(header);
         auto& mask = builder.Emit(IrOpcode::Phi, IrType::Bool, {});
         auto& low = builder.Emit(IrOpcode::Phi, IrType::U32, {});
@@ -66,9 +76,9 @@ struct Fixture {
         auto& next = builder.INotEqual(builder.BitwiseAnd(builder.ShiftRightLogical(word, selector), builder.Constant(1)), builder.Constant(0));
         mask.AddPhiOperand(&entry, mode == Mode::UnguardedBoolean ? &builder.ConstantBool(true) : &condition);
         mask.AddPhiOperand(&body, &next);
-        low.AddPhiOperand(&entry, &lowInitial);
+        low.AddPhiOperand(&entry, lowInitial);
         low.AddPhiOperand(&body, &lowNext);
-        high.AddPhiOperand(&entry, &highInitial);
+        high.AddPhiOperand(&entry, highInitial);
         high.AddPhiOperand(&body, &highNext);
         this->mask = &mask;
         this->read = &read;

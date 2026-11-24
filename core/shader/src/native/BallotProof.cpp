@@ -39,10 +39,6 @@ bool WordImplies(const IrProgram& program, const IrValue* word, const IrValue* c
     return entered && repeated;
 }
 
-bool LowHalf(const IrValue* value) {
-    value = value->Resolve();
-    return value->Opcode() == IrOpcode::ULessThan32 && value->ArgumentCount() == 2 && value->Argument(0)->Resolve()->Opcode() == IrOpcode::LaneId && Constant(value->Argument(1), 32);
-}
 }
 
 bool AnyBox::Shader::NativeBallotPredicateImplies(const ShaderRecompiler::IrProgram& program, const ShaderRecompiler::IrValue* mask, const ShaderRecompiler::IrValue* condition, unsigned& steps) {
@@ -51,6 +47,6 @@ bool AnyBox::Shader::NativeBallotPredicateImplies(const ShaderRecompiler::IrProg
     auto selector = ReadNativeLaneMask(source->selector);
     if (!selector) return false;
     if (program.WaveSize() == 32 && (*selector == 31 || *selector == UINT32_MAX)) return WordImplies(program, source->word, condition, 0, 64, steps);
-    if (program.WaveSize() != 64 || *selector != 31 || source->word->Opcode() != ShaderRecompiler::IrOpcode::SelectU32 || source->word->ArgumentCount() != 3 || !LowHalf(source->word->Argument(0))) return false;
+    if (program.WaveSize() != 64 || *selector != 31 || source->word->Opcode() != ShaderRecompiler::IrOpcode::SelectU32 || source->word->ArgumentCount() != 3 || !NativeLowHalf(source->word->Argument(0))) return false;
     return WordImplies(program, source->word->Argument(1), condition, 0, 64, steps) && WordImplies(program, source->word->Argument(2), condition, 1, 64, steps);
 }

@@ -13,7 +13,7 @@ bool Implies(const IrProgram& program, const IrValue* mask, const IrValue* condi
     condition = condition->Resolve();
     if (mask == condition || (mask->HasImmediate() && !mask->ImmediateBool()) || (condition->HasImmediate() && condition->ImmediateBool())) return true;
     if (depth == 0) return false;
-    if (AnyBox::Shader::NativeBitPredicateImplies(mask, condition, steps)) return true;
+    if (NativeBitPredicateImplies(program, mask, condition, steps)) return true;
     if (NativeBallotPredicateImplies(program, mask, condition, steps)) return true;
     if (condition->Opcode() == IrOpcode::LogicalAnd && condition->ArgumentCount() == 2 && Implies(program, mask, condition->Argument(0), depth - 1, steps) && Implies(program, mask, condition->Argument(1), depth - 1, steps)) return true;
     if (condition->Opcode() == IrOpcode::LogicalOr && condition->ArgumentCount() == 2 && (Implies(program, mask, condition->Argument(0), depth - 1, steps) || Implies(program, mask, condition->Argument(1), depth - 1, steps))) return true;

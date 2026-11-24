@@ -11,6 +11,7 @@ struct NativeBitPredicate {
 
 std::optional<NativeBitPredicate> ReadNativeBitPredicate(const ShaderRecompiler::IrValue* value);
 std::optional<std::uint32_t> ReadNativeLaneMask(const ShaderRecompiler::IrValue* value);
-bool NativeBitPredicateImplies(const ShaderRecompiler::IrValue* mask, const ShaderRecompiler::IrValue* condition, unsigned& steps);
+bool NativeLowHalf(const ShaderRecompiler::IrValue* value);
+bool NativeBitPredicateImplies(const ShaderRecompiler::IrProgram& program, const ShaderRecompiler::IrValue* mask, const ShaderRecompiler::IrValue* condition, unsigned& steps);
 bool NativeBallotPredicateImplies(const ShaderRecompiler::IrProgram& program, const ShaderRecompiler::IrValue* mask, const ShaderRecompiler::IrValue* condition, unsigned& steps);
 }
