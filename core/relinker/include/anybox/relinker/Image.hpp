@@ -30,6 +30,8 @@ public:
 private:
     void appendExports(std::vector<std::uint32_t>& entries) const;
     void appendRelocations(std::vector<std::uint32_t>& entries) const;
+    void appendLoaderEntries(std::vector<std::uint32_t>& entries) const;
+    void appendGuardTable(std::vector<std::uint32_t>& entries, std::size_t offset, std::size_t stride) const;
     std::vector<std::byte> bytes;
     std::vector<Section> sections;
     std::array<Directory, 16> directories{};

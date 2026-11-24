@@ -7,7 +7,6 @@ AnyBox::Relinker::RelinkResult AnyBox::Relinker::Relink(Image& image, const Cpu&
     Decoder decoder;
     RelinkResult result;
     auto entries = image.EntryPoints();
-    std::vector<std::size_t> interiorEntries;
     std::vector<std::uint8_t> visited(image.GetBytes().size());
     while (!entries.empty()) {
         auto address = entries.back();
@@ -15,7 +14,7 @@ AnyBox::Relinker::RelinkResult AnyBox::Relinker::Relink(Image& image, const Cpu&
         while (image.IsExecutable(address)) {
             auto offset = image.FileOffset(address, 1);
             if (visited[offset] != 0) {
-                if (visited[offset] == 2) interiorEntries.push_back(offset);
+                if (visited[offset] == 2) throw std::runtime_error("PE control flow enters an instruction interior at RVA " + std::to_string(address));
                 break;
             }
             auto code = image.Code(address);
@@ -50,13 +49,6 @@ AnyBox::Relinker::RelinkResult AnyBox::Relinker::Relink(Image& image, const Cpu&
             if (address > UINT32_MAX - length) throw std::runtime_error("PE instruction address overflows");
             address += length;
         }
-    }
-    std::ranges::sort(interiorEntries);
-    for (auto address : result.writebackAddresses) {
-        auto offset = image.FileOffset(address, 1);
-        auto length = decoder.Decode(image.Code(address)).native.length;
-        auto found = std::ranges::upper_bound(interiorEntries, offset);
-        if (found != interiorEntries.end() && *found < offset + length) throw std::runtime_error("A control flow entry overlaps a lowered cache instruction");
     }
     ZydisDecoder scanner{};
     if (!ZYAN_SUCCESS(ZydisDecoderInit(&scanner, ZYDIS_MACHINE_MODE_LONG_64, ZYDIS_STACK_WIDTH_64))) throw std::runtime_error("Cannot initialize the PE cache instruction scan");

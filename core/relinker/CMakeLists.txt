@@ -1,5 +1,6 @@
 add_library(anybox_relinker STATIC src/Decoder.cpp src/Writeback.cpp)
 target_sources(anybox_relinker PRIVATE src/Image.cpp src/Entries.cpp src/Relink.cpp)
+target_sources(anybox_relinker PRIVATE src/LoaderEntries.cpp)
 target_sources(anybox_relinker PRIVATE src/cpu/State.cpp src/cpu/Scalar.cpp src/cpu/Vector.cpp src/cpu/Cpu.cpp)
 target_link_libraries(anybox_relinker PUBLIC anybox_options Zydis)
 target_include_directories(anybox_relinker PUBLIC include)

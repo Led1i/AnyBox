@@ -105,4 +105,29 @@ void AnyBox::Relinker::Tests::CheckImages() {
     corrupt = original;
     corrupt[512] = std::byte{0xC3};
     Reject([&] { Image ambiguous(corrupt); LowerCacheWriteback(ambiguous); });
+
+    auto loader = Fixture(std::array<std::uint8_t, 1>{0xC3});
+    Put<std::uint32_t>(loader, 0x1B8, 512);
+    Put<std::uint32_t>(loader, 0x150, 0x2040);
+    Put<std::uint32_t>(loader, 0x154, 40);
+    Put<std::uint64_t>(loader, 1088 + 24, 0x140002080ULL);
+    Put<std::uint64_t>(loader, 1152, 0x140001020ULL);
+    loader[544] = std::byte{0xC3};
+    Require(Image(loader).EntryPoints() == std::vector<std::uint32_t>{0x1000, 0x1020}, "PE TLS callback was not included as a code root");
+    Put<std::uint64_t>(loader, 1152, 0x140002010ULL);
+    Reject([&] { Image invalid(loader); invalid.EntryPoints(); });
+
+    loader = Fixture(std::array<std::uint8_t, 1>{0xC3});
+    Put<std::uint32_t>(loader, 0x1B8, 512);
+    Put<std::uint32_t>(loader, 0x158, 0x2040);
+    Put<std::uint32_t>(loader, 0x15C, 148);
+    Put<std::uint32_t>(loader, 1088, 148);
+    Put<std::uint64_t>(loader, 1088 + 128, 0x140002100ULL);
+    Put<std::uint64_t>(loader, 1088 + 136, 2);
+    Put<std::uint32_t>(loader, 1088 + 144, 0x10000400);
+    Put<std::uint32_t>(loader, 1280, 0x1020);
+    Put<std::uint32_t>(loader, 1285, 0x1030);
+    Require(Image(loader).EntryPoints() == std::vector<std::uint32_t>{0x1000, 0x1020, 0x1030}, "PE guard table metadata stride lost an indirect function target");
+    Put<std::uint64_t>(loader, 1088 + 136, UINT64_MAX);
+    Reject([&] { Image invalid(loader); invalid.EntryPoints(); });
 }

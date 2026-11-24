@@ -18,6 +18,7 @@ std::vector<std::uint32_t> AnyBox::Relinker::Image::EntryPoints() const {
     }
     appendExports(entries);
     appendRelocations(entries);
+    appendLoaderEntries(entries);
     std::ranges::sort(entries);
     entries.erase(std::unique(entries.begin(), entries.end()), entries.end());
     if (entries.empty()) throw std::runtime_error("PE image has no discoverable code entry points");
