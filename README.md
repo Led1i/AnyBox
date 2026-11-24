@@ -20,7 +20,7 @@ The D3D12 backend uses Microsoft Agility SDK 1.614.1. CMake downloads the runtim
 
 Unmodified executables require Windows Developer Mode for process-local SDK activation. Executables exporting SDK version 614 and a relative SDK path use that configuration directly.
 
-`ANYBOX_REQUIRE_D3D12_VALIDATION=ON` enables the graphics validation test. It requires the Windows graphics debug tools, including `DXGIDebug.dll`.
+`ANYBOX_REQUIRE_D3D12_VALIDATION=ON` enables the graphics validation test. It requires the Windows graphics debug tools, including `DXGIDebug.dll`. `ANYBOX_DXGI_DEBUG_LIBRARY` optionally supplies an application-local copy of that library.
 
 ## Disclaimer
 

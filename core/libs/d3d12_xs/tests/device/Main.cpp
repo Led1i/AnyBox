@@ -50,22 +50,27 @@ int main(int argc, char** argv) {
         }
         Reject<std::invalid_argument>([&] { query(device, unsupported, &identity); });
         Require(!identity, "Rejected graphics interface retained a stale pointer");
-        CheckProperties(device);
-        CheckQueues(device);
-        CheckFences(device);
-        CheckAllocators(device);
-        CheckLists(device);
-        CheckRoots(device);
-        CheckSynchronization(device);
-        CheckPhysicalHeap(device);
-        CheckPlacedBuffer(device);
-        CheckInlineCommands(device);
-        CheckDxgi(device);
-        CheckFrameConfiguration(device);
-        CheckFrameTimeline();
-        CheckFrameEvents(device);
-        CheckFrameAncillary(device);
-        CheckUnsupportedDeviceMethods(device);
+        try {
+            CheckProperties(device);
+            CheckQueues(device);
+            CheckFences(device);
+            CheckAllocators(device);
+            CheckLists(device);
+            CheckRoots(device);
+            CheckSynchronization(device);
+            CheckPhysicalHeap(device);
+            CheckPlacedBuffer(device);
+            CheckInlineCommands(device);
+            CheckDxgi(device);
+            CheckFrameConfiguration(device);
+            CheckFrameTimeline();
+            CheckFrameEvents(device);
+            CheckFrameAncillary(device);
+            CheckUnsupportedDeviceMethods(device);
+        } catch (...) {
+            if (validation) CheckValidation(device);
+            throw;
+        }
         if (validation) CheckValidation(device);
         Require(release(device) == 0, "Graphics device final reference was not released");
     });

@@ -38,7 +38,8 @@ void AnyBox::Graphics::Tests::CheckValidation(Device* device) {
     auto count = queue->GetNumStoredMessagesAllowedByRetrievalFilter();
     for (std::uint64_t index = 0; index < count; ++index) {
         SIZE_T size = 0;
-        Require(queue->GetMessage(index, nullptr, &size) == 0, "D3D12 validation message size query failed");
+        Windows::CheckHResult(queue->GetMessage(index, nullptr, &size), "D3D12 validation message size query");
+        Require(size >= sizeof(D3D12_MESSAGE), "D3D12 validation message size is invalid");
         std::vector<std::uint64_t> storage((size + 7) / 8);
         auto* message = reinterpret_cast<D3D12_MESSAGE*>(storage.data());
         Require(queue->GetMessage(index, message, &size) == 0, "D3D12 validation message query failed");
