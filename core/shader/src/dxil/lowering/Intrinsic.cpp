@@ -11,6 +11,7 @@ IrValue& ScalarLowering::call(const LLVMBC::CallInst& instruction) {
     if (!function) throw std::runtime_error("DXIL indirect function call is not implemented");
     const auto& name = function->getName();
     auto identifier = std::string_view(name.data(), name.size());
+    if (identifier == "dx.op.legacyF16ToF32") return legacyHalf(instruction);
     if (identifier == "dx.op.threadId.i32") return thread(instruction, 93);
     if (identifier == "dx.op.groupId.i32") return thread(instruction, 94);
     if (identifier == "dx.op.threadIdInGroup.i32") return thread(instruction, 95);
