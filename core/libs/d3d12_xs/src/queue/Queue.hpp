@@ -11,6 +11,7 @@ public:
     Queue(ID3D12CommandQueue* host, Device* device, const D3D12_COMMAND_QUEUE_DESC& description);
     ~Queue();
     ID3D12CommandQueue* GetHost() const noexcept { return host; }
+    void SetXboxSelection(std::uint32_t selection) noexcept { xboxSelection = selection; }
     static bool Supports(const Guid& interfaceId) noexcept;
     static std::int32_t QueryInterface(Queue* self, const Guid& interfaceId, void** object);
     static std::uint32_t AddRef(Queue* self);
@@ -31,6 +32,7 @@ private:
     ID3D12CommandQueue* host;
     Device* device;
     D3D12_COMMAND_QUEUE_DESC description;
+    std::uint32_t xboxSelection = 0;
 };
 
 static_assert(std::is_standard_layout_v<Queue>);

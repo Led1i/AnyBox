@@ -25,6 +25,7 @@ DeviceMethod MethodAddress(TFunction function) {
 inline constexpr Guid XboxDeviceId{0x5405C344, 0xD457, 0x444E, {0xB4, 0xDD, 0x23, 0x66, 0xE4, 0x5A, 0xEE, 0x39}};
 inline constexpr Guid UnknownId{0, 0, 0, {0xC0, 0, 0, 0, 0, 0, 0, 0x46}};
 const DeviceTable& GetDeviceTable();
+struct XboxQueueDescription;
 GUID NativeGuid(const Guid& value);
 void CheckGraphicsResult(HRESULT result, const char* operation);
 
@@ -42,10 +43,13 @@ public:
     static D3D12_HEAP_PROPERTIES GetCustomHeapProperties(Device* self, std::uint32_t nodeMask, D3D12_HEAP_TYPE type);
     static HRESULT CreateCommandQueue(Device* self, const D3D12_COMMAND_QUEUE_DESC* description, const Guid& interfaceId, void** queue);
     static HRESULT CreateFence(Device* self, std::uint64_t initialValue, D3D12_FENCE_FLAGS flags, const Guid& interfaceId, void** fence);
+    static HRESULT CreateCommandQueueX(Device* self, const XboxQueueDescription* description, const Guid& interfaceId, void** queue);
+    void ReleaseQueueSelection(std::uint32_t selection) noexcept;
 
 private:
     const DeviceTable* vtable;
     std::atomic<std::uint32_t> references{1};
+    std::atomic<std::uint32_t> computeQueues{0};
     ID3D12Device* host;
     D3D12XboxCreateDeviceParameters parameters;
 };

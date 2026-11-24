@@ -1,5 +1,6 @@
 #include "Tests.hpp"
 #include "../../src/queue/Queue.hpp"
+#include "../../src/queue/Description.hpp"
 #include <d3d12_xs.hpp>
 
 namespace {
@@ -40,11 +41,26 @@ void CheckQueue(AnyBox::Graphics::Device* device, std::size_t slot, D3D12_COMMAN
 }
 
 void AnyBox::Graphics::Tests::CheckQueues(Device* device) {
-    for (auto slot : {std::size_t{8}, std::size_t{48}}) {
+    for (auto slot : {std::size_t{8}}) {
         for (auto type : {D3D12_COMMAND_LIST_TYPE_DIRECT, D3D12_COMMAND_LIST_TYPE_COMPUTE, D3D12_COMMAND_LIST_TYPE_COPY, static_cast<D3D12_COMMAND_LIST_TYPE>(0x10)}) {
             auto create = Method<decltype(&Device::CreateCommandQueue)>(device, slot);
             Reject<std::invalid_argument>([&] { create(device, nullptr, QueueId, nullptr); });
             CheckQueue(device, slot, type);
         }
+    }
+    auto create = Method<decltype(&Device::CreateCommandQueueX)>(device, 48);
+    for (auto engine : {0U, 1U, 2U, 3U}) {
+        XboxQueueDescription description{2, 0, engine, engine == 0 ? 1U : 0U};
+        void* output = nullptr;
+        Require(create(device, &description, QueueId, &output) == 0 && output, "Xbox compute engine queue creation failed");
+        auto* queue = static_cast<Queue*>(output);
+        void* duplicate = nullptr;
+        Reject<std::logic_error>([&] { create(device, &description, QueueId, &duplicate); });
+        Require(!duplicate, "Duplicate Xbox hardware queue retained an output");
+        auto restored = Method<decltype(&Queue::GetDescription)>(queue, 18)(queue);
+        Require(restored.Type == D3D12_COMMAND_LIST_TYPE_COMPUTE && restored.Flags == D3D12_COMMAND_QUEUE_FLAG_NONE && restored.NodeMask == 0, "Xbox engine selector was mistaken for desktop queue flags");
+        Require(Method<decltype(&Queue::Release)>(queue, 2)(queue) == 0, "Xbox compute queue was not released");
+        description.engineIndex = 4;
+        Reject<std::invalid_argument>([&] { create(device, &description, QueueId, &output); });
     }
 }

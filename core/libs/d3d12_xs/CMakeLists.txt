@@ -6,6 +6,7 @@ target_sources(d3d12_xs PRIVATE src/memory/Configuration.cpp)
 target_sources(d3d12_xs PRIVATE src/device/Creation.cpp src/device/Lifetime.cpp src/device/Properties.cpp src/device/Table.cpp)
 target_sources(d3d12_xs PRIVATE src/device/Queues.cpp src/queue/Lifetime.cpp src/queue/Properties.cpp src/queue/Table.cpp)
 target_sources(d3d12_xs PRIVATE src/device/Registry.cpp)
+target_sources(d3d12_xs PRIVATE src/device/XboxQueues.cpp)
 target_sources(d3d12_xs PRIVATE src/device/Fences.cpp src/fence/Lifetime.cpp src/fence/Timeline.cpp src/fence/Table.cpp src/queue/Synchronization.cpp)
 target_link_libraries(d3d12_xs PRIVATE xmem)
 
