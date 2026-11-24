@@ -30,3 +30,5 @@ function(anybox_add_zlib)
 endfunction()
 
 anybox_add_zlib()
+
+include("${CMAKE_CURRENT_SOURCE_DIR}/../cmake/FFmpeg.cmake")
