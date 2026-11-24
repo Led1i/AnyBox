@@ -21,6 +21,13 @@ static_assert(sizeof(D3D12VirtualMemoryConfiguration) == 32);
 static_assert(offsetof(D3D12VirtualMemoryConfiguration, backendData) == 16);
 struct D3D12_VERSIONED_ROOT_SIGNATURE_DESC;
 using D3D12VersionedRootSignatureDescription = D3D12_VERSIONED_ROOT_SIGNATURE_DESC;
-struct D3D12XboxCreateDeviceParameters;
+struct D3D12XboxCreateDeviceParameters {
+    std::uint32_t version;
+    std::uint32_t processDebugFlags;
+    std::array<std::uint32_t, 16> driverParameters;
+};
+
+static_assert(sizeof(D3D12XboxCreateDeviceParameters) == 72);
+static_assert(offsetof(D3D12XboxCreateDeviceParameters, driverParameters) == 8);
 
 #endif
