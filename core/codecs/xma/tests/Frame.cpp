@@ -58,6 +58,12 @@ void Run() {
     bool rejected = false;
     try { decoder.Decode(malformed, 0, 23); } catch (const std::runtime_error&) { rejected = true; }
     if (!rejected) throw std::runtime_error("XMA decoder accepted a bitstream error after producing PCM");
+    auto [data, bits] = Silence(1, 0);
+    rejected = false;
+    try { decoder.Decode(data, 0, bits); } catch (const std::logic_error&) { rejected = true; }
+    if (!rejected) throw std::runtime_error("XMA decoder continued using state after a bitstream error");
+    decoder.Reset();
+    Verify(decoder.Decode(data, 0, bits), 1);
 }
 }
 

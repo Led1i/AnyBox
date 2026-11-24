@@ -37,4 +37,5 @@ void AnyBox::Codecs::XmaFrameDecoder::Reset() {
     av_frame_unref(frame.get());
     context = std::move(replacement);
     needsDrain = false;
+    failed = false;
 }

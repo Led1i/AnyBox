@@ -34,5 +34,6 @@ private:
     std::uint32_t sampleRate;
     std::uint32_t channels;
     bool needsDrain = false;
+    bool failed = false;
 };
 }
