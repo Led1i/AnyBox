@@ -9,6 +9,7 @@ void CheckDxil();
 void CheckCompilerOptions();
 void CheckNative();
 void CheckNativeComputeState();
+void CheckRootSignatureLayout();
 
 namespace {
 using namespace AnyBox::Graphics::Container;
@@ -80,5 +81,6 @@ int main() {
         CheckCompilerOptions();
         CheckNative();
         CheckNativeComputeState();
+        CheckRootSignatureLayout();
     });
 }

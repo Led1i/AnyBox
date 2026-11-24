@@ -49,6 +49,7 @@ target_sources(d3d12_xs PRIVATE src/resource/TextureMemory.cpp src/resource/Text
 if(BUILD_TESTING)
     add_executable(d3d12_device_tests tests/device/Main.cpp tests/device/Properties.cpp tests/device/Queues.cpp tests/device/Fences.cpp tests/device/Allocators.cpp)
     target_link_libraries(d3d12_device_tests PRIVATE d3d12_xs xmem anybox_test_support)
+    target_link_libraries(d3d12_device_tests PRIVATE anybox_container)
     target_sources(d3d12_device_tests PRIVATE tests/device/Lists.cpp)
     target_sources(d3d12_device_tests PRIVATE tests/device/Roots.cpp)
     target_sources(d3d12_device_tests PRIVATE tests/device/Pipelines.cpp tests/device/ComputeShader.cpp)

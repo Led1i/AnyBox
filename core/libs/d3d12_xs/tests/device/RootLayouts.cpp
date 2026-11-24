@@ -1,6 +1,7 @@
 #include "Tests.hpp"
 #include "../../src/root/Signature.hpp"
 #include <d3d12_xs.hpp>
+#include <anybox/graphics/container/RootSignature.hpp>
 #include <array>
 #include <limits>
 #include <memory>
@@ -44,6 +45,11 @@ void CheckLayout(AnyBox::Graphics::Device* device, D3D_ROOT_SIGNATURE_VERSION ve
     ID3DBlob* serialized = nullptr;
     D3D12SerializeVersionedRootSignature(&description, &serialized, nullptr);
     std::unique_ptr<ID3DBlob, Release> blob(serialized);
+    auto reflected = Container::ReadRootSignatureLayout(std::span(static_cast<const std::byte*>(blob->GetBufferPointer()), blob->GetBufferSize()));
+    Require(reflected.version == static_cast<unsigned>(version) && reflected.flags == flags && reflected.staticSamplerCount == 1 && reflected.parameters.size() == 4, "Serialized root signature reflection differs");
+    Require(reflected.parameters[0].kind == Container::RootParameterKind::ShaderResource && reflected.parameters[1].kind == Container::RootParameterKind::UnorderedAccess, "Serialized root descriptor types differ");
+    Require(reflected.parameters[2].wordCount == 16 && reflected.parameters[3].ranges.size() == 1 && reflected.parameters[3].ranges[0].count == 4, "Serialized root constant or table layout differs");
+    Require(reflected.parameters[3].ranges[0].firstRegister == 2 && reflected.parameters[3].ranges[0].space == 1 && reflected.parameters[3].ranges[0].tableOffset == UINT32_MAX, "Serialized root descriptor range differs");
     void* output = nullptr;
     auto create = Method<decltype(&Device::CreateRootSignature)>(device, 16);
     Require(create(device, 1, blob->GetBufferPointer(), blob->GetBufferSize(), RootSignatureId, &output) == 0 && output, "Xbox root signature creation failed");
