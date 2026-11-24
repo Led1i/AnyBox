@@ -1,5 +1,7 @@
 #include "Buffers.hpp"
 #include "../../src/resource/Resource.hpp"
+#include "PlacedTransfer.hpp"
+#include "ResourceMetadata.hpp"
 #include <xmem.hpp>
 
 void AnyBox::Graphics::Tests::CheckPlacedBuffer(Device* device) {
@@ -41,7 +43,8 @@ void AnyBox::Graphics::Tests::CheckPlacedBuffer(Device* device) {
     static_cast<std::byte*>(mapped)[17] = std::byte{0x73};
     unmap(resource, 0, nullptr);
     Require(address[17] == std::byte{0x73}, "Xbox buffer mapping is not coherent with title memory");
-    CheckSharedBufferTransfer(device, resource->GetHost(), {address, 2 * page});
+    CheckPlacedBufferTransfer(device, resource, {address, 2 * page}, false);
+    CheckResourceMetadata(device, resource);
     Reject<std::logic_error>([&] { XMemMapPhysicalPages(address, 2, nullptr); });
     Reject<std::invalid_argument>([&] { create(device, pointer, nullptr, D3D12_BARRIER_LAYOUT_UNDEFINED, nullptr, ResourceId, &output); });
     Require(!output, "Rejected placed resource creation retained its output");
@@ -51,10 +54,15 @@ void AnyBox::Graphics::Tests::CheckPlacedBuffer(Device* device) {
     D3D12_RANGE invalid{0, 2 * page + 1};
     Reject<std::invalid_argument>([&] { unmap(resource, 0, &invalid); });
     Require(release(resource) == 0, "Placed buffer final reference was not released");
-    XMemMapPhysicalPages(address + page, 1, frames.data());
-    Reject<std::runtime_error>([&] { create(device, pointer, &description, D3D12_BARRIER_LAYOUT_UNDEFINED, nullptr, ResourceId, &output); });
-    Require(!output, "Rejected scatter buffer retained an output interface");
-    Require(XMemMapPhysicalPages(address, 2, frames.data()) == address, "Rejected scatter buffer leaked a physical mapping lease");
+    for (bool repeated : {false, true}) {
+        std::array mapping{repeated ? frames[0] : frames[1], frames[0]};
+        XMemMapPhysicalPages(address, mapping.size(), mapping.data());
+        Require(create(device, pointer, &description, D3D12_BARRIER_LAYOUT_UNDEFINED, nullptr, ResourceId, &output) == S_OK && output, "Xbox scatter buffer creation failed");
+        auto* scatter = static_cast<Resource*>(output);
+        CheckPlacedBufferTransfer(device, scatter, {address, 2 * page}, repeated);
+        Reject<std::logic_error>([&] { XMemMapPhysicalPages(address, 2, nullptr); });
+        Require(release(scatter) == 0, "Xbox scatter buffer final reference was not released");
+    }
     XMemMapPhysicalPages(address, 2, nullptr);
     for (std::size_t index = 0; index < frames.size(); ++index) Require(VirtualFree(address + index * page, 0, MEM_RELEASE) != FALSE, "Placed buffer test placeholder did not release");
     XMemFreePhysicalPages(frames.size(), frames.data());

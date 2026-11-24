@@ -2,6 +2,7 @@
 
 #include <anybox/vulkan/Buffer.hpp>
 #include <anybox/PhysicalMemory.hpp>
+#include <anybox/vulkan/MemoryTest.hpp>
 #include <array>
 #include <memory>
 
@@ -35,8 +36,6 @@ private:
     std::byte* address = nullptr;
 };
 
-void Copy(Context& context, const Buffer& source, const Buffer& destination, VkDeviceSize size);
 void CheckLayout(Context& context, Storage& storage, std::span<const std::uint64_t> frames);
 std::vector<std::uint32_t> CompileCompute(const char* source);
-void CheckCompute(Context& context, Buffer& imported, Buffer& scratch, bool repeated);
 }
