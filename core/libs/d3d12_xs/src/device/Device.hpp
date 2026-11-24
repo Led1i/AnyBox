@@ -1,0 +1,53 @@
+#pragma once
+
+#include <d3d12_xsTypes.hpp>
+#include <anybox/Types.hpp>
+#include <anybox/platform/Windows.hpp>
+#include <d3d12.h>
+#include <array>
+#include <atomic>
+#include <cstring>
+#include <type_traits>
+
+namespace AnyBox::Graphics {
+using DeviceMethod = std::array<std::byte, sizeof(void (*)())>;
+using DeviceTable = std::array<DeviceMethod, 128>;
+
+template<class TFunction>
+DeviceMethod MethodAddress(TFunction function) {
+    DeviceMethod result{};
+    static_assert(sizeof(function) == sizeof(result));
+    std::memcpy(result.data(), &function, sizeof(function));
+    return result;
+}
+
+inline constexpr Guid XboxDeviceId{0x5405C344, 0xD457, 0x444E, {0xB4, 0xDD, 0x23, 0x66, 0xE4, 0x5A, 0xEE, 0x39}};
+inline constexpr Guid UnknownId{0, 0, 0, {0xC0, 0, 0, 0, 0, 0, 0, 0x46}};
+const DeviceTable& GetDeviceTable();
+GUID NativeGuid(const Guid& value);
+void CheckGraphicsResult(HRESULT result, const char* operation);
+
+class Device {
+public:
+    Device(ID3D12Device* host, const D3D12XboxCreateDeviceParameters& parameters);
+    ~Device();
+    static std::int32_t QueryInterface(Device* self, const Guid& interfaceId, void** object);
+    static std::uint32_t AddRef(Device* self);
+    static std::uint32_t Release(Device* self);
+    static HRESULT GetPrivateData(Device* self, const Guid& key, std::uint32_t* size, void* data);
+    static HRESULT SetPrivateData(Device* self, const Guid& key, std::uint32_t size, const void* data);
+    static HRESULT SetPrivateDataInterface(Device* self, const Guid& key, const IUnknown* object);
+    static HRESULT SetName(Device* self, const wchar_t* name);
+    static std::uint32_t GetNodeCount(Device* self);
+    static D3D12_HEAP_PROPERTIES GetCustomHeapProperties(Device* self, std::uint32_t nodeMask, D3D12_HEAP_TYPE type);
+
+private:
+    const DeviceTable* vtable;
+    std::atomic<std::uint32_t> references{1};
+    ID3D12Device* host;
+    D3D12XboxCreateDeviceParameters parameters;
+};
+
+static_assert(std::is_standard_layout_v<Device>);
+static_assert(sizeof(DeviceMethod) == 8);
+}

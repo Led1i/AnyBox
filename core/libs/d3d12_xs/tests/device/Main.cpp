@@ -1,0 +1,40 @@
+#include "Tests.hpp"
+#include <d3d12_xs.hpp>
+
+int main() {
+    return AnyBox::Tests::Run([] {
+        using namespace AnyBox::Graphics;
+        using namespace AnyBox::Graphics::Tests;
+        D3D12XboxCreateDeviceParameters parameters{};
+        parameters.version = 0x20004;
+        void* output = nullptr;
+        Reject<std::invalid_argument>([&] { D3D12XboxCreateDevice(nullptr, nullptr, XboxDeviceId, &output); });
+        Reject<std::invalid_argument>([&] { D3D12XboxCreateDevice(nullptr, &parameters, XboxDeviceId, nullptr); });
+        auto invalid = parameters;
+        invalid.version = 0;
+        Reject<std::runtime_error>([&] { D3D12XboxCreateDevice(nullptr, &invalid, XboxDeviceId, &output); });
+        invalid = parameters;
+        invalid.processDebugFlags = 1;
+        Reject<std::runtime_error>([&] { D3D12XboxCreateDevice(nullptr, &invalid, XboxDeviceId, &output); });
+        AnyBox::Guid unsupported{};
+        Reject<std::invalid_argument>([&] { D3D12XboxCreateDevice(nullptr, &parameters, unsupported, &output); });
+        Require(!output, "Rejected graphics device creation changed its output");
+        Require(D3D12XboxCreateDevice(nullptr, &parameters, XboxDeviceId, &output) == 0 && output, "Xbox graphics device creation failed");
+        auto* device = static_cast<Device*>(output);
+        auto query = Method<decltype(&Device::QueryInterface)>(device, 0);
+        auto addRef = Method<decltype(&Device::AddRef)>(device, 1);
+        auto release = Method<decltype(&Device::Release)>(device, 2);
+        Require(addRef(device) == 2 && release(device) == 1, "Graphics device reference counting changed");
+        void* identity = nullptr;
+        Require(query(device, UnknownId, &identity) == 0 && identity == device, "Graphics device IUnknown identity changed");
+        Require(release(static_cast<Device*>(identity)) == 1, "Graphics device interface did not own a reference");
+        Require(query(device, XboxDeviceId, &identity) == 0 && identity == device, "Xbox graphics device identity changed");
+        Require(release(static_cast<Device*>(identity)) == 1, "Xbox device interface did not own a reference");
+        Reject<std::invalid_argument>([&] { query(device, unsupported, &identity); });
+        Require(!identity, "Rejected graphics interface retained a stale pointer");
+        CheckProperties(device);
+        auto unavailable = Method<void (*)(void*, ...)>(device, 8);
+        Reject<std::runtime_error>([&] { unavailable(device, nullptr, nullptr, nullptr); });
+        Require(release(device) == 0, "Graphics device final reference was not released");
+    });
+}
