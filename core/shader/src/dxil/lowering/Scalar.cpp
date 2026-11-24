@@ -40,6 +40,11 @@ IrValue& ScalarLowering::Get(const LLVMBC::Value& value) {
     if (auto* instruction = LLVMBC::dyn_cast<LLVMBC::LoadInst>(&value)) {
         if (!locals) throw std::runtime_error("DXIL local load has no local storage configuration");
         output = &locals->Load(*instruction, *this);
+    } else if (LLVMBC::isa<LLVMBC::UndefValue>(&value)) {
+        if (resultType == IrType::F32) output = &builder.ConstantF32(0);
+        else if (resultType == IrType::Bool) output = &builder.ConstantBool(false);
+        else if (resultType == IrType::U64) output = &builder.ConstantU64(0);
+        else output = &builder.Constant(0);
     } else if (auto* constant = LLVMBC::dyn_cast<LLVMBC::ConstantFP>(&value)) {
         if (resultType != IrType::F32) throw std::runtime_error("DXIL floating constant type is not implemented");
         auto data = static_cast<std::uint32_t>(constant->getValueAPF().bitcastToAPInt().getZExtValue());
