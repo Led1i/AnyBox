@@ -2,6 +2,7 @@
 #include <anybox/graphics/container/Native.hpp>
 #include <RdnaDecoder/RdnaInstructionDecoder.hpp>
 #include <ControlFlow/GraphBuilder.hpp>
+#include <ControlFlow/Structurizer.hpp>
 #include <stdexcept>
 
 AnyBox::Shader::NativeFrontend::NativeFrontend(std::span<const std::byte> program) {
@@ -15,5 +16,7 @@ AnyBox::Shader::NativeFrontend::NativeFrontend(std::span<const std::byte> progra
     }
     decoded = ShaderRecompiler::RdnaInstructionDecoder{}.Decode(code);
     graph = ShaderRecompiler::GraphBuilder{}.Build(decoded);
+    if (graph.unsupported) throw std::runtime_error(graph.unsupportedReason);
+    ShaderRecompiler::Structurizer{}.Structurize(graph);
     if (graph.unsupported) throw std::runtime_error(graph.unsupportedReason);
 }

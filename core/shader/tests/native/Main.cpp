@@ -5,10 +5,12 @@
 #include <utility>
 
 void CheckNativeCompute();
+void CheckNativeFlow();
 
 int main() {
     return AnyBox::Tests::Run([] {
         CheckNativeCompute();
+        CheckNativeFlow();
         using namespace Fixtures;
         auto data = MakeNativeProgram();
         AnyBox::Shader::NativeFrontend frontend(data);

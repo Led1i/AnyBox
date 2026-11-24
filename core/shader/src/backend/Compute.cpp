@@ -1,4 +1,5 @@
 #include <anybox/shader/ComputeCompiler.hpp>
+#include "Validation.hpp"
 #include <Optimization/ConstantFolder.hpp>
 #include <Optimization/DeadCodeEliminator.hpp>
 #include <Optimization/ResourceTracker.hpp>
@@ -42,5 +43,6 @@ AnyBox::Shader::ComputeCompilation AnyBox::Shader::CompileCompute(ShaderRecompil
     ComputeCompilation result;
     result.bindings = std::move(static_cast<CompiledBindingLayout&>(allocation));
     result.code = SpirvEmitter{}.Emit(program, stage, result.bindings, target, &result.info);
+    ValidateSpirv(result.code, target.vulkanVersion);
     return result;
 }

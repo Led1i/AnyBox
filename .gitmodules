@@ -33,3 +33,6 @@
 [submodule "3rdparty/dxil-spirv"]
 	path = 3rdparty/dxil-spirv
 	url = https://github.com/HansKristian-Work/dxil-spirv.git
+[submodule "3rdparty/SPIRV-Tools"]
+	path = 3rdparty/SPIRV-Tools
+	url = https://github.com/KhronosGroup/SPIRV-Tools.git

@@ -5,6 +5,8 @@
 #include "Recompiler.hpp"
 #include <array>
 
+void CheckSpirvValidation(std::span<const std::uint32_t> code);
+
 void CheckNativeCompute() {
     using namespace Fixtures;
     using namespace AnyBox::Shader;
@@ -22,6 +24,7 @@ void CheckNativeCompute() {
     Require(result.program.Info().sharedMemoryBytes == 1024 && result.program.Resources().userDataCount == 4);
     auto compiled = CompileCompute(result.program, result.input, target, {0, 0, 0, 128});
     Require(compiled.code.size() >= 5 && compiled.code.front() == 0x07230203);
+    CheckSpirvValidation(compiled.code);
     for (unsigned count = 0; count <= 16; ++count) {
         for (unsigned ids = 0; ids < 3; ++ids) {
             auto selected = state;

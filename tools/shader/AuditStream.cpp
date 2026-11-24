@@ -44,7 +44,11 @@ int AnyBox::Shader::Tools::AuditStream() {
                 result = "compiled\t" + std::to_string(words);
             }
         } catch (const std::exception& error) {
-            result = "failed\t" + std::string(error.what());
+            std::string diagnostic(error.what());
+            for (auto& character : diagnostic) {
+                if (character == '\n' || character == '\r' || character == '\t') character = ' ';
+            }
+            result = "failed\t" + diagnostic;
         }
         std::cout << "record\t" << count++ << '\t' << kind << '\t' << result << '\n';
         if (!std::cout) throw std::runtime_error("Cannot write shader audit result");
