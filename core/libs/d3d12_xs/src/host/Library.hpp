@@ -26,4 +26,5 @@ private:
 };
 
 const HostLibrary& GetHostLibrary();
+void ConfigureHostRuntime(const HostLibrary& library);
 }

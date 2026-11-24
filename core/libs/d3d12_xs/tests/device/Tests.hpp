@@ -12,11 +12,11 @@ inline void Require(bool condition, const char* message) {
 
 template<class TFunction, class TObject>
 TFunction Method(TObject* device, std::size_t slot) {
-    const DeviceTable* table;
+    const std::byte* table;
     std::memcpy(&table, device, sizeof(table));
     TFunction result;
     static_assert(sizeof(result) == sizeof(DeviceMethod));
-    std::memcpy(&result, (*table)[slot].data(), sizeof(result));
+    std::memcpy(&result, table + slot * sizeof(DeviceMethod), sizeof(result));
     return result;
 }
 
@@ -34,4 +34,5 @@ void CheckFences(Device* device);
 void CheckAllocators(Device* device);
 void CheckLists(Device* device);
 void CheckRoots(Device* device);
+void CheckSynchronization(Device* device);
 }

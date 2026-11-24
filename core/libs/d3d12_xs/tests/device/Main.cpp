@@ -1,11 +1,16 @@
 #include "Tests.hpp"
+#include "Validation.hpp"
 #include <d3d12_xs.hpp>
 #include <xmem.hpp>
+#include <optional>
 
-int main() {
-    return AnyBox::Tests::Run([] {
+int main(int argc, char** argv) {
+    return AnyBox::Tests::Run([&] {
         using namespace AnyBox::Graphics;
         using namespace AnyBox::Graphics::Tests;
+        if (argc > 2 || (argc == 2 && std::strcmp(argv[1], "--validate") != 0)) throw std::invalid_argument("Unknown graphics test argument");
+        std::optional<NativeValidation> validation;
+        if (argc == 2) validation.emplace();
         D3D12XboxCreateDeviceParameters parameters{};
         parameters.version = 0x20004;
         void* output = nullptr;
@@ -51,8 +56,10 @@ int main() {
         CheckAllocators(device);
         CheckLists(device);
         CheckRoots(device);
+        CheckSynchronization(device);
         auto unavailable = Method<void (*)(void*, ...)>(device, 127);
         Reject<std::runtime_error>([&] { unavailable(device, nullptr, nullptr, nullptr); });
+        if (validation) CheckValidation(device);
         Require(release(device) == 0, "Graphics device final reference was not released");
     });
 }

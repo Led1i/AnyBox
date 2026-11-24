@@ -16,9 +16,15 @@ AnyBox uses standard C++20 and can be built with any conforming compiler targeti
 
 Initialize dependencies with `git submodule update --init --recursive` before configuring CMake. Third-party libraries require a C compiler from the same toolchain as the C++ compiler.
 
+The D3D12 backend uses Microsoft Agility SDK 1.614.1. CMake downloads the runtime package into `build/deps/agility`, verifies its checksums and copies the runtime beside the built libraries.
+
+Unmodified executables require Windows Developer Mode for process-local SDK activation. Executables exporting SDK version 614 and a relative SDK path use that configuration directly.
+
+`ANYBOX_REQUIRE_D3D12_VALIDATION=ON` enables the graphics validation test. It requires the Windows graphics debug tools, including `DXGIDebug.dll`.
+
 ## Disclaimer
 
-The project is intended for interoperability, research and preservation. Game files, firmware, cryptographic keys and proprietary SDK libraries are not distributed with the project.
+The project is intended for interoperability, research and preservation. Game files, firmware, cryptographic keys and proprietary console SDK libraries are not distributed with the project.
 
 AnyBox is an independent project and is not affiliated with, authorized or endorsed by Microsoft. Xbox is a trademark of Microsoft Corporation.
 

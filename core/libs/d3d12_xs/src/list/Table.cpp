@@ -22,6 +22,8 @@ AnyBox::Graphics::ListTable MakeTable(std::index_sequence<TSlots...>) {
     result[8] = MethodAddress(&CommandList::GetType);
     result[9] = MethodAddress(&CommandList::Close);
     result[10] = MethodAddress(&CommandList::Reset);
+    result[131] = MethodAddress(&CommandList::SyncTopOfPipeX);
+    result[132] = MethodAddress(&CommandList::SyncBottomOfPipeX);
     return result;
 }
 }

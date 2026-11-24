@@ -33,9 +33,13 @@ public:
     static D3D12_COMMAND_LIST_TYPE GetType(CommandList* self);
     static HRESULT Close(CommandList* self);
     static HRESULT Reset(CommandList* self, void* allocator, void* initialState);
+    static void SyncTopOfPipeX(CommandList* self, std::uint32_t flags, std::uint32_t control, std::uint64_t address, std::uint64_t size);
+    static void SyncBottomOfPipeX(CommandList* self, std::uint32_t flags, std::uint32_t control, std::uint64_t address, std::uint64_t size);
 
 private:
     friend class ObjectLifetime<CommandList>;
+    ID3D12GraphicsCommandList7* getSynchronizationHost();
+    void synchronize(bool top, std::uint32_t flags, std::uint32_t control, std::uint64_t address, std::uint64_t size);
     const ListTable* vtable;
     std::atomic<std::uint32_t> references{1};
     ID3D12GraphicsCommandList* host;
@@ -43,6 +47,7 @@ private:
     Allocator* allocator;
     D3D12_COMMAND_LIST_TYPE type;
     bool closed = false;
+    ID3D12GraphicsCommandList7* synchronizationHost = nullptr;
 };
 
 static_assert(std::is_standard_layout_v<CommandList>);

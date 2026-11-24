@@ -13,6 +13,7 @@ HRESULT AnyBox::Graphics::Device::CreateRootSignature(Device* self, std::uint32_
     if (!signature) throw std::invalid_argument("Root signature output is null");
     *signature = nullptr;
     if (!data || size == 0) throw std::invalid_argument("Root signature bytecode is empty");
+    if (size < 32 || std::memcmp(data, "DXBC", 4) != 0) throw std::invalid_argument("Root signature container header is invalid");
     if (!RootSignature::Supports(interfaceId)) throw std::invalid_argument("Unsupported root signature creation interface");
     void* host = nullptr;
     auto result = self->host->CreateRootSignature(nodeMask, data, size, NativeGuid(RootSignatureId), &host);

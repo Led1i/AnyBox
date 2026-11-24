@@ -7,6 +7,7 @@ AnyBox::Graphics::CommandList::CommandList(ID3D12GraphicsCommandList* host, Devi
 }
 
 AnyBox::Graphics::CommandList::~CommandList() {
+    if (synchronizationHost) synchronizationHost->Release();
     host->Release();
     Allocator::Release(allocator);
     Device::Release(device);
