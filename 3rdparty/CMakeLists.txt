@@ -48,15 +48,6 @@ endfunction()
 
 anybox_add_glslang()
 
-function(anybox_add_zydis)
-    set(ZYDIS_BUILD_SHARED_LIB OFF)
-    set(ZYDIS_BUILD_EXAMPLES OFF)
-    set(ZYDIS_BUILD_TOOLS OFF)
-    set(ZYDIS_BUILD_TESTS OFF)
-    set(ZYDIS_BUILD_DOXYGEN OFF)
-    set(ZYDIS_FEATURE_ENCODER OFF)
-    set(ZYDIS_FEATURE_FORMATTER OFF)
-    add_subdirectory(zydis EXCLUDE_FROM_ALL)
-endfunction()
+include("${CMAKE_CURRENT_SOURCE_DIR}/../cmake/Zydis.cmake")
 
 anybox_add_zydis()

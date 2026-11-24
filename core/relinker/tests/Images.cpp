@@ -61,6 +61,16 @@ void AnyBox::Relinker::Tests::CheckImages() {
     Require(image.GetBytes()[515] == std::byte{0x40} && image.GetBytes()[519] == std::byte{0x39}, "PE cache replacement encoding changed");
     Require(LowerCacheWriteback(image).writebackAddresses.empty(), "PE cache lowering is not idempotent");
 
+    auto signedBytes = original;
+    signedBytes.resize(1568, std::byte{0xA7});
+    Put<std::uint32_t>(signedBytes, 0xD8, 0x12345678);
+    Put<std::uint32_t>(signedBytes, 0x128, 1536);
+    Put<std::uint32_t>(signedBytes, 0x12C, 32);
+    Image signedImage(signedBytes);
+    LowerCacheWriteback(signedImage);
+    Require(Read<std::uint32_t>(signedImage.GetBytes(), 0xD8) == 0 && Read<std::uint64_t>(signedImage.GetBytes(), 0x128) == 0, "PE lowering retained an invalid checksum or certificate directory");
+    Require(std::ranges::equal(signedImage.GetBytes().subspan(1024), std::span(signedBytes).subspan(1024)), "PE header finalization changed section data or its overlay");
+
     const std::array<std::uint8_t, 11> immediate{0x48, 0xB8, 0x66, 0x41, 0x0F, 0xAE, 0x31, 0, 0, 0, 0xC3};
     auto data = Fixture(immediate);
     Image literal(data);
