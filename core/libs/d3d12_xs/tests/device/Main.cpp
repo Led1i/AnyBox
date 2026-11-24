@@ -63,6 +63,7 @@ int main(int argc, char** argv) {
             CheckDescriptorHeaps(device);
             CheckNullShaderViews(device);
             CheckNullUnorderedViews(device);
+            CheckConstantViews(device);
             CheckVulkanTimeline(device);
             CheckInlineCommands(device);
             CheckDxgi(device);

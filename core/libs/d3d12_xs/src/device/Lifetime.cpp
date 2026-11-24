@@ -2,11 +2,12 @@
 #include "../dxgi/Device.hpp"
 #include "../frame/Clock.hpp"
 #include <anybox/vulkan/Context.hpp>
+#include <anybox/vulkan/Buffer.hpp>
 #include <algorithm>
 #include <limits>
 #include <stdexcept>
 
-AnyBox::Graphics::Device::~Device() { delete frameClock; delete gpuContext; host->Release(); }
+AnyBox::Graphics::Device::~Device() { delete frameClock; delete nullConstantBuffer; delete gpuContext; host->Release(); }
 
 bool AnyBox::Graphics::Device::Supports(const Guid& interfaceId) noexcept { return interfaceId == UnknownId || interfaceId == ObjectId || std::ranges::find(DeviceInterfaces, interfaceId) != DeviceInterfaces.end(); }
 

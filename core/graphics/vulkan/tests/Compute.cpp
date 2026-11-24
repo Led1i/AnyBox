@@ -71,3 +71,14 @@ void AnyBox::Vulkan::Tests::CheckCompute(Context& context, Buffer& imported, Buf
     Dispatch(context, pipeline, {scratch.GetAddress(), imported.GetAddress(), count, writeSalt});
     Verify(memory, expected, writeSalt);
 }
+
+void AnyBox::Vulkan::Tests::CheckAddress(Context& context, VkDeviceAddress address, std::span<const std::byte> expected) {
+    if (expected.empty() || expected.size() % 4 != 0 || expected.size() / 4 > UINT32_MAX) throw std::invalid_argument("Vulkan address test size is invalid");
+    constexpr auto usage = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT;
+    auto scratch = Buffer::Allocate(context, expected.size(), usage, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+    std::ranges::fill(scratch.Map(), std::byte{0xA7});
+    auto code = CompileCompute(Source);
+    ComputePipeline pipeline(context, code, sizeof(Parameters));
+    Dispatch(context, pipeline, {address, scratch.GetAddress(), static_cast<std::uint32_t>(expected.size() / 4), 0});
+    Require(std::ranges::equal(scratch.Map(), expected), "Vulkan shader did not read the expected data through its supplied device address");
+}
