@@ -1,8 +1,7 @@
 #include <anybox/shader/NativeCompute.hpp>
+#include "Optimize.hpp"
 #include <Translation/InstructionTranslator.hpp>
 #include <Optimization/SsaBuilder.hpp>
-#include <Optimization/ConstantFolder.hpp>
-#include <Optimization/DeadCodeEliminator.hpp>
 #include <Recompiler.hpp>
 #include <spirv/unified1/spirv.hpp>
 #include <algorithm>
@@ -52,10 +51,6 @@ AnyBox::Shader::NativeComputeTranslation AnyBox::Shader::LowerNativeCompute(cons
     options.float32DenormPreserve = target.float32DenormPreserve;
     result.program = InstructionTranslator{}.Translate(frontend.GetDecoded(), frontend.GetGraph(), options);
     SsaBuilder{}.Rewrite(result.program);
-    ConstantFolder{}.Fold(result.program);
-    ResolveControlFlowIdentities(result.program);
-    DeadCodeEliminator{}.RemoveIdentities(result.program);
-    DeadCodeEliminator{}.Eliminate(result.program);
-    ValidateProgram(result.program, true);
+    OptimizeNativeProgram(result.program, input.waveSize);
     return result;
 }

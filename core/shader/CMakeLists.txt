@@ -11,6 +11,7 @@ target_include_directories(anybox_compute_shader PUBLIC include)
 
 add_library(anybox_native_shader STATIC src/native/Frontend.cpp)
 target_sources(anybox_native_shader PRIVATE src/native/Compute.cpp)
+target_sources(anybox_native_shader PRIVATE src/native/Optimize.cpp)
 target_link_libraries(anybox_native_shader PUBLIC anybox_compute_shader anybox_container PRIVATE anybox_options)
 target_include_directories(anybox_native_shader PUBLIC include)
 target_include_directories(anybox_native_shader SYSTEM PUBLIC "${PROJECT_SOURCE_DIR}/3rdparty/anyps5/core/shader/recompiler" "${PROJECT_SOURCE_DIR}/3rdparty/anyps5/core/shader/recompiler/ControlFlow/include")
