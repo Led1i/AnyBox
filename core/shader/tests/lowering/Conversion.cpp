@@ -38,7 +38,7 @@ void LoweringTests::CheckComparisonsAndCasts() {
             batch.Expect(*selected, left);
         }
     }
-    auto* wide = LLVMBC::ConstantInt::get(LLVMBC::Type::getInt64Ty(batch.Context()), 1);
+    auto* wide = LLVMBC::ConstantInt::get(LLVMBC::Type::getIntTy(batch.Context(), 128), 1);
     Fixtures::Reject<std::runtime_error>([&] { batch.Lowering().Get(*wide); });
     auto* invalid = batch.Context().construct<LLVMBC::CastInst>(LLVMBC::Type::getInt16Ty(batch.Context()), batch.Constant(16, 1), Op::ZExt);
     Fixtures::Reject<std::runtime_error>([&] { batch.Lowering().Get(*invalid); });

@@ -58,7 +58,8 @@ void FunctionLowering::emitBlock(const LLVMBC::BasicBlock& source) {
             if (nonPhi) throw std::runtime_error("DXIL PHI follows a non-PHI instruction");
             auto* type = phi->getType();
             if (!type || !type->isIntegerTy()) throw std::runtime_error("DXIL non-integer PHI is not implemented");
-            auto& value = builder.Emit(IrOpcode::Phi, type->getIntegerBitWidth() == 1 ? IrType::Bool : IrType::U32, {});
+            auto bits = type->getIntegerBitWidth();
+            auto& value = builder.Emit(IrOpcode::Phi, bits == 1 ? IrType::Bool : bits == 64 ? IrType::U64 : IrType::U32, {});
             scalar.Bind(*phi, value);
             phis.push_back({phi, &source, &value});
         } else {

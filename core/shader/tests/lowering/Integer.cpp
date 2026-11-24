@@ -47,5 +47,7 @@ int main() {
     return AnyBox::Tests::Run([] {
         for (unsigned bits : {1u, 8u, 16u, 32u}) CheckInteger(bits);
         LoweringTests::CheckComparisonsAndCasts();
+        LoweringTests::CheckWideIntegers();
+        LoweringTests::CheckIntrinsics();
     });
 }

@@ -26,6 +26,7 @@ IrValue& ScalarLowering::binary(const LLVMBC::BinaryOperator& instruction) {
     using Op = LLVMBC::Instruction;
     auto bits = width(instruction);
     if (width(*instruction.getOperand(0)) != bits || width(*instruction.getOperand(1)) != bits) throw std::runtime_error("DXIL binary integer operand widths do not match");
+    if (bits == 64) return wideBinary(instruction);
     auto& left = unsignedValue(Get(*instruction.getOperand(0)));
     auto& right = unsignedValue(Get(*instruction.getOperand(1)));
     IrValue* output = nullptr;

@@ -9,6 +9,7 @@ IrValue& ScalarLowering::compare(const LLVMBC::ICmpInst& instruction) {
     auto* leftSource = instruction.getOperand(0);
     auto bits = width(*leftSource);
     if (width(*instruction.getOperand(1)) != bits) throw std::runtime_error("DXIL comparison operand widths do not match");
+    if (bits == 64) return wideCompare(instruction);
     auto predicate = instruction.getPredicate();
     bool isSigned = predicate >= Predicate::ICMP_SGT && predicate <= Predicate::ICMP_SLE;
     auto& left = isSigned ? signedValue(Get(*leftSource), bits) : unsignedValue(Get(*leftSource));

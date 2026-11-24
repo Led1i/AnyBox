@@ -13,7 +13,7 @@ void FunctionLowering::connectPhis() {
             auto& value = scalar.Get(*input);
             if (auto previous = incoming.find(predecessor); previous != incoming.end()) {
                 auto* first = previous->second;
-                bool sameConstant = first->HasImmediate() && value.HasImmediate() && (first->Type() == ShaderRecompiler::IrType::Bool ? first->ImmediateBool() == value.ImmediateBool() : first->ImmediateU32() == value.ImmediateU32());
+                bool sameConstant = first->HasImmediate() && value.HasImmediate() && (first->Type() == ShaderRecompiler::IrType::Bool ? first->ImmediateBool() == value.ImmediateBool() : first->Type() == ShaderRecompiler::IrType::U64 ? first->ImmediateU64() == value.ImmediateU64() : first->ImmediateU32() == value.ImmediateU32());
                 if (first != &value && !sameConstant) throw std::runtime_error("DXIL PHI repeats a predecessor with different incoming values");
                 continue;
             }

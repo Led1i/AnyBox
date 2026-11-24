@@ -15,9 +15,14 @@ IrValue& ScalarLowering::cast(const LLVMBC::CastInst& instruction) {
             return narrow(value, targetBits);
         case LLVMBC::Instruction::ZExt:
             if (targetBits <= sourceBits) throw std::runtime_error("DXIL zero extension does not increase integer width");
+            if (targetBits == 64) return builder.ConstructU64(unsignedValue(value), builder.Constant(0));
             return unsignedValue(value);
         case LLVMBC::Instruction::SExt:
             if (targetBits <= sourceBits) throw std::runtime_error("DXIL sign extension does not increase integer width");
+            if (targetBits == 64) {
+                auto& low = signedValue(value, sourceBits);
+                return builder.ConstructU64(low, builder.ShiftRightArithmetic(low, builder.Constant(31)));
+            }
             return narrow(signedValue(value, sourceBits), targetBits);
         case LLVMBC::Instruction::BitCast:
             if (targetBits != sourceBits) throw std::runtime_error("DXIL integer bitcast changes bit width");

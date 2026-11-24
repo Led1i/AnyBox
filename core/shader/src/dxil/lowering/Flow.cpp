@@ -61,7 +61,8 @@ void FunctionLowering::emitSwitch(const LLVMBC::BasicBlock& source, const LLVMBC
         auto& next = createBlock();
         builder.SetInsertionPoint(*current);
         auto& value = scalar.Get(*key);
-        auto& condition = selector.Type() == IrType::Bool ? builder.Emit(IrOpcode::LogicalXor, IrType::Bool, {&selector, &value}) : builder.IEqual(selector, value);
+        auto opcode = selector.Type() == IrType::Bool ? IrOpcode::LogicalXor : selector.Type() == IrType::U64 ? IrOpcode::IEqual64 : IrOpcode::IEqual32;
+        auto& condition = builder.Emit(opcode, IrType::Bool, {&selector, &value});
         auto& equal = selector.Type() == IrType::Bool ? builder.LogicalNot(condition) : condition;
         conditional(*current, equal, *blocks.at(entry->getCaseSuccessor()), next);
         edges.push_back({&source, entry->getCaseSuccessor(), current});
