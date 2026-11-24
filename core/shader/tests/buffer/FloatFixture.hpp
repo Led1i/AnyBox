@@ -29,11 +29,11 @@ public:
             for (unsigned index = 0; index < 4; ++index) {
                 auto* argument = source.Context().construct<LLVMBC::Argument>(LLVMBC::Type::getFloatTy(source.Context()), group * 4 + index, false);
                 scalar.Bind(*argument, builder.BitCastF32(builder.CompositeExtract(loaded, index)));
-                arguments[group * 4 + index] = argument;
+                inputArguments[group * 4 + index] = argument;
             }
         }
     }
-    LLVMBC::Value* Argument(unsigned index) { return arguments.at(index); }
+    LLVMBC::Value* Argument(unsigned index) { return inputArguments.at(index); }
     LLVMBC::ConstantInt* Integer(unsigned bits, std::uint64_t value) { return LLVMBC::ConstantInt::get(LLVMBC::Type::getIntTy(source.Context(), bits), value); }
     LLVMBC::Type* FloatType() { return LLVMBC::Type::getFloatTy(source.Context()); }
     LLVMBC::ConstantFP* FloatConstant(std::uint32_t bits) { return LLVMBC::ConstantFP::get(FloatType(), bits); }
@@ -100,7 +100,7 @@ private:
     ShaderRecompiler::IrProgram program;
     ShaderRecompiler::IrBuilder builder;
     AnyBox::Shader::Dxil::ScalarLowering scalar;
-    std::array<LLVMBC::Value*, 16> arguments{};
+    std::array<LLVMBC::Value*, 16> inputArguments{};
     std::vector<std::uint32_t> expected;
     unsigned nextId = 1;
 };

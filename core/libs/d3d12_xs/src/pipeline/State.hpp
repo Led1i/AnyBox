@@ -27,7 +27,7 @@ public:
     static constexpr std::size_t GetInlineOffset() { return offsetof(PipelineState, inlineCommands); }
 
 private:
-    friend class ObjectLifetime<PipelineState, ManagedProperties>;
+    friend class ObjectLifetime<PipelineState, AnyBox::Graphics::ManagedProperties>;
     std::atomic<std::uint32_t>& getReferences() noexcept { return references; }
     const ObjectTable* vtable;
     [[maybe_unused]] std::uint32_t objectFlags = 0;
@@ -38,6 +38,7 @@ private:
     RootSignature* root;
     OfflinePipeline* offline = nullptr;
     PrivateDataSlot privateData;
+    [[maybe_unused]] std::uint64_t reserved = 0;
     void initialize();
 };
 static_assert(std::is_standard_layout_v<PipelineState>);

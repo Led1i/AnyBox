@@ -26,7 +26,7 @@ void AnyBox::AcpHal::XmaContext::validate() const {
     if (get(1, 14, 7) != 0) ANYBOX_NOT_IMPLEMENTED();
     if (get(1, 20, 15) != 4 || get(1, 30, 1) != 0 || get(9, 30, 3) != 0) ANYBOX_NOT_IMPLEMENTED();
     if (get(2, 26, 63) != 0 || get(3, 26, 63) != 0) throw std::runtime_error("XMA context contains a decoder error");
-    for (std::size_t index = 10; index < words.size(); ++index) if (words[index] != 0) ANYBOX_NOT_IMPLEMENTED();
+    for (std::size_t word = 10; word < words.size(); ++word) if (words[word] != 0) ANYBOX_NOT_IMPLEMENTED();
     auto capacity = get(0, 22, 31);
     if (capacity == 0 || get(0, 27, 31) >= capacity || get(9, 0, 31) >= capacity) throw std::invalid_argument("Invalid XMA output ring offsets");
 }

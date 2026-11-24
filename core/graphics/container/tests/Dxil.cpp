@@ -24,7 +24,7 @@ void CheckDxil() {
     Require(options.GetCount() == 2 && options.FindOption(627)->value == "1" && options.FindOption(677)->value == "0");
     Reject<std::out_of_range>([&] { xbox.GetEmbeddedPart(3); });
 
-    for (std::size_t size = 0; size < data.size(); ++size) Reject<std::invalid_argument>([&] { DxilView invalid(std::span(data).first(size)); });
+    for (std::size_t size = 0; size < data.size(); ++size) Reject<std::invalid_argument>([&] { DxilView invalid{std::span(data).first(size)}; });
     for (const auto& [offset, value] : std::array<std::pair<std::size_t, std::uint32_t>, 9>{{{4, 0}, {8, 0}, {16, UINT32_MAX}, {20, UINT32_MAX}, {28, UINT32_MAX}, {32, UINT32_MAX}, {40, 0}, {52, 72}, {56, UINT32_MAX}}}) {
         auto invalid = data;
         Set(invalid, offset, value);

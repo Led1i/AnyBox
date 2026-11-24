@@ -35,9 +35,9 @@ std::int32_t AnyBox::Storage::Queue::QueryInterface(const Guid& interfaceId, voi
 std::uint32_t AnyBox::Storage::Queue::AddRef() { return references.Add(); }
 
 std::uint32_t AnyBox::Storage::Queue::Release() {
-    auto count = references.Release();
-    if (count == 0) delete this;
-    return count;
+    auto remaining = references.Release();
+    if (remaining == 0) delete this;
+    return remaining;
 }
 
 void AnyBox::Storage::Queue::Submit() {

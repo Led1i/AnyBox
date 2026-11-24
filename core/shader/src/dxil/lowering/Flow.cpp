@@ -38,10 +38,10 @@ void FunctionLowering::emitTerminator(const LLVMBC::BasicBlock& source, const LL
             branch(output, *blocks.at(first));
         }
         edges.push_back({&source, first, &output});
-    } else if (auto* input = LLVMBC::dyn_cast<LLVMBC::SwitchInst>(&instruction)) {
-        emitSwitch(source, *input);
-    } else if (auto* input = LLVMBC::dyn_cast<LLVMBC::ReturnInst>(&instruction)) {
-        if (input->getReturnValue()) throw std::runtime_error("DXIL non-void return is not implemented");
+    } else if (auto* selection = LLVMBC::dyn_cast<LLVMBC::SwitchInst>(&instruction)) {
+        emitSwitch(source, *selection);
+    } else if (auto* returned = LLVMBC::dyn_cast<LLVMBC::ReturnInst>(&instruction)) {
+        if (returned->getReturnValue()) throw std::runtime_error("DXIL non-void return is not implemented");
         (void)builder.Emit(IrOpcode::Return, IrType::Void, {});
     } else if (LLVMBC::isa<LLVMBC::UnreachableInst>(&instruction)) {
         (void)builder.Emit(IrOpcode::Unreachable, IrType::Void, {});

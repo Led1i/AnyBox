@@ -45,12 +45,12 @@ IrValue& ScalarLowering::Get(const LLVMBC::Value& value) {
         else if (resultType == IrType::Bool) output = &builder.ConstantBool(false);
         else if (resultType == IrType::U64) output = &builder.ConstantU64(0);
         else output = &builder.Constant(0);
-    } else if (auto* constant = LLVMBC::dyn_cast<LLVMBC::ConstantFP>(&value)) {
+    } else if (auto* floatingConstant = LLVMBC::dyn_cast<LLVMBC::ConstantFP>(&value)) {
         if (resultType != IrType::F32) throw std::runtime_error("DXIL floating constant type is not implemented");
-        auto data = static_cast<std::uint32_t>(constant->getValueAPF().bitcastToAPInt().getZExtValue());
+        auto data = static_cast<std::uint32_t>(floatingConstant->getValueAPF().bitcastToAPInt().getZExtValue());
         output = &builder.ConstantF32(std::bit_cast<float>(data));
-    } else if (auto* constant = LLVMBC::dyn_cast<LLVMBC::ConstantInt>(&value)) {
-        auto data = constant->getUniqueInteger().getZExtValue();
+    } else if (auto* integerConstant = LLVMBC::dyn_cast<LLVMBC::ConstantInt>(&value)) {
+        auto data = integerConstant->getUniqueInteger().getZExtValue();
         if (bits == 64) output = &builder.ConstantU64(data);
         else if (bits == 1) output = &builder.ConstantBool((data & 1) != 0);
         else output = &builder.Constant(static_cast<std::uint32_t>(bits == 32 ? data : data & ((1u << bits) - 1)));

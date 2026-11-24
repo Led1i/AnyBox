@@ -17,10 +17,10 @@ std::vector<std::byte> MakeContainer(std::span<const std::byte> program, bool wa
 void Check() {
     using AnyBox::Shader::GetComputeWaveSize;
     auto program = MakeXboxProgram();
-    Require(GetComputeWaveSize(MakeContainer(program, true)) == 32);
+    Require(GetComputeWaveSize(MakeContainer(program, true)) == 32u);
     Require(!GetComputeWaveSize(MakeContainer(program, false)));
     program[120] = std::byte{'0'};
-    Require(GetComputeWaveSize(MakeContainer(program, true)) == 64);
+    Require(GetComputeWaveSize(MakeContainer(program, true)) == 64u);
     Require(!GetComputeWaveSize(MakeContainer(program, false)));
     program[120] = std::byte{'2'};
     Reject<std::invalid_argument>([&] { GetComputeWaveSize(MakeContainer(program, true)); });

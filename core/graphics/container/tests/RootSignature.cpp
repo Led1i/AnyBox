@@ -39,7 +39,7 @@ void CheckRootSignatureLayout() {
         auto root = Read(data);
         Require(root.version == version && root.flags == 0x3000000 && root.staticSamplerCount == 0 && root.parameters.size() == 3);
         const auto& descriptor = root.parameters[0];
-        Require(descriptor.kind == RootParameterKind::ShaderResource && descriptor.shaderRegister == 7 && descriptor.space == 2 && descriptor.flags == (version == 1 ? 0 : 4));
+        Require(descriptor.kind == RootParameterKind::ShaderResource && descriptor.shaderRegister == 7 && descriptor.space == 2 && descriptor.flags == (version == 1 ? 0u : 4u));
         const auto& constants = root.parameters[1];
         Require(constants.kind == RootParameterKind::Constants && constants.shaderRegister == 5 && constants.space == 3 && constants.wordCount == 5);
         const auto& table = root.parameters[2];

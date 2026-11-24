@@ -5,7 +5,7 @@
 
 void AnyBox::Storage::Queue::run() {
     try {
-        WorkerRegistration registration;
+        WorkerRegistration workerRegistration;
         {
             std::lock_guard lock(mutex);
             started = true;

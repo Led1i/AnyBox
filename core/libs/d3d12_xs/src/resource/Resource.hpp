@@ -45,7 +45,7 @@ public:
     PrivateData& GetPrivateDataStore() { return privateData.Get(); }
 
 private:
-    friend class ObjectLifetime<Resource, ManagedProperties>;
+    friend class ObjectLifetime<Resource, AnyBox::Graphics::ManagedProperties>;
     std::atomic<std::uint32_t>& getReferences() noexcept { return references; }
     const ObjectTable* vtable;
     std::uint32_t objectFlags = 0;

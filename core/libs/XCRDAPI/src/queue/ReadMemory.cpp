@@ -38,9 +38,9 @@ void AnyBox::Storage::Queue::readMemory(ReadOperation& operation) {
         for (std::size_t position = 0; position < source->GetSize();) {
             auto from = source->GetChunk(position);
             auto to = destination.GetChunk(position);
-            auto count = std::min(from.size(), to.size());
-            std::memmove(to.data(), from.data(), count);
-            position += count;
+            auto chunkBytes = std::min(from.size(), to.size());
+            std::memmove(to.data(), from.data(), chunkBytes);
+            position += chunkBytes;
         }
         return;
     }
@@ -52,8 +52,8 @@ void AnyBox::Storage::Queue::readMemory(ReadOperation& operation) {
     WorkStatistics statistics(WorkType::Decompression);
     startStream(destination);
     for (std::size_t position = 0; position < source->GetSize();) {
-        auto input = source->GetChunk(position);
-        position += input.size();
-        processStream(input, position == source->GetSize());
+        auto chunk = source->GetChunk(position);
+        position += chunk.size();
+        processStream(chunk, position == source->GetSize());
     }
 }

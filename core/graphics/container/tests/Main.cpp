@@ -57,7 +57,7 @@ void RoundTrip() {
 void InvalidContainers() {
     const std::array<std::byte, 8> bytes{};
     auto source = BuildDxbc(std::array<Part, 2>{{{1, bytes}, {2, bytes}}});
-    for (std::size_t size = 0; size < source.size(); ++size) Reject<std::invalid_argument>([&] { DxbcView view(std::span(source).first(size)); });
+    for (std::size_t size = 0; size < source.size(); ++size) Reject<std::invalid_argument>([&] { DxbcView view{std::span(source).first(size)}; });
     auto invalid = source;
     invalid.back() ^= std::byte{1};
     Reject<std::invalid_argument>([&] { DxbcView view(invalid); });

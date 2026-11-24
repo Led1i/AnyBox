@@ -5,7 +5,7 @@ using namespace ShaderRecompiler;
 using AnyBox::Shader::Dxil::ScalarLowering;
 
 IrValue& ScalarLowering::bitField(const LLVMBC::CallInst& instruction, bool insert) {
-    if (instruction.getNumArgOperands() != (insert ? 5 : 4) || width(instruction) != 32) throw std::runtime_error("DXIL bit field intrinsic has an invalid signature");
+    if (instruction.getNumArgOperands() != (insert ? 5u : 4u) || width(instruction) != 32) throw std::runtime_error("DXIL bit field intrinsic has an invalid signature");
     for (unsigned index = 0; index < instruction.getNumArgOperands(); ++index) {
         if (width(*instruction.getArgOperand(index)) != 32) throw std::runtime_error("DXIL bit field intrinsic requires 32-bit integers");
     }

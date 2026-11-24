@@ -28,7 +28,7 @@ public:
     }
 
 private:
-    friend class ObjectLifetime<DescriptorHeap, ManagedProperties>;
+    friend class ObjectLifetime<DescriptorHeap, AnyBox::Graphics::ManagedProperties>;
     std::atomic<std::uint32_t>& getReferences() noexcept { return references; }
     std::uint64_t getStart() const noexcept;
     const ObjectTable* vtable;

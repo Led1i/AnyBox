@@ -14,7 +14,7 @@ void CheckNative() {
     auto other = data;
     Set(other, 0xD4, 0);
     Require(FssmView(other).GetWaveSize() == 64);
-    for (std::size_t size = 0; size < data.size(); ++size) Reject<std::invalid_argument>([&] { FssmView rejected(std::span(data).first(size)); });
+    for (std::size_t size = 0; size < data.size(); ++size) Reject<std::invalid_argument>([&] { FssmView rejected{std::span(data).first(size)}; });
     for (const auto& [offset, value] : std::array<std::pair<std::size_t, std::uint32_t>, 6>{{{0, 0}, {0xC0, 0}, {0xC0, 0x141}, {0xC4, 1}, {0xC8, 40}, {0xCC, 1}}}) {
         auto invalid = data;
         Set(invalid, offset, value);

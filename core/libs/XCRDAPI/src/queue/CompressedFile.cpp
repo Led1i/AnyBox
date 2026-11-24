@@ -13,15 +13,15 @@ void AnyBox::Storage::Queue::decompressFile(ReadOperation& operation, MemoryView
     startStream(destination);
     std::size_t consumed = 0;
     while (consumed < request.sourceSize) {
-        auto count = std::min<std::size_t>(request.sourceSize - consumed, staging.Get().size());
-        auto input = staging.Get().first(count);
+        auto chunkBytes = std::min<std::size_t>(request.sourceSize - consumed, staging.Get().size());
+        auto input = staging.Get().first(chunkBytes);
         try {
             readFile(operation, input, consumed);
         } catch (...) {
             statistics.Cancel();
             throw;
         }
-        consumed += count;
+        consumed += chunkBytes;
         processStream(input, consumed == request.sourceSize);
     }
 }
