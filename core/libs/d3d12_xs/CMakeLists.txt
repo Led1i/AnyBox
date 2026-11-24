@@ -38,6 +38,7 @@ target_link_libraries(d3d12_xs PUBLIC anybox_texture)
 target_sources(d3d12_xs PRIVATE src/descriptor/TextureViews.cpp)
 target_sources(d3d12_xs PRIVATE src/descriptor/RenderTargetViews.cpp src/descriptor/RenderTargetTable.cpp)
 target_sources(d3d12_xs PRIVATE src/descriptor/TextureUnorderedViews.cpp)
+target_sources(d3d12_xs PRIVATE src/resource/TextureMemory.cpp src/resource/TextureBacking.cpp)
 
 if(BUILD_TESTING)
     add_executable(d3d12_device_tests tests/device/Main.cpp tests/device/Properties.cpp tests/device/Queues.cpp tests/device/Fences.cpp tests/device/Allocators.cpp)

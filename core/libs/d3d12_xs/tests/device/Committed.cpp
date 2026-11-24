@@ -42,10 +42,13 @@ void AnyBox::Graphics::Tests::CheckCommittedTextures(Device* device) {
     Reject<std::runtime_error>([&] { map(resource.get(), 0, nullptr, &mapped); });
     Require(!mapped, "Rejected texture mapping retained a stale output");
     auto textureAddress = resource->GetTexture().GetAddress();
+    MEMORY_BASIC_INFORMATION memory{};
+    Require(VirtualQuery(reinterpret_cast<void*>(textureAddress), &memory, sizeof(memory)) == sizeof(memory) && memory.State == MEM_COMMIT && (memory.Protect & PAGE_WRITECOMBINE) != 0, "Committed texture did not use mapped write-combined XMem storage");
     CheckTextureShaderViews(device, resource.get());
     CheckTextureUnorderedViews(device, resource.get());
     CheckRenderTargets(device, resource.get());
     resource.reset();
+    Require(VirtualQuery(reinterpret_cast<void*>(textureAddress), &memory, sizeof(memory)) == sizeof(memory) && memory.State == MEM_FREE, "Committed texture did not release its owned XMem storage");
     Reject<std::out_of_range>([&] { device->GetTextureAddresses().Resolve(textureAddress); });
 
     properties.Type = D3D12_HEAP_TYPE_UPLOAD;

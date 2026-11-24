@@ -3,9 +3,12 @@
 #include "../device/Device.hpp"
 #include <anybox/texture/Resource.hpp>
 #include <anybox/descriptor/ColorTarget.hpp>
+#include "TextureMemory.hpp"
 
 namespace AnyBox::Graphics {
 struct TextureBacking {
+    TextureBacking(Device& device, TextureMemory memory, const Vulkan::ImageDescription& image, const Descriptor::Texture2DDescription& description, const D3D12_HEAP_PROPERTIES& properties, D3D12_HEAP_FLAGS flags, D3D12_BARRIER_LAYOUT layout, const Descriptor::SurfacePitch& pitch);
+    TextureMemory memory;
     Texture::Resource allocation;
     D3D12_HEAP_PROPERTIES properties;
     D3D12_HEAP_FLAGS flags;
