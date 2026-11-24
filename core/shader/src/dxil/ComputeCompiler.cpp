@@ -19,7 +19,8 @@ AnyBox::Shader::Dxil::ComputeCompilation AnyBox::Shader::Dxil::CompileCompute(Sh
     program.Resources().stage = IrShaderStage::Compute;
     program.SetWaveSize(input.waveSize);
     program.Info().sharedMemoryBytes = input.ldsSizeDwords * 4;
-    program.Info().scratchDwords = input.scratchSizeDwords;
+    if (program.Info().scratchDwords != 0 && input.scratchSizeDwords != 0 && program.Info().scratchDwords != input.scratchSizeDwords) throw std::invalid_argument("DXIL local storage and compute scratch sizes do not match");
+    if (program.Info().scratchDwords == 0) program.Info().scratchDwords = input.scratchSizeDwords;
     ValidateProgram(program, true);
     for (const auto& block : program.Blocks()) {
         for (auto iterator = block->Instructions().begin(); iterator != block->Instructions().end();) {

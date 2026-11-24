@@ -2,6 +2,7 @@
 
 #include "Scalar.hpp"
 #include "Buffer.hpp"
+#include "Local.hpp"
 #include <function.hpp>
 #include <vector>
 
@@ -36,6 +37,7 @@ private:
     ShaderRecompiler::IrProgram& program;
     ShaderRecompiler::IrBuilder builder;
     ScalarLowering scalar;
+    LocalLowering locals;
     std::unique_ptr<BufferLowering> buffers;
     std::unordered_map<const LLVMBC::BasicBlock*, IrBlock*> blocks;
     std::vector<const LLVMBC::BasicBlock*> order;

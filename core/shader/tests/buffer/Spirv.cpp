@@ -4,6 +4,7 @@
 #include "Target.hpp"
 #include "TransferFixture.hpp"
 #include "FloatFixture.hpp"
+#include "LocalFixture.hpp"
 #include <anybox/vulkan/Context.hpp>
 #include <spirv/unified1/spirv.hpp>
 
@@ -49,4 +50,5 @@ void BufferTests::CheckSpirv() {
     CheckTransfers(context);
     CheckFloats(context);
     CheckFloatTransfers(context);
+    CheckLocals(context);
 }

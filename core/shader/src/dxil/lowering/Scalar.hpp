@@ -7,12 +7,14 @@
 
 namespace AnyBox::Shader::Dxil {
 class BufferLowering;
+class LocalLowering;
 class ScalarLowering {
 public:
     ScalarLowering(ShaderRecompiler::IrProgram& program, ShaderRecompiler::IrBuilder& builder);
     ShaderRecompiler::IrValue& Get(const LLVMBC::Value& value);
     void Bind(const LLVMBC::Value& source, ShaderRecompiler::IrValue& value);
     void SetBuffers(BufferLowering& buffers);
+    void SetLocals(LocalLowering& locals);
     void Emit(const LLVMBC::Instruction& instruction);
     static ShaderRecompiler::IrType GetType(const LLVMBC::Value& value);
 
@@ -38,6 +40,7 @@ private:
     ShaderRecompiler::IrProgram& program;
     ShaderRecompiler::IrBuilder& builder;
     BufferLowering* buffers = nullptr;
+    LocalLowering* locals = nullptr;
     std::unordered_map<const LLVMBC::Value*, IrValue*> values;
 };
 }

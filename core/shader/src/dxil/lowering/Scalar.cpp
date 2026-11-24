@@ -1,5 +1,6 @@
 #include "Scalar.hpp"
 #include "Buffer.hpp"
+#include "Local.hpp"
 #include <cast.hpp>
 #include <stdexcept>
 #include <bit>
@@ -15,9 +16,15 @@ void ScalarLowering::SetBuffers(BufferLowering& value) {
 }
 
 void ScalarLowering::Emit(const LLVMBC::Instruction& instruction) {
+    if (locals && locals->Emit(instruction, *this)) return;
     auto* call = LLVMBC::dyn_cast<LLVMBC::CallInst>(&instruction);
     if (call && buffers && buffers->Emit(*call, *this)) return;
     (void)Get(instruction);
+}
+
+void ScalarLowering::SetLocals(LocalLowering& value) {
+    if (locals) throw std::logic_error("DXIL local lowering is already configured");
+    locals = &value;
 }
 
 IrValue& ScalarLowering::Get(const LLVMBC::Value& value) {
@@ -30,7 +37,10 @@ IrValue& ScalarLowering::Get(const LLVMBC::Value& value) {
     auto resultType = GetType(value);
     auto bits = resultType == IrType::F32 ? 0u : width(value);
     IrValue* output = nullptr;
-    if (auto* constant = LLVMBC::dyn_cast<LLVMBC::ConstantFP>(&value)) {
+    if (auto* instruction = LLVMBC::dyn_cast<LLVMBC::LoadInst>(&value)) {
+        if (!locals) throw std::runtime_error("DXIL local load has no local storage configuration");
+        output = &locals->Load(*instruction, *this);
+    } else if (auto* constant = LLVMBC::dyn_cast<LLVMBC::ConstantFP>(&value)) {
         if (resultType != IrType::F32) throw std::runtime_error("DXIL floating constant type is not implemented");
         auto data = static_cast<std::uint32_t>(constant->getValueAPF().bitcastToAPInt().getZExtValue());
         output = &builder.ConstantF32(std::bit_cast<float>(data));

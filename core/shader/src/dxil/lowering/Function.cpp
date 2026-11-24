@@ -6,7 +6,7 @@
 using namespace ShaderRecompiler;
 using AnyBox::Shader::Dxil::FunctionLowering;
 
-FunctionLowering::FunctionLowering(IrProgram& program) : program(program), builder(program), scalar(program, builder) {}
+FunctionLowering::FunctionLowering(IrProgram& program) : program(program), builder(program), scalar(program, builder), locals(program, builder) { scalar.SetLocals(locals); }
 
 FunctionLowering::FunctionLowering(IrProgram& program, const ResourceLayout& layout, IResourceBindings& bindings) : FunctionLowering(program) {
     buffers = std::make_unique<BufferLowering>(program, builder, layout, bindings);
@@ -80,6 +80,7 @@ void FunctionLowering::emitBlock(const LLVMBC::BasicBlock& source) {
 void FunctionLowering::Run(const LLVMBC::Function& function) {
     if (!program.Blocks().empty() || !blocks.empty()) throw std::logic_error("DXIL function lowering requires an empty program");
     prepare(function);
+    locals.Prepare(function);
     for (auto* source : order) emitBlock(*source);
     connectPhis();
     ValidateProgram(program, true);
