@@ -1,28 +1,26 @@
 #include <anybox/shader/Inspection.hpp>
 #include "Audit.hpp"
 #include "NativeAudit.hpp"
+#include "Compilation.hpp"
+#include "Files.hpp"
 #include <anybox/shader/Resources.hpp>
 #include <anybox/shader/Compute.hpp>
 #include <array>
-#include <filesystem>
-#include <fstream>
 #include <iostream>
-#include <limits>
 #include <string_view>
-#include <vector>
 
 int main(int argc, char** argv) {
     try {
         if (argc == 2 && std::string_view(argv[1]) == "--audit-stream") return AnyBox::Shader::Tools::AuditStream();
-        if (argc != 3 || (std::string_view(argv[1]) != "--inspect" && std::string_view(argv[1]) != "--bindings" && std::string_view(argv[1]) != "--compute" && std::string_view(argv[1]) != "--native-info" && std::string_view(argv[1]) != "--native-ir" && std::string_view(argv[1]) != "--native-audit")) throw std::invalid_argument("Usage: anybox_shader <--inspect|--bindings|--compute|--native-info|--native-ir|--native-audit> <shader.dxbc> | --audit-stream");
-        std::ifstream input(std::filesystem::path(argv[2]), std::ios::binary | std::ios::ate);
-        if (!input) throw std::runtime_error("Cannot open shader input");
-        auto size = input.tellg();
-        if (size <= 0 || static_cast<std::uint64_t>(size) > std::numeric_limits<std::uint32_t>::max()) throw std::length_error("Shader input size is invalid");
-        std::vector<std::byte> data(static_cast<std::size_t>(size));
-        input.seekg(0);
-        if (!input.read(reinterpret_cast<char*>(data.data()), size)) throw std::runtime_error("Cannot read shader input");
-        if (std::string_view(argv[1]) == "--native-audit") {
+        bool artifactCommand = argc == 4 && (std::string_view(argv[1]) == "--compile" || std::string_view(argv[1]) == "--verify" || std::string_view(argv[1]) == "--check-gpu");
+        if (!artifactCommand && (argc != 3 || (std::string_view(argv[1]) != "--inspect" && std::string_view(argv[1]) != "--bindings" && std::string_view(argv[1]) != "--compute" && std::string_view(argv[1]) != "--native-info" && std::string_view(argv[1]) != "--native-ir" && std::string_view(argv[1]) != "--native-audit"))) throw std::invalid_argument("Usage: anybox_shader <--inspect|--bindings|--compute|--native-info|--native-ir|--native-audit> <shader.dxbc> | <--compile|--verify|--check-gpu> <shader.dxbc> <shader.abxc> | --audit-stream");
+        auto data = AnyBox::Shader::Tools::ReadInput(argv[2]);
+        if (artifactCommand) {
+            auto artifact = std::string_view(argv[1]) == "--compile" ? AnyBox::Shader::Tools::CompileDxil(data) : AnyBox::Shader::DecodeComputeArtifact(AnyBox::Shader::Tools::ReadInput(argv[3]), AnyBox::Shader::HashShader(data));
+            if (std::string_view(argv[1]) == "--compile") AnyBox::Shader::Tools::WriteOutput(argv[3], AnyBox::Shader::EncodeComputeArtifact(artifact));
+            if (std::string_view(argv[1]) == "--check-gpu") AnyBox::Shader::Tools::CheckArtifactGpu(artifact);
+            std::cout << "source=" << AnyBox::Shader::DigestName(artifact.sourceHash) << " words=" << artifact.code.size() << " buffers=" << artifact.buffers.size() << " arguments=" << artifact.userRegisters.size() << " push_bytes=" << artifact.pushConstantSize << '\n';
+        } else if (std::string_view(argv[1]) == "--native-audit") {
             auto words = AnyBox::Shader::Tools::AuditNative(data);
             std::cout << "words=" << words << '\n';
         } else if (std::string_view(argv[1]) == "--native-info") {

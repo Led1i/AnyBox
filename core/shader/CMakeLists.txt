@@ -8,6 +8,8 @@ include("${PROJECT_SOURCE_DIR}/cmake/SpirvTools.cmake")
 anybox_add_spirv_tools()
 
 include(src/backend/Backend.cmake)
+include(src/artifact/Artifact.cmake)
+include(src/runtime/Runtime.cmake)
 
 add_library(anybox_native_shader STATIC src/native/Frontend.cpp)
 target_sources(anybox_native_shader PRIVATE src/native/Compute.cpp)

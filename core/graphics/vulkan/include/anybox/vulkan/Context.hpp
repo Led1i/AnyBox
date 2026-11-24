@@ -23,6 +23,8 @@ public:
     VkPhysicalDevice GetPhysicalDevice() const noexcept { return physicalDevice; }
     const DeviceFunctions& GetFunctions() const noexcept { return deviceFunctions; }
     const VkPhysicalDeviceProperties& GetProperties() const noexcept { return properties; }
+    const VkPhysicalDeviceSubgroupProperties& GetSubgroupProperties() const noexcept { return subgroups; }
+    const VkPhysicalDeviceFloatControlsProperties& GetFloatControls() const noexcept { return floatControls; }
     const VkPhysicalDeviceMemoryProperties& GetMemoryProperties() const noexcept { return memoryProperties; }
     VkDeviceSize GetHostPointerAlignment() const noexcept { return hostPointerAlignment; }
     std::uint32_t GetQueueFamily() const noexcept { return queueFamily; }
@@ -52,6 +54,8 @@ private:
     InstanceFunctions instanceFunctions{};
     DeviceFunctions deviceFunctions{};
     VkPhysicalDeviceProperties properties{};
+    VkPhysicalDeviceSubgroupProperties subgroups{};
+    VkPhysicalDeviceFloatControlsProperties floatControls{};
     VkPhysicalDeviceMemoryProperties memoryProperties{};
     VkDeviceSize hostPointerAlignment = 0;
     std::uint32_t queueFamily = 0;

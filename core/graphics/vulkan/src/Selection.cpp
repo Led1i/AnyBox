@@ -9,6 +9,10 @@ void AnyBox::Vulkan::Context::selectAdapter(const AdapterSelection& selection, s
     host.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_MEMORY_HOST_PROPERTIES_EXT;
     VkPhysicalDeviceIDProperties identity{};
     identity.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ID_PROPERTIES;
+    subgroups.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SUBGROUP_PROPERTIES;
+    floatControls.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FLOAT_CONTROLS_PROPERTIES;
+    identity.pNext = &subgroups;
+    subgroups.pNext = &floatControls;
     host.pNext = &identity;
     VkPhysicalDeviceProperties2 physical{};
     physical.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2;
