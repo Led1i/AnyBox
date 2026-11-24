@@ -60,4 +60,5 @@ void BufferTests::CheckSpirv() {
     CheckBallotLoopGpu(context);
     CheckBufferArgumentGpu(context);
     CheckLegacyHalfGpu(context);
+    CheckFloatMinMax(context);
 }
