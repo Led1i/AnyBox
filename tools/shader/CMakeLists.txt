@@ -1,0 +1,4 @@
+add_executable(anybox_shader Main.cpp)
+target_link_libraries(anybox_shader PRIVATE anybox_dxil)
+set_target_properties(anybox_shader PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${ANYBOX_RUNTIME_DIRECTORY}")
+anybox_add_compiler_runtime(anybox_shader)

@@ -30,3 +30,6 @@
 [submodule "3rdparty/SPIRV-Headers"]
 	path = 3rdparty/SPIRV-Headers
 	url = https://github.com/KhronosGroup/SPIRV-Headers.git
+[submodule "3rdparty/dxil-spirv"]
+	path = 3rdparty/dxil-spirv
+	url = https://github.com/HansKristian-Work/dxil-spirv.git
