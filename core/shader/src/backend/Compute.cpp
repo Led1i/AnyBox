@@ -3,8 +3,11 @@
 #include <Optimization/ConstantFolder.hpp>
 #include <Optimization/DeadCodeEliminator.hpp>
 #include <Optimization/ResourceTracker.hpp>
+#include <Optimization/ResourceMaterializer.hpp>
+#include <Optimization/RedundantValueEliminator.hpp>
 #include <Optimization/ShaderInfoCollector.hpp>
 #include <Optimization/SrtWalker.hpp>
+#include <spirv/unified1/spirv.hpp>
 #include <algorithm>
 #include <limits>
 
@@ -37,6 +40,11 @@ AnyBox::Shader::ComputeCompilation AnyBox::Shader::CompileCompute(ShaderRecompil
     ValidateProgram(program, true);
     SrtWalker{}.BuildPlan(program);
     ResourceTracker{}.Track(program);
+    auto nativeOffsets = target.nonConstantImageOffsets && std::ranges::find(target.supportedCapabilities, static_cast<std::uint32_t>(spv::CapabilityImageGatherExtended)) != target.supportedCapabilities.end();
+    ResourceMaterializer{}.ApplyStaticInterface(program, nativeOffsets);
+    DeadCodeEliminator{}.RemoveIdentities(program);
+    (void)RedundantValueEliminator{}.Eliminate(program);
+    DeadCodeEliminator{}.Eliminate(program);
     ShaderStageInputInfo stage{nullptr, nullptr, &input};
     ShaderInfoCollector{}.Collect(program, stage);
     auto allocation = BindingAllocator{}.Allocate(program, layout, target.registrationModules);
