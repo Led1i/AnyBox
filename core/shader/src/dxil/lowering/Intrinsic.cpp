@@ -15,6 +15,8 @@ IrValue& ScalarLowering::call(const LLVMBC::CallInst& instruction) {
     if (identifier == "dx.op.groupId.i32") return thread(instruction, 94);
     if (identifier == "dx.op.threadIdInGroup.i32") return thread(instruction, 95);
     if (identifier == "dx.op.flattenedThreadIdInGroup.i32") return thread(instruction, 96);
+    if (identifier == "dx.op.tertiary.i32") return bitField(instruction, false);
+    if (identifier == "dx.op.quaternary.i32") return bitField(instruction, true);
     if (identifier == "xbox.global_load_dword_with_cache") return globalLoad(instruction, 1);
     if (identifier == "xbox.global_load_dwordx2_with_cache") return globalLoad(instruction, 2);
     if (identifier == "xbox.global_load_dwordx3_with_cache") return globalLoad(instruction, 3);

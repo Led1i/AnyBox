@@ -53,4 +53,5 @@ void BufferTests::CheckSpirv() {
     CheckFloatTransfers(context);
     CheckLocals(context);
     CheckConstants(context);
+    CheckBitFields(context);
 }

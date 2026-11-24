@@ -32,6 +32,7 @@ private:
     IrValue& call(const LLVMBC::CallInst& instruction);
     IrValue& globalLoad(const LLVMBC::CallInst& instruction, unsigned words);
     IrValue& thread(const LLVMBC::CallInst& instruction, unsigned opcode);
+    IrValue& bitField(const LLVMBC::CallInst& instruction, bool insert);
     IrValue& floatBinary(const LLVMBC::BinaryOperator& instruction);
     IrValue& floatCompare(const LLVMBC::FCmpInst& instruction);
     IrValue& floatCast(const LLVMBC::CastInst& instruction);

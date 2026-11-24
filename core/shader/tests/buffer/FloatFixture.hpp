@@ -39,6 +39,17 @@ public:
     LLVMBC::Type* IntegerType(unsigned bits) { return LLVMBC::Type::getIntTy(source.Context(), bits); }
     template<class TInstruction, class... TArguments>
     TInstruction* Make(TArguments&&... arguments) { return source.Context().construct<TInstruction>(std::forward<TArguments>(arguments)...); }
+    LLVMBC::CallInst* Call(const std::string& name, LLVMBC::Type* result, LLVMBC::Vector<LLVMBC::Value*> arguments) {
+        auto& context = source.Context();
+        auto& module = source.Module();
+        auto id = nextId++;
+        module.add_value_name(id, LLVMBC::String(name.begin(), name.end()));
+        LLVMBC::Vector<LLVMBC::Type*> parameters;
+        for (auto* argument : arguments) parameters.push_back(argument->getType());
+        auto* type = context.construct<LLVMBC::FunctionType>(context, result, std::move(parameters));
+        auto* function = context.construct<LLVMBC::Function>(type, id, module);
+        return context.construct<LLVMBC::CallInst>(type, function, std::move(arguments));
+    }
     void Expect(const LLVMBC::Value& value, std::uint32_t expected) {
         using namespace ShaderRecompiler;
         auto& result = scalar.Get(value);
@@ -90,7 +101,9 @@ private:
     AnyBox::Shader::Dxil::ScalarLowering scalar;
     std::array<LLVMBC::Value*, 16> arguments{};
     std::vector<std::uint32_t> expected;
+    unsigned nextId = 1;
 };
 
 void CheckFloats(AnyBox::Vulkan::Context& context);
+void CheckBitFields(AnyBox::Vulkan::Context& context);
 }
