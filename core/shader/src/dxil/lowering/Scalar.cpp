@@ -5,7 +5,7 @@
 using namespace ShaderRecompiler;
 using AnyBox::Shader::Dxil::ScalarLowering;
 
-ScalarLowering::ScalarLowering(IrBuilder& builder) : builder(builder) {}
+ScalarLowering::ScalarLowering(IrProgram& program, IrBuilder& builder) : program(program), builder(builder) {}
 
 unsigned ScalarLowering::width(const LLVMBC::Value& value) {
     auto* type = value.getType();
@@ -54,6 +54,11 @@ void ScalarLowering::Bind(const LLVMBC::Value& source, IrValue& value) {
 
 IrValue& ScalarLowering::Get(const LLVMBC::Value& value) {
     if (auto found = values.find(&value); found != values.end()) return *found->second;
+    if (auto* instruction = LLVMBC::dyn_cast<LLVMBC::CallInst>(&value)) {
+        auto& output = call(*instruction);
+        values.emplace(&value, &output);
+        return output;
+    }
     auto bits = width(value);
     IrValue* output = nullptr;
     if (auto* constant = LLVMBC::dyn_cast<LLVMBC::ConstantInt>(&value)) {
@@ -67,8 +72,12 @@ IrValue& ScalarLowering::Get(const LLVMBC::Value& value) {
         output = &compare(*instruction);
     } else if (auto* instruction = LLVMBC::dyn_cast<LLVMBC::CastInst>(&value)) {
         output = &cast(*instruction);
-    } else if (auto* instruction = LLVMBC::dyn_cast<LLVMBC::CallInst>(&value)) {
-        output = &call(*instruction);
+    } else if (auto* instruction = LLVMBC::dyn_cast<LLVMBC::ExtractValueInst>(&value)) {
+        if (instruction->getNumIndices() != 1) throw std::runtime_error("DXIL nested aggregate extraction is not implemented");
+        auto& aggregate = Get(*instruction->getAggregateOperand());
+        auto index = instruction->getIndices()[0];
+        if (!IsVectorType(aggregate.Type()) || index >= ComponentCount(aggregate.Type()) || bits != 32) throw std::runtime_error("DXIL aggregate extraction has an incompatible result type or index");
+        output = &builder.CompositeExtract(aggregate, index);
     } else if (auto* instruction = LLVMBC::dyn_cast<LLVMBC::SelectInst>(&value)) {
         if (width(*instruction->getOperand(0)) != 1 || width(*instruction->getOperand(1)) != bits || width(*instruction->getOperand(2)) != bits) throw std::runtime_error("DXIL select operand types do not match");
         auto& condition = Get(*instruction->getOperand(0));

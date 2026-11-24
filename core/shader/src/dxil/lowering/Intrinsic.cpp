@@ -10,7 +10,12 @@ IrValue& ScalarLowering::call(const LLVMBC::CallInst& instruction) {
     auto* function = instruction.getCalledFunction();
     if (!function) throw std::runtime_error("DXIL indirect function call is not implemented");
     const auto& name = function->getName();
-    if (std::string_view(name.data(), name.size()) != "xbox.V_ALIGNBYTE_B32") throw std::runtime_error("DXIL intrinsic is not implemented: " + std::string(name.data(), name.size()));
+    auto identifier = std::string_view(name.data(), name.size());
+    if (identifier == "xbox.global_load_dword_with_cache") return globalLoad(instruction, 1);
+    if (identifier == "xbox.global_load_dwordx2_with_cache") return globalLoad(instruction, 2);
+    if (identifier == "xbox.global_load_dwordx3_with_cache") return globalLoad(instruction, 3);
+    if (identifier == "xbox.global_load_dwordx4_with_cache") return globalLoad(instruction, 4);
+    if (identifier != "xbox.V_ALIGNBYTE_B32") throw std::runtime_error("DXIL intrinsic is not implemented: " + std::string(name.data(), name.size()));
     if (instruction.getNumArgOperands() != 4 || width(instruction) != 32) throw std::runtime_error("Xbox byte alignment intrinsic has an invalid signature");
     for (unsigned index = 0; index < 4; ++index) {
         if (width(*instruction.getArgOperand(index)) != 32) throw std::runtime_error("Xbox byte alignment intrinsic requires 32-bit operands");

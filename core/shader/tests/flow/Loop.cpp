@@ -44,5 +44,6 @@ int main() {
         CheckLoop();
         CheckInvalid();
         FlowTests::CheckSwitches();
+        FlowTests::CheckGlobalLoads();
     });
 }

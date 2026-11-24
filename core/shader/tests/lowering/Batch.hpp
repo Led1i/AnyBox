@@ -11,7 +11,7 @@
 namespace LoweringTests {
 class Batch {
 public:
-    Batch() : builder(program), lowering(builder) {
+    Batch() : builder(program), lowering(program, builder) {
         auto& block = program.CreateBlock();
         program.SetEntryBlock(block);
         program.BlockOrder().push_back(&block);

@@ -14,6 +14,7 @@ add_library(anybox_dxil_lowering STATIC src/dxil/lowering/Scalar.cpp src/dxil/lo
 target_sources(anybox_dxil_lowering PRIVATE src/dxil/lowering/Function.cpp src/dxil/lowering/Flow.cpp src/dxil/lowering/Phi.cpp)
 target_sources(anybox_dxil_lowering PRIVATE src/dxil/lowering/WideBinary.cpp src/dxil/lowering/WideCompare.cpp)
 target_sources(anybox_dxil_lowering PRIVATE src/dxil/lowering/Intrinsic.cpp)
+target_sources(anybox_dxil_lowering PRIVATE src/dxil/lowering/GlobalLoad.cpp)
 target_link_libraries(anybox_dxil_lowering PUBLIC anybox_shader_recompiler PRIVATE llvm-bc anybox_options)
 target_include_directories(anybox_dxil_lowering SYSTEM PRIVATE "${PROJECT_SOURCE_DIR}/3rdparty/dxil-spirv/bc" "${PROJECT_SOURCE_DIR}/3rdparty/dxil-spirv/debug" "${PROJECT_SOURCE_DIR}/3rdparty/dxil-spirv/util")
 
@@ -22,7 +23,7 @@ target_link_libraries(anybox_shader_requirements PUBLIC anybox_container)
 target_include_directories(anybox_shader_requirements PUBLIC include)
 
 if(BUILD_TESTING)
-    add_executable(shader_flow_lowering_tests tests/flow/Loop.cpp tests/flow/Switch.cpp tests/flow/Evaluate.cpp)
+    add_executable(shader_flow_lowering_tests tests/flow/Loop.cpp tests/flow/Switch.cpp tests/flow/Evaluate.cpp tests/flow/GlobalLoad.cpp)
     target_include_directories(shader_flow_lowering_tests PRIVATE src/dxil ../graphics/container/tests)
     target_include_directories(shader_flow_lowering_tests SYSTEM PRIVATE "${PROJECT_SOURCE_DIR}/3rdparty/dxil-spirv/util" "${PROJECT_SOURCE_DIR}/3rdparty/dxil-spirv/bc" "${PROJECT_SOURCE_DIR}/3rdparty/dxil-spirv/debug")
     target_link_libraries(shader_flow_lowering_tests PRIVATE anybox_dxil_lowering llvm-bc anybox_test_support)

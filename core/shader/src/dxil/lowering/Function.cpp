@@ -6,7 +6,7 @@
 using namespace ShaderRecompiler;
 using AnyBox::Shader::Dxil::FunctionLowering;
 
-FunctionLowering::FunctionLowering(IrProgram& program) : program(program), builder(program), scalar(builder) {}
+FunctionLowering::FunctionLowering(IrProgram& program) : program(program), builder(program), scalar(program, builder) {}
 
 IrBlock& FunctionLowering::createBlock() {
     auto& block = program.CreateBlock();
