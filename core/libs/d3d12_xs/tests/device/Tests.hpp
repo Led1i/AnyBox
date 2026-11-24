@@ -44,4 +44,5 @@ void CheckFrameAncillary(Device* device);
 void CheckUnsupportedDeviceMethods(Device* device);
 void CheckPhysicalHeap(Device* device);
 void CheckPlacedBuffer(Device* device);
+void CheckVulkanTimeline(Device* device);
 }

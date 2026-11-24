@@ -46,7 +46,7 @@ public:
         info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
         info.commandBufferCount = 1;
         info.pCommandBuffers = &buffer;
-        AnyBox::Vulkan::Check(functions.queueSubmit(context.GetQueue(0), 1, &info, fence), "Submit Vulkan transfer test commands");
+        context.Submit(0, info, fence);
         pending = true;
         AnyBox::Vulkan::Check(functions.waitForFences(context.GetDevice(), 1, &fence, VK_TRUE, 5000000000ull), "Wait Vulkan transfer test completion");
         pending = false;

@@ -11,11 +11,16 @@ void AnyBox::Vulkan::Context::selectAdapter(std::uint32_t adapterIndex, std::uin
     physicalDevice = devices[adapterIndex];
     VkPhysicalDeviceExternalMemoryHostPropertiesEXT host{};
     host.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_MEMORY_HOST_PROPERTIES_EXT;
+    VkPhysicalDeviceIDProperties identity{};
+    identity.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ID_PROPERTIES;
+    host.pNext = &identity;
     VkPhysicalDeviceProperties2 physical{};
     physical.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2;
     physical.pNext = &host;
     instanceFunctions.getPhysicalDeviceProperties(physicalDevice, &physical);
     properties = physical.properties;
+    if (!identity.deviceLUIDValid) throw std::runtime_error("Vulkan adapter has no Windows LUID");
+    std::memcpy(adapterLuid.data(), identity.deviceLUID, adapterLuid.size());
     if (properties.apiVersion < VK_API_VERSION_1_2) throw std::runtime_error("Vulkan adapter does not support API version 1.2");
     hostPointerAlignment = host.minImportedHostPointerAlignment;
     instanceFunctions.getMemoryProperties(physicalDevice, &memoryProperties);
@@ -31,17 +36,22 @@ void AnyBox::Vulkan::Context::selectAdapter(std::uint32_t adapterIndex, std::uin
     Check(instanceFunctions.enumerateExtensions(physicalDevice, nullptr, &count, extensions.data()), "Enumerate Vulkan device extensions");
     if (std::ranges::none_of(extensions, [](const auto& value) { return std::strcmp(value.extensionName, VK_EXT_EXTERNAL_MEMORY_HOST_EXTENSION_NAME) == 0; })) throw std::runtime_error("Vulkan host memory imports are unsupported");
     if (hostPointerAlignment == 0) throw std::runtime_error("Vulkan host pointer alignment is zero");
+    if (std::ranges::none_of(extensions, [](const auto& value) { return std::strcmp(value.extensionName, VK_KHR_EXTERNAL_SEMAPHORE_WIN32_EXTENSION_NAME) == 0; })) throw std::runtime_error("Vulkan Windows semaphore imports are unsupported");
 }
 
 void AnyBox::Vulkan::Context::createDevice(std::uint32_t queueCount) {
     VkPhysicalDeviceBufferDeviceAddressFeatures address{};
     address.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES;
+    VkPhysicalDeviceTimelineSemaphoreFeatures timeline{};
+    timeline.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TIMELINE_SEMAPHORE_FEATURES;
+    address.pNext = &timeline;
     VkPhysicalDeviceFeatures2 features{};
     features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
     features.pNext = &address;
     instanceFunctions.getFeatures(physicalDevice, &features);
     if (!address.bufferDeviceAddress) throw std::runtime_error("Vulkan buffer device addresses are unsupported");
     if (!features.features.shaderInt64) throw std::runtime_error("Vulkan shader 64-bit integers are unsupported");
+    if (!timeline.timelineSemaphore) throw std::runtime_error("Vulkan timeline semaphores are unsupported");
     VkPhysicalDeviceFeatures enabled{};
     enabled.shaderInt64 = VK_TRUE;
     address.bufferDeviceAddressCaptureReplay = VK_FALSE;
@@ -52,14 +62,14 @@ void AnyBox::Vulkan::Context::createDevice(std::uint32_t queueCount) {
     queue.queueFamilyIndex = queueFamily;
     queue.queueCount = queueCount;
     queue.pQueuePriorities = priorities.data();
-    const char* extensions[]{VK_EXT_EXTERNAL_MEMORY_HOST_EXTENSION_NAME};
+    const char* extensions[]{VK_EXT_EXTERNAL_MEMORY_HOST_EXTENSION_NAME, VK_KHR_EXTERNAL_SEMAPHORE_WIN32_EXTENSION_NAME};
     VkDeviceCreateInfo info{};
     info.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
     info.pNext = &address;
     info.pEnabledFeatures = &enabled;
     info.queueCreateInfoCount = 1;
     info.pQueueCreateInfos = &queue;
-    info.enabledExtensionCount = 1;
+    info.enabledExtensionCount = 2;
     info.ppEnabledExtensionNames = extensions;
     Check(instanceFunctions.createDevice(physicalDevice, &info, nullptr, &device), "Create Vulkan device");
 }

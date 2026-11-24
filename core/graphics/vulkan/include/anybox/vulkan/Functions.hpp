@@ -1,5 +1,6 @@
 #pragma once
 
+#include <anybox/platform/Windows.hpp>
 #include <vulkan/vulkan.h>
 #include <stdexcept>
 #include <string>
@@ -20,6 +21,7 @@ struct InstanceFunctions {
     PFN_vkCreateDevice createDevice;
     PFN_vkGetDeviceProcAddr getDeviceProcAddr;
     PFN_vkGetPhysicalDeviceExternalBufferProperties getExternalBufferProperties;
+    PFN_vkGetPhysicalDeviceExternalSemaphoreProperties getExternalSemaphoreProperties;
 };
 
 struct DeviceFunctions {
@@ -56,6 +58,11 @@ struct DeviceFunctions {
     PFN_vkCmdBindPipeline bindPipeline;
     PFN_vkCmdPushConstants pushConstants;
     PFN_vkCmdDispatch dispatch;
+    PFN_vkCreateSemaphore createSemaphore;
+    PFN_vkDestroySemaphore destroySemaphore;
+    PFN_vkImportSemaphoreWin32HandleKHR importSemaphore;
+    PFN_vkGetSemaphoreCounterValue getSemaphoreValue;
+    PFN_vkWaitSemaphores waitSemaphores;
 };
 
 template<class TFunction>

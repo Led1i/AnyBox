@@ -11,6 +11,7 @@ void AnyBox::Vulkan::Context::loadInstanceFunctions() {
     instanceFunctions.createDevice = RequireFunction<PFN_vkCreateDevice>(getInstanceProcAddr(instance, "vkCreateDevice"), "vkCreateDevice");
     instanceFunctions.getDeviceProcAddr = RequireFunction<PFN_vkGetDeviceProcAddr>(getInstanceProcAddr(instance, "vkGetDeviceProcAddr"), "vkGetDeviceProcAddr");
     instanceFunctions.getExternalBufferProperties = RequireFunction<PFN_vkGetPhysicalDeviceExternalBufferProperties>(getInstanceProcAddr(instance, "vkGetPhysicalDeviceExternalBufferProperties"), "vkGetPhysicalDeviceExternalBufferProperties");
+    instanceFunctions.getExternalSemaphoreProperties = RequireFunction<PFN_vkGetPhysicalDeviceExternalSemaphoreProperties>(getInstanceProcAddr(instance, "vkGetPhysicalDeviceExternalSemaphoreProperties"), "vkGetPhysicalDeviceExternalSemaphoreProperties");
 }
 
 void AnyBox::Vulkan::Context::loadDeviceFunctions() {
@@ -48,5 +49,10 @@ void AnyBox::Vulkan::Context::loadDeviceFunctions() {
     ANYBOX_VULKAN_FUNCTION(bindPipeline, vkCmdBindPipeline);
     ANYBOX_VULKAN_FUNCTION(pushConstants, vkCmdPushConstants);
     ANYBOX_VULKAN_FUNCTION(dispatch, vkCmdDispatch);
+    ANYBOX_VULKAN_FUNCTION(createSemaphore, vkCreateSemaphore);
+    ANYBOX_VULKAN_FUNCTION(destroySemaphore, vkDestroySemaphore);
+    ANYBOX_VULKAN_FUNCTION(importSemaphore, vkImportSemaphoreWin32HandleKHR);
+    ANYBOX_VULKAN_FUNCTION(getSemaphoreValue, vkGetSemaphoreCounterValue);
+    ANYBOX_VULKAN_FUNCTION(waitSemaphores, vkWaitSemaphores);
 #undef ANYBOX_VULKAN_FUNCTION
 }

@@ -29,6 +29,7 @@ AnyBox::Vulkan::Context::Context(std::uint32_t adapterIndex, std::uint32_t queue
         createDevice(queueCount);
         loadDeviceFunctions();
         queues.resize(queueCount);
+        queueMutexes = std::make_unique<std::mutex[]>(queueCount);
         for (std::uint32_t index = 0; index < queueCount; ++index) deviceFunctions.getDeviceQueue(device, queueFamily, index, &queues[index]);
     } catch (...) { release(); throw; }
 }

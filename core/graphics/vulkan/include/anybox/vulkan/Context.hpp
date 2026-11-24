@@ -4,6 +4,10 @@
 #include <anybox/platform/Windows.hpp>
 #include <vector>
 #include <cstdint>
+#include <cstddef>
+#include <array>
+#include <memory>
+#include <mutex>
 
 namespace AnyBox::Vulkan {
 class Context {
@@ -21,6 +25,9 @@ public:
     std::uint32_t GetQueueFamily() const noexcept { return queueFamily; }
     VkQueue GetQueue(std::uint32_t index) const;
     VkExternalBufferProperties GetExternalBufferProperties(VkBufferUsageFlags usage) const;
+    VkExternalSemaphoreProperties GetD3D12FenceProperties() const;
+    const std::array<std::byte, VK_LUID_SIZE>& GetAdapterLuid() const noexcept { return adapterLuid; }
+    void Submit(std::uint32_t queueIndex, const VkSubmitInfo& submission, VkFence fence = VK_NULL_HANDLE);
 
 private:
     void loadInstanceFunctions();
@@ -40,5 +47,7 @@ private:
     VkDeviceSize hostPointerAlignment = 0;
     std::uint32_t queueFamily = 0;
     std::vector<VkQueue> queues;
+    std::unique_ptr<std::mutex[]> queueMutexes;
+    std::array<std::byte, VK_LUID_SIZE> adapterLuid{};
 };
 }
