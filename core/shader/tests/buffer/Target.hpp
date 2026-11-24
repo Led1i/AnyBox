@@ -28,4 +28,5 @@ void CheckBallotLoopGpu(AnyBox::Vulkan::Context& context);
 void CheckBufferArgumentGpu(AnyBox::Vulkan::Context& context);
 void CheckLegacyHalfGpu(AnyBox::Vulkan::Context& context);
 void CheckFloatMinMax(AnyBox::Vulkan::Context& context);
+void CheckFloatMad(AnyBox::Vulkan::Context& context);
 }

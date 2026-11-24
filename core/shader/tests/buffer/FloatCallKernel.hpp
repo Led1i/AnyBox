@@ -4,8 +4,9 @@
 #include "lowering/Scalar.hpp"
 
 namespace BufferTests {
-inline ShaderRecompiler::IrProgram MakeMinMaxKernel(unsigned opcode) {
+inline ShaderRecompiler::IrProgram MakeFloatCallKernel(unsigned opcode, unsigned operands) {
     using namespace ShaderRecompiler;
+    if (operands != 2 && operands != 3) throw std::invalid_argument("Floating kernel requires two or three operands");
     ResourceTests::Fixture source;
     auto& context = source.Context();
     auto* word = LLVMBC::Type::getInt32Ty(context);
@@ -27,8 +28,6 @@ inline ShaderRecompiler::IrProgram MakeMinMaxKernel(unsigned opcode) {
     builder.SetInsertionPoint(block);
     AnyBox::Shader::Dxil::ScalarLowering scalar(program, builder);
     auto& index = scalar.Get(*call("dx.op.threadId.i32", 93, word, {integer(93), integer(0)}));
-    auto& leftIndex = builder.ShiftRightLogical(index, builder.Constant(4));
-    auto& rightIndex = builder.BitwiseAnd(index, builder.Constant(15));
     auto load = [&](IrValue& element) -> IrValue& {
         auto& low = builder.ShiftLeftLogical(element, builder.Constant(2));
         auto& high = builder.Constant(1);
@@ -42,11 +41,15 @@ inline ShaderRecompiler::IrProgram MakeMinMaxKernel(unsigned opcode) {
         return builder.BitCastF32(bits);
     };
     auto* floating = LLVMBC::Type::getFloatTy(context);
-    auto* left = context.construct<LLVMBC::Argument>(floating, 0, false);
-    auto* right = context.construct<LLVMBC::Argument>(floating, 1, false);
-    scalar.Bind(*left, load(leftIndex));
-    scalar.Bind(*right, load(rightIndex));
-    auto& result = scalar.Get(*call("dx.op.binary.f32", 35, floating, {integer(opcode), left, right}));
+    LLVMBC::Vector<LLVMBC::Value*> arguments{integer(opcode)};
+    for (unsigned operand = 0; operand < operands; ++operand) {
+        auto& shifted = builder.ShiftRightLogical(index, builder.Constant((operands - operand - 1) * 4));
+        auto& element = builder.BitwiseAnd(shifted, builder.Constant(15));
+        auto* argument = context.construct<LLVMBC::Argument>(floating, operand, false);
+        scalar.Bind(*argument, load(element));
+        arguments.push_back(argument);
+    }
+    auto& result = scalar.Get(*call(operands == 2 ? "dx.op.binary.f32" : "dx.op.tertiary.f32", 100, floating, std::move(arguments)));
     auto& nan = builder.Emit(IrOpcode::FPIsNan32, IrType::Bool, {&result});
     auto& bits = builder.Select(nan, builder.Constant(0x7FC00000U), builder.BitCastU32(result));
     auto& low = builder.ShiftLeftLogical(index, builder.Constant(2));

@@ -29,3 +29,18 @@ IrValue& ScalarLowering::floatBinaryIntrinsic(const LLVMBC::CallInst& instructio
     auto& right = Flush(builder, Get(*instruction.getArgOperand(2)));
     return builder.Emit(operation, IrType::F32, {&left, &right});
 }
+
+IrValue& ScalarLowering::floatTernaryIntrinsic(const LLVMBC::CallInst& instruction) {
+    if (instruction.getNumArgOperands() != 4 || GetType(instruction) != IrType::F32) throw std::runtime_error("DXIL floating ternary intrinsic has an invalid signature");
+    if (width(*instruction.getArgOperand(0)) != 32) throw std::runtime_error("DXIL floating ternary intrinsic requires a 32-bit opcode");
+    for (unsigned index = 1; index < 4; ++index) {
+        if (GetType(*instruction.getArgOperand(index)) != IrType::F32) throw std::runtime_error("DXIL floating ternary intrinsic requires 32-bit floating operands");
+    }
+    auto* opcode = LLVMBC::dyn_cast<LLVMBC::ConstantInt>(instruction.getArgOperand(0));
+    if (!opcode || opcode->getUniqueInteger().getZExtValue() != 46) throw std::runtime_error("DXIL floating ternary intrinsic opcode is not implemented");
+
+    auto& left = Get(*instruction.getArgOperand(1));
+    auto& right = Get(*instruction.getArgOperand(2));
+    auto& addend = Get(*instruction.getArgOperand(3));
+    return builder.Emit(IrOpcode::FPMad32, IrType::F32, {&left, &right, &addend});
+}

@@ -1,5 +1,5 @@
 #include "FloatFixture.hpp"
-#include "MinMaxKernel.hpp"
+#include "FloatCallKernel.hpp"
 #include <Recompiler.hpp>
 #include <bit>
 #include <cmath>
@@ -29,7 +29,7 @@ void Expect(BufferTests::FloatFixture& fixture, LLVMBC::Value* left, LLVMBC::Val
 void BufferTests::CheckFloatMinMax(AnyBox::Vulkan::Context& context) {
     std::array<std::uint32_t, 16> input{0x3F800000, 0xC0000000, 0x3F000000, 0x4B800000, 0, 0x80000000, 0x7F800000, 0xFF800000, 0x7FC12345, 0x7F812345, 1, 0x80000001, 0x007FFFFF, 0x807FFFFF, 0x00800000, 0x7F7FFFFF};
     for (unsigned opcode : {35u, 36u}) {
-        auto program = MakeMinMaxKernel(opcode);
+        auto program = MakeFloatCallKernel(opcode, 2);
         ShaderRecompiler::ShaderComputeInputInfo info;
         info.threadsNum[0] = 64;
         info.threadsNum[1] = info.threadsNum[2] = 1;
