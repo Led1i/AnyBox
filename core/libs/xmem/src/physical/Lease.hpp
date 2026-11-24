@@ -7,7 +7,7 @@ namespace AnyBox::XMem {
 
 class PhysicalPageLease final : public IPhysicalPageLease {
 public:
-    PhysicalPageLease(Pool& pool, std::vector<Page> retained);
+    PhysicalPageLease(Pool& pool, std::vector<Page> retained, std::uintptr_t mappingBase);
     ~PhysicalPageLease();
     void Activate() noexcept;
     std::size_t GetPageCount() const noexcept override;
@@ -18,6 +18,7 @@ public:
 private:
     Pool& pool;
     std::vector<Page> retained;
+    std::uintptr_t mappingBase;
     bool active = false;
 };
 

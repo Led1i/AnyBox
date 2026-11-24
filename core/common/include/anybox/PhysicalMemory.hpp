@@ -19,5 +19,6 @@ struct IPhysicalPageLease {
 }
 
 extern "C" AnyBox::IPhysicalPageLease* AnyBoxAcquirePhysicalPages(std::size_t pageCount, const std::uint64_t* pageFrames) noexcept(false);
+extern "C" AnyBox::IPhysicalPageLease* AnyBoxAcquireMappedPhysicalPages(const void* address, std::size_t pageCount) noexcept(false);
 
 #endif

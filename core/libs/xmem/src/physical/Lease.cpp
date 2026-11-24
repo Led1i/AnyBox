@@ -3,10 +3,10 @@
 #include <stdexcept>
 #include <utility>
 
-AnyBox::XMem::PhysicalPageLease::PhysicalPageLease(Pool& pool, std::vector<Page> retained) : pool(pool), retained(std::move(retained)) {}
+AnyBox::XMem::PhysicalPageLease::PhysicalPageLease(Pool& pool, std::vector<Page> retained, std::uintptr_t mappingBase) : pool(pool), retained(std::move(retained)), mappingBase(mappingBase) {}
 
 AnyBox::XMem::PhysicalPageLease::~PhysicalPageLease() {
-    if (active) pool.Release(retained);
+    if (active) pool.Release(retained, mappingBase);
 }
 
 void AnyBox::XMem::PhysicalPageLease::Activate() noexcept { active = true; }

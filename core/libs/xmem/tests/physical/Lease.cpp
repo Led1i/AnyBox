@@ -76,10 +76,13 @@ void CheckPinFailures() {
 
 }
 
+void CheckMappedLeases();
+
 int main() {
     try {
         CheckLeases();
         CheckPinFailures();
+        CheckMappedLeases();
         return 0;
     } catch (const std::exception& error) {
         std::cerr << error.what() << '\n';

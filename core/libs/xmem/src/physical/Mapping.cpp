@@ -23,6 +23,8 @@ void AnyBox::XMem::Pool::Map(std::span<void* const> addresses, const std::uint64
         }
         std::optional<Page> previous;
         if (auto it = mappings.find(address); it != mappings.end()) previous = it->second;
+        if (mappedPins.contains(address) && (!next || !previous || next->frame != previous->frame)) throw std::logic_error("Physical mapping has active GPU resources and cannot be changed");
+        if (next && previous && next->frame == previous->frame) continue;
         changes.push_back({addresses[i], previous, next});
     }
     std::size_t completed = 0;
