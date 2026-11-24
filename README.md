@@ -4,7 +4,7 @@ AnyBox is a compatibility layer for running Xbox Series X|S executables natively
 
 ## Status
 
-Initial development. No applications confirmed to run fully.
+Initial development. The test app has not been confirmed to run fully.
 
 Seven system libraries with a total of 39 functions required by the test app and its bundled libraries have been added and build successfully. Launch has been tested with the test app's executable.
 
