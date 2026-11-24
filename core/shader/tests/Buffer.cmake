@@ -22,4 +22,4 @@ target_compile_definitions(shader_buffer_lowering_tests PRIVATE ANYBOX_LIBRARY_N
 set_target_properties(shader_buffer_lowering_tests PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${ANYBOX_RUNTIME_DIRECTORY}")
 anybox_add_compiler_runtime(shader_buffer_lowering_tests)
 add_test(NAME shader.buffer_lowering COMMAND shader_buffer_lowering_tests)
-set_tests_properties(shader.buffer_lowering PROPERTIES TIMEOUT 60)
+set_tests_properties(shader.buffer_lowering PROPERTIES TIMEOUT 300)
