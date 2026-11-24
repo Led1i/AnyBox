@@ -16,6 +16,7 @@ void XMemFreeDefault(void* allocation, std::uint64_t attributes) noexcept(false)
 std::int32_t XMemFreePhysicalPages(std::size_t pageCount, const std::uint64_t* pageFrames) noexcept(false);
 std::int32_t XMemGetWorkingSetStatistics(std::uint32_t flags, XMemWorkingSetStatistics* statistics) noexcept(false);
 std::int32_t XMemIsToolsMemAvailable() noexcept(false);
+void XMemRegisterGraphicsMemoryConfiguration(const XMemGraphicsMemoryConfiguration* configuration) noexcept(false);
 void* XMemMapPhysicalPages(void* address, std::size_t pageCount, const std::uint64_t* pageFrames) noexcept(false);
 std::int32_t XMemMapPhysicalPagesScatter(void* const* addresses, std::size_t pageCount, const std::uint64_t* pageFrames) noexcept(false);
 std::int32_t XMemTransferMemory(std::uint32_t memoryPool, std::size_t size) noexcept(false);

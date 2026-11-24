@@ -29,6 +29,12 @@ struct XMemWorkingSetStatistics {
 struct XMemAllocationHook;
 struct XMemFreeHook;
 
+struct XMemGraphicsMemoryConfiguration {
+    std::uint32_t pageTableSize;
+    std::uint32_t framePreserveBufferSize;
+    std::array<std::uintptr_t, 2> backendData;
+};
+
 struct XMemMemoryBasicInformation {
     void* baseAddress;
     void* allocationBase;
@@ -45,6 +51,8 @@ struct XMemMemoryBasicInformation {
 };
 
 static_assert(sizeof(XMemWorkingSetStatistics) == 120);
+static_assert(sizeof(XMemGraphicsMemoryConfiguration) == 24);
+static_assert(offsetof(XMemGraphicsMemoryConfiguration, backendData) == 8);
 static_assert(offsetof(XMemWorkingSetStatistics, gameUsed) == 8);
 static_assert(sizeof(XMemMemoryBasicInformation) == 64);
 static_assert(offsetof(XMemMemoryBasicInformation, regionSize) == 24);

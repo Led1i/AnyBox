@@ -8,6 +8,7 @@ EXPORTS
     XMemFreePhysicalPages
     XMemGetWorkingSetStatistics
     XMemIsToolsMemAvailable
+    XMemRegisterGraphicsMemoryConfiguration
     XMemMapPhysicalPages
     XMemMapPhysicalPagesScatter
     XMemTransferMemory

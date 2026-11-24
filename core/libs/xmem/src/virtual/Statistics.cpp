@@ -1,4 +1,5 @@
 #include "Statistics.hpp"
+#include "../graphics/Configuration.hpp"
 
 #include <xmem.hpp>
 #include <anybox/Unimplemented.hpp>
@@ -31,6 +32,7 @@ std::int32_t XMemGetWorkingSetStatistics(std::uint32_t flags, XMemWorkingSetStat
 
     if ((flags & 4) != 0) result.stackUsed = AnyBox::XMem::GetStackSize();
     if ((flags & 0x10) != 0) result.cpuPageTableSize = AnyBox::XMem::GetPageTableSize();
+    AnyBox::XMem::GetGraphicsStatistics(result);
 
     auto version = flags & 0xF0000000;
     std::size_t outputSize = version == 0x20000000 ? 120 : version == 0x10000000 ? 80 : 72;
