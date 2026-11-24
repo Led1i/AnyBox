@@ -26,6 +26,7 @@ inline constexpr Guid XboxDeviceId{0x5405C344, 0xD457, 0x444E, {0xB4, 0xDD, 0x23
 inline constexpr Guid UnknownId{0, 0, 0, {0xC0, 0, 0, 0, 0, 0, 0, 0x46}};
 const DeviceTable& GetDeviceTable();
 struct XboxQueueDescription;
+struct XboxListDescription;
 GUID NativeGuid(const Guid& value);
 void CheckGraphicsResult(HRESULT result, const char* operation);
 
@@ -46,6 +47,8 @@ public:
     static HRESULT CreateCommandQueueX(Device* self, const XboxQueueDescription* description, const Guid& interfaceId, void** queue);
     void ReleaseQueueSelection(std::uint32_t selection) noexcept;
     static HRESULT CreateCommandAllocator(Device* self, D3D12_COMMAND_LIST_TYPE type, const Guid& interfaceId, void** allocator);
+    static HRESULT CreateCommandList(Device* self, std::uint32_t nodeMask, D3D12_COMMAND_LIST_TYPE type, void* allocator, void* initialState, const Guid& interfaceId, void** list);
+    static HRESULT CreateCommandListX(Device* self, const XboxListDescription* description, void* allocator, void* initialState, const Guid& interfaceId, void** list);
 
 private:
     const DeviceTable* vtable;

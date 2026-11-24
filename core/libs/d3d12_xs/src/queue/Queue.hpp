@@ -25,6 +25,7 @@ public:
     static void EndEvent(Queue* self);
     static HRESULT Signal(Queue* self, void* fence, std::uint64_t value);
     static HRESULT Wait(Queue* self, void* fence, std::uint64_t value);
+    static void ExecuteCommandLists(Queue* self, std::uint32_t count, void* const* lists);
 
 private:
     const DeviceTable* vtable;

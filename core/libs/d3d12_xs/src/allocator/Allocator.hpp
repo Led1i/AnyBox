@@ -11,6 +11,7 @@ public:
     Allocator(ID3D12CommandAllocator* host, Device* device, D3D12_COMMAND_LIST_TYPE type);
     ~Allocator();
     ID3D12CommandAllocator* GetHost() const noexcept { return host; }
+    Device* GetParent() const noexcept { return device; }
     D3D12_COMMAND_LIST_TYPE GetType() const noexcept { return type; }
     static Allocator* From(void* object);
     static bool Supports(const Guid& interfaceId) noexcept;

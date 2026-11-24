@@ -43,6 +43,7 @@ int main() {
         CheckQueues(device);
         CheckFences(device);
         CheckAllocators(device);
+        CheckLists(device);
         auto unavailable = Method<void (*)(void*, ...)>(device, 127);
         Reject<std::runtime_error>([&] { unavailable(device, nullptr, nullptr, nullptr); });
         Require(release(device) == 0, "Graphics device final reference was not released");

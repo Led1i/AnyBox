@@ -19,6 +19,7 @@ AnyBox::Graphics::DeviceTable MakeTable(std::index_sequence<TSlots...>) {
     result[5] = MethodAddress(&Queue::SetPrivateDataInterface);
     result[6] = MethodAddress(&Queue::SetName);
     result[7] = MethodAddress(&Queue::GetDevice);
+    result[10] = MethodAddress(&Queue::ExecuteCommandLists);
     result[11] = MethodAddress(&Queue::SetMarker);
     result[12] = MethodAddress(&Queue::BeginEvent);
     result[13] = MethodAddress(&Queue::EndEvent);
