@@ -21,7 +21,12 @@ void BufferLowering::constantBuffer(const LLVMBC::CallInst& instruction, unsigne
     }
     auto* selected = instruction.getArgOperand(2);
     if (!selected->getType()->isIntegerTy() || selected->getType()->getIntegerBitWidth() != 32) throw std::runtime_error("DXIL legacy constant buffer register index must be 32-bit");
-    auto view = bindings.ResolveBuffer(binding, scalar.Get(*handle->second.index), handle->second.nonUniform, builder);
+    auto mapped = bindings.ResolveConstantBuffer(binding, scalar.Get(*handle->second.index), handle->second.nonUniform, builder);
+    if (auto* words = std::get_if<InlineConstants>(&mapped)) {
+        constantWords(instruction, words->words, scalar.Get(*selected), bits, binding.byteSize, floating);
+        return;
+    }
+    auto view = std::get<BufferAddress>(mapped);
     if (view.address.Type() != IrType::U64 || view.byteLength.Type() != IrType::U64) throw std::logic_error("DXIL constant buffer binding requires a 64-bit address and size");
     auto& index = builder.ConstructU64(scalar.Get(*selected), builder.Constant(0));
     auto& base = builder.Emit(IrOpcode::ShiftLeftLogical64, IrType::U64, {&index, &builder.Constant(4)});

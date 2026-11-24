@@ -10,6 +10,7 @@ target_sources(shader_buffer_lowering_tests PRIVATE tests/buffer/GlobalAtomic.cp
 target_sources(shader_buffer_lowering_tests PRIVATE tests/buffer/Undef.cpp)
 target_sources(shader_buffer_lowering_tests PRIVATE tests/buffer/Locals.cpp)
 target_sources(shader_buffer_lowering_tests PRIVATE tests/buffer/Constants.cpp)
+target_sources(shader_buffer_lowering_tests PRIVATE tests/buffer/RootConstants.cpp)
 target_sources(shader_buffer_lowering_tests PRIVATE tests/buffer/BitFields.cpp)
 target_sources(shader_buffer_lowering_tests PRIVATE tests/buffer/Native.cpp ../graphics/container/tests/NativeFixtures.cpp)
 target_sources(shader_buffer_lowering_tests PRIVATE tests/buffer/NativeFma.cpp tests/buffer/FirstLane.cpp tests/buffer/BallotLoops.cpp tests/buffer/Arguments.cpp)

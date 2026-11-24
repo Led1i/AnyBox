@@ -20,10 +20,10 @@ public:
         return context.construct<LLVMBC::MDNode>(&module, LLVMBC::Vector<LLVMBC::MDOperand*>(operands));
     }
     LLVMBC::MDOperand* Null() { return context.construct<LLVMBC::MDOperand>(&module); }
-    LLVMBC::MDNode* Buffer(unsigned category, unsigned stride = 32, unsigned firstRegister = 4, unsigned count = 3) {
+    LLVMBC::MDNode* Buffer(unsigned category, unsigned stride = 32, unsigned firstRegister = 4, unsigned count = 3, unsigned byteSize = 52) {
         auto* symbol = context.construct<LLVMBC::ConstantAsMetadata>(&module, LLVMBC::UndefValue::get(LLVMBC::PointerType::get(LLVMBC::Type::getInt32Ty(context), 0)));
         auto* name = context.construct<LLVMBC::MDString>(&module, "buffer");
-        if (category == 2) return Node({Integer(7), symbol, name, Integer(2), Integer(firstRegister), Integer(count), Integer(52), Null()});
+        if (category == 2) return Node({Integer(7), symbol, name, Integer(2), Integer(firstRegister), Integer(count), Integer(byteSize), Null()});
         auto* extra = stride == 0 ? Null() : static_cast<LLVMBC::MDOperand*>(Node({Integer(1), Integer(stride)}));
         if (category == 0) return Node({Integer(7), symbol, name, Integer(2), Integer(firstRegister), Integer(count), Integer(stride == 0 ? 11 : 12), Integer(0), extra});
         return Node({Integer(7), symbol, name, Integer(2), Integer(firstRegister), Integer(count), Integer(stride == 0 ? 11 : 12), Integer(1, 1), Integer(0, 1), Integer(0, 1), extra});

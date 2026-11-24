@@ -5,6 +5,8 @@
 #include <array>
 #include <unordered_map>
 #include <unordered_set>
+#include <variant>
+#include <vector>
 
 namespace AnyBox::Shader::Dxil {
 class ScalarLowering;
@@ -14,10 +16,17 @@ struct BufferAddress {
     ShaderRecompiler::IrValue& byteLength;
 };
 
+struct InlineConstants {
+    std::vector<ShaderRecompiler::IrValue*> words;
+};
+
+using ConstantBufferBinding = std::variant<BufferAddress, InlineConstants>;
+
 class IResourceBindings {
 public:
     virtual ~IResourceBindings() = default;
     virtual BufferAddress ResolveBuffer(const BufferBinding& binding, ShaderRecompiler::IrValue& index, bool nonUniform, ShaderRecompiler::IrBuilder& builder) = 0;
+    virtual ConstantBufferBinding ResolveConstantBuffer(const BufferBinding& binding, ShaderRecompiler::IrValue& index, bool nonUniform, ShaderRecompiler::IrBuilder& builder) { return ResolveBuffer(binding, index, nonUniform, builder); }
 };
 
 class BufferLowering {
@@ -40,6 +49,7 @@ private:
     };
     void load(const LLVMBC::CallInst& instruction, unsigned bits, ScalarLowering& scalar, bool floating = false);
     void constantBuffer(const LLVMBC::CallInst& instruction, unsigned bits, ScalarLowering& scalar, bool floating);
+    void constantWords(const LLVMBC::CallInst& instruction, std::span<IrValue* const> words, IrValue& row, unsigned bits, std::uint32_t byteSize, bool floating);
     void store(const LLVMBC::CallInst& instruction, unsigned bits, ScalarLowering& scalar, bool floating = false);
     Access resolve(const LLVMBC::CallInst& instruction, ScalarLowering& scalar, bool write);
     Component component(const Access& access, unsigned bits, unsigned index);

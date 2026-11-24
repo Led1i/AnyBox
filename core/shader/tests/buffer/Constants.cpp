@@ -3,6 +3,7 @@
 #include "Target.hpp"
 
 void BufferTests::CheckConstants(AnyBox::Vulkan::Context& context) {
+    CheckRootConstants(context);
     {
         ConstantFixture fixture;
         auto program = fixture.Lower();

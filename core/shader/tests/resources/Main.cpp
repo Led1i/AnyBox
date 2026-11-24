@@ -3,6 +3,7 @@
 #include <anybox/ExceptionTest.hpp>
 
 void CheckBufferArguments();
+void CheckRootArguments();
 
 namespace {
 void CheckBinding(unsigned category, unsigned stride) {
@@ -35,6 +36,7 @@ int main() {
     return AnyBox::Tests::Run([] {
         ResourceTests::CheckComputeEntries();
         CheckBufferArguments();
+        CheckRootArguments();
         for (unsigned category : {0u, 1u}) {
             CheckBinding(category, 0);
             CheckBinding(category, 32);
