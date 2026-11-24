@@ -53,6 +53,7 @@ int main(int argc, char** argv) {
         try {
             CheckProperties(device);
             CheckAllocation(device);
+            CheckCommittedTextures(device);
             CheckQueues(device);
             CheckFences(device);
             CheckAllocators(device);

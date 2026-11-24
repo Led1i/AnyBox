@@ -2,7 +2,7 @@
 #include <string>
 
 void AnyBox::Graphics::Tests::CheckUnsupportedDeviceMethods(Device* device) {
-    for (auto slot : {127u, 128u, 134u, 255u}) {
+    for (auto slot : {128u, 134u, 255u}) {
         auto unavailable = Method<void (*)(void*, ...)>(device, slot);
         auto expected = std::string(ANYBOX_LIBRARY_NAME) + "!Device method " + std::to_string(slot) + " is not implemented";
         bool matched = false;

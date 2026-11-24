@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Backing.hpp"
+#include "Texture.hpp"
 #include "../object/Lifetime.hpp"
 #include "../object/ManagedProperties.hpp"
 
@@ -13,8 +14,16 @@ const ObjectTable& GetResourceTable();
 class Resource : public ObjectLifetime<Resource, ManagedProperties> {
 public:
     Resource(BufferBacking backing, Device* device, std::uintptr_t address, const D3D12_RESOURCE_DESC1& description);
+    Resource(std::unique_ptr<TextureBacking> backing, Device* device, const D3D12_RESOURCE_DESC1& description);
     ~Resource();
-    Vulkan::Buffer& GetGpuBuffer() const noexcept { return *buffer; }
+    Vulkan::Buffer& GetGpuBuffer() const {
+        if (!buffer) throw std::logic_error("Texture resource has no Vulkan buffer");
+        return *buffer;
+    }
+    Vulkan::Image& GetGpuImage() const {
+        if (!texture) throw std::logic_error("Buffer resource has no Vulkan image");
+        return texture->image;
+    }
     static bool Supports(const Guid& interfaceId) noexcept;
     static Resource* From(void* value, Device* owner);
     const D3D12_RESOURCE_DESC1& GetMetadata() const noexcept { return description; }
@@ -39,6 +48,7 @@ private:
     std::uintptr_t address;
     D3D12_RESOURCE_DESC1 description;
     PrivateDataSlot privateData;
+    TextureBacking* texture = nullptr;
 };
 static_assert(std::is_standard_layout_v<Resource>);
 static_assert(Resource::GetVtableOffset() == 0);

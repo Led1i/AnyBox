@@ -54,6 +54,7 @@ public:
     static std::uint32_t GetDescriptorHandleIncrementSize(Device* self, D3D12_DESCRIPTOR_HEAP_TYPE type);
     static D3D12_HEAP_PROPERTIES GetCustomHeapProperties(Device* self, std::uint32_t nodeMask, D3D12_HEAP_TYPE type);
     static D3D12_RESOURCE_ALLOCATION_INFO GetResourceAllocationInfo(Device* self, std::uint32_t nodeMask, std::uint32_t count, const D3D12_RESOURCE_DESC* descriptions);
+    static HRESULT CreateCommittedResource3(Device* self, const D3D12_HEAP_PROPERTIES* properties, D3D12_HEAP_FLAGS flags, const D3D12_RESOURCE_DESC1* description, D3D12_BARRIER_LAYOUT layout, const D3D12_CLEAR_VALUE* clearValue, void* protectedSession, std::uint32_t formatCount, const DXGI_FORMAT* formats, const Guid& interfaceId, void** resource);
     static HRESULT CreateCommandQueue(Device* self, const D3D12_COMMAND_QUEUE_DESC* description, const Guid& interfaceId, void** queue);
     static HRESULT CreateFence(Device* self, std::uint64_t initialValue, D3D12_FENCE_FLAGS flags, const Guid& interfaceId, void** fence);
     static HRESULT CreateCommandQueueX(Device* self, const XboxQueueDescription* description, const Guid& interfaceId, void** queue);
