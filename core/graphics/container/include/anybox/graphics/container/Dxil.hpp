@@ -7,7 +7,8 @@ namespace AnyBox::Graphics::Container {
 class DxilView {
 public:
     explicit DxilView(std::span<const std::byte> data);
-    std::span<const std::byte> GetBitcode() const noexcept { return bitcode; }
+    std::span<const std::byte> GetBitcode() const;
+    bool HasBitcode() const noexcept { return !bitcode.empty(); }
     std::uint32_t GetProgramVersion() const noexcept { return programVersion; }
     std::uint32_t GetDxilVersion() const noexcept { return dxilVersion; }
     bool HasEmbeddedData() const noexcept { return table != 0; }

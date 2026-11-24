@@ -10,8 +10,10 @@ AnyBox::Graphics::Container::DxilView::DxilView(std::span<const std::byte> data)
     auto offset = static_cast<std::uint64_t>(ReadInteger(data, 16)) + 8;
     auto size = ReadInteger(data, 20);
     if (offset < 24 || offset > data.size() || size < 4 || size > data.size() - offset) throw std::invalid_argument("DXIL bitcode range is invalid");
-    bitcode = data.subspan(static_cast<std::size_t>(offset), size);
-    if (ReadInteger(bitcode, 0) != 0xDEC04342) throw std::invalid_argument("DXIL bitcode magic is invalid");
+    auto payload = data.subspan(static_cast<std::size_t>(offset), size);
+    auto magic = ReadInteger(payload, 0);
+    if (magic == 0xDEC04342) bitcode = payload;
+    else if (magic != 0x43424F4E || size != 4) throw std::invalid_argument("DXIL bitcode magic is invalid");
     if (offset < 36 || ReadInteger(data, 24) != 0x54414458) return;
     count = ReadInteger(data, 28);
     table = ReadInteger(data, 32);
@@ -31,6 +33,11 @@ AnyBox::Graphics::Container::DxilView::DxilView(std::span<const std::byte> data)
             if (start < otherEnd && otherStart < static_cast<std::uint64_t>(start) + length) throw std::invalid_argument("Xbox DXIL embedded data ranges overlap");
         }
     }
+}
+
+std::span<const std::byte> AnyBox::Graphics::Container::DxilView::GetBitcode() const {
+    if (!HasBitcode()) throw std::runtime_error("Native shader program has no DXIL bitcode");
+    return bitcode;
 }
 
 AnyBox::Graphics::Container::Part AnyBox::Graphics::Container::DxilView::GetEmbeddedPart(std::uint32_t index) const {
