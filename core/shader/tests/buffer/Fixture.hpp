@@ -71,6 +71,18 @@ public:
         ShaderRecompiler::ValidateProgram(program, true);
         return program;
     }
+    void WriteOutput(ShaderRecompiler::IrValue& value) {
+        using namespace ShaderRecompiler;
+        auto& low = builder.Constant(0);
+        auto& high = builder.Constant(2);
+        auto& resource = builder.Emit(IrOpcode::GetAddressResource, IrType::AddressResource, {&low, &high});
+        MemoryInfo memory;
+        memory.kind = ResourceKind::Global;
+        memory.addressIsFull = true;
+        MemoryFlags flags{static_cast<std::uint32_t>(program.Resources().memoryInfo.size()), 0};
+        program.Resources().memoryInfo.push_back(memory);
+        (void)builder.Emit(IrOpcode::StoreAddressU32, IrType::Void, {&resource, &low, &high, &value, &builder.ConstantBool(true)}, flags);
+    }
 
 private:
     ResourceTests::Fixture source;
@@ -86,4 +98,5 @@ private:
 };
 
 std::uint64_t Evaluate(ShaderRecompiler::IrProgram& program, ShaderRecompiler::IrValue& output);
+void CheckSpirv();
 }

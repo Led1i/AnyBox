@@ -40,6 +40,9 @@ void AnyBox::Vulkan::Context::createDevice(std::uint32_t queueCount) {
     address.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES;
     VkPhysicalDeviceTimelineSemaphoreFeatures timeline{};
     timeline.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TIMELINE_SEMAPHORE_FEATURES;
+    VkPhysicalDevice8BitStorageFeatures storage{};
+    storage.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_8BIT_STORAGE_FEATURES;
+    timeline.pNext = &storage;
     address.pNext = &timeline;
     VkPhysicalDeviceFeatures2 features{};
     features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
@@ -55,6 +58,9 @@ void AnyBox::Vulkan::Context::createDevice(std::uint32_t queueCount) {
     enabled.textureCompressionASTC_LDR = features.features.textureCompressionASTC_LDR;
     enabled.imageCubeArray = features.features.imageCubeArray;
     cubeArrays = enabled.imageCubeArray != VK_FALSE;
+    byteStorage = storage.storageBuffer8BitAccess != VK_FALSE;
+    storage.uniformAndStorageBuffer8BitAccess = VK_FALSE;
+    storage.storagePushConstant8 = VK_FALSE;
     address.bufferDeviceAddressCaptureReplay = VK_FALSE;
     address.bufferDeviceAddressMultiDevice = VK_FALSE;
     std::vector<float> priorities(queueCount, 1.0f);

@@ -72,6 +72,13 @@ struct DeviceFunctions {
     PFN_vkCmdCopyImageToBuffer copyImageToBuffer;
     PFN_vkCreateImageView createImageView;
     PFN_vkDestroyImageView destroyImageView;
+    PFN_vkCreateDescriptorSetLayout createDescriptorSetLayout;
+    PFN_vkDestroyDescriptorSetLayout destroyDescriptorSetLayout;
+    PFN_vkCreateDescriptorPool createDescriptorPool;
+    PFN_vkDestroyDescriptorPool destroyDescriptorPool;
+    PFN_vkAllocateDescriptorSets allocateDescriptorSets;
+    PFN_vkUpdateDescriptorSets updateDescriptorSets;
+    PFN_vkCmdBindDescriptorSets bindDescriptorSets;
 };
 
 template<class TFunction>

@@ -54,6 +54,7 @@ void CheckMasks(unsigned bits) {
 
 int main() {
     return AnyBox::Tests::Run([] {
+        BufferTests::CheckSpirv();
         for (unsigned bits : {16u, 32u, 64u}) {
             CheckRaw(bits);
             CheckStructured(bits);

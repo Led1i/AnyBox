@@ -63,5 +63,12 @@ void AnyBox::Vulkan::Context::loadDeviceFunctions() {
     ANYBOX_VULKAN_FUNCTION(copyImageToBuffer, vkCmdCopyImageToBuffer);
     ANYBOX_VULKAN_FUNCTION(createImageView, vkCreateImageView);
     ANYBOX_VULKAN_FUNCTION(destroyImageView, vkDestroyImageView);
+    ANYBOX_VULKAN_FUNCTION(createDescriptorSetLayout, vkCreateDescriptorSetLayout);
+    ANYBOX_VULKAN_FUNCTION(destroyDescriptorSetLayout, vkDestroyDescriptorSetLayout);
+    ANYBOX_VULKAN_FUNCTION(createDescriptorPool, vkCreateDescriptorPool);
+    ANYBOX_VULKAN_FUNCTION(destroyDescriptorPool, vkDestroyDescriptorPool);
+    ANYBOX_VULKAN_FUNCTION(allocateDescriptorSets, vkAllocateDescriptorSets);
+    ANYBOX_VULKAN_FUNCTION(updateDescriptorSets, vkUpdateDescriptorSets);
+    ANYBOX_VULKAN_FUNCTION(bindDescriptorSets, vkCmdBindDescriptorSets);
 #undef ANYBOX_VULKAN_FUNCTION
 }
