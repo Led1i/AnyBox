@@ -1,5 +1,6 @@
 #include <anybox/shader/ComputeCompiler.hpp>
 #include "Validation.hpp"
+#include "choices/Choice.hpp"
 #include <Optimization/ConstantFolder.hpp>
 #include <Optimization/DeadCodeEliminator.hpp>
 #include <Optimization/ResourceTracker.hpp>
@@ -37,6 +38,7 @@ AnyBox::Shader::ComputeCompilation AnyBox::Shader::CompileCompute(ShaderRecompil
     ResolveControlFlowIdentities(program);
     DeadCodeEliminator{}.RemoveIdentities(program);
     DeadCodeEliminator{}.Eliminate(program);
+    if (PlanDescriptorChoices(program) != 0) DeadCodeEliminator{}.Eliminate(program);
     ValidateProgram(program, true);
     SrtWalker{}.BuildPlan(program);
     ResourceTracker{}.Track(program);
