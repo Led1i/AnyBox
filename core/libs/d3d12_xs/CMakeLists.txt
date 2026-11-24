@@ -23,6 +23,8 @@ target_sources(d3d12_xs PRIVATE src/frame/Ancillary.cpp src/frame/Events.cpp src
 target_sources(d3d12_xs PRIVATE src/device/Resources.cpp src/resource/Backing.cpp src/resource/Lifetime.cpp src/resource/Properties.cpp src/resource/Table.cpp)
 target_sources(d3d12_xs PRIVATE src/device/Fences.cpp src/fence/Lifetime.cpp src/fence/Timeline.cpp src/fence/Table.cpp src/queue/Synchronization.cpp)
 target_link_libraries(d3d12_xs PRIVATE xmem)
+target_link_libraries(d3d12_xs PRIVATE anybox_vulkan)
+target_sources(d3d12_xs PRIVATE src/device/Gpu.cpp)
 
 if(BUILD_TESTING)
     add_executable(d3d12_device_tests tests/device/Main.cpp tests/device/Properties.cpp tests/device/Queues.cpp tests/device/Fences.cpp tests/device/Allocators.cpp)

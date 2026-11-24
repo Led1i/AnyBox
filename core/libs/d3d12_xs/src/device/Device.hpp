@@ -13,6 +13,8 @@
 #include <mutex>
 #include <type_traits>
 
+namespace AnyBox::Vulkan { class Context; }
+
 namespace AnyBox::Graphics {
 using DeviceMethod = std::array<std::byte, sizeof(void (*)())>;
 using ObjectTable = std::array<DeviceMethod, 128>;
@@ -44,6 +46,7 @@ public:
     static std::uint32_t AddRef(Device* self);
     static std::uint32_t Release(Device* self);
     ID3D12Device* GetHost() const noexcept { return host; }
+    Vulkan::Context& GetGpuContext() const noexcept { return *gpuContext; }
     bool Matches(const D3D12XboxCreateDeviceParameters& value) const noexcept;
     static std::uint32_t TryAddRef(Device* self);
     static std::uint32_t GetNodeCount(Device* self);
@@ -80,6 +83,7 @@ private:
     mutable std::mutex frameMutex;
     FrameConfiguration frameConfiguration;
     FrameClock* frameClock = nullptr;
+    Vulkan::Context* gpuContext = nullptr;
 };
 
 static_assert(std::is_standard_layout_v<Device>);

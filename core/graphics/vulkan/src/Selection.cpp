@@ -2,13 +2,9 @@
 #include <algorithm>
 #include <cstring>
 
-void AnyBox::Vulkan::Context::selectAdapter(std::uint32_t adapterIndex, std::uint32_t queueCount) {
+void AnyBox::Vulkan::Context::selectAdapter(const AdapterSelection& selection, std::uint32_t queueCount) {
+    findAdapter(selection);
     std::uint32_t count = 0;
-    Check(instanceFunctions.enumeratePhysicalDevices(instance, &count, nullptr), "Count Vulkan adapters");
-    std::vector<VkPhysicalDevice> devices(count);
-    Check(instanceFunctions.enumeratePhysicalDevices(instance, &count, devices.data()), "Enumerate Vulkan adapters");
-    if (adapterIndex >= count) throw std::out_of_range("Vulkan adapter index is unavailable");
-    physicalDevice = devices[adapterIndex];
     VkPhysicalDeviceExternalMemoryHostPropertiesEXT host{};
     host.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_MEMORY_HOST_PROPERTIES_EXT;
     VkPhysicalDeviceIDProperties identity{};

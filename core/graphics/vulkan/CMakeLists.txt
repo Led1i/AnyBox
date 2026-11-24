@@ -2,6 +2,7 @@ add_library(anybox_vulkan STATIC src/Context.cpp src/Selection.cpp src/Functions
 target_sources(anybox_vulkan PRIVATE src/Buffer.cpp src/Allocation.cpp)
 target_sources(anybox_vulkan PRIVATE src/ComputePipeline.cpp)
 target_sources(anybox_vulkan PRIVATE src/Timeline.cpp src/Queue.cpp)
+target_sources(anybox_vulkan PRIVATE src/Adapter.cpp)
 target_link_libraries(anybox_vulkan PUBLIC anybox_common Vulkan::Headers)
 target_compile_definitions(anybox_vulkan PUBLIC VK_NO_PROTOTYPES VK_USE_PLATFORM_WIN32_KHR)
 target_include_directories(anybox_vulkan PUBLIC include)

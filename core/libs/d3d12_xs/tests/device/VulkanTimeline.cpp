@@ -11,11 +11,15 @@ using Handle = std::unique_ptr<void, HandleDeleter>;
 }
 
 void AnyBox::Graphics::Tests::CheckVulkanTimeline(Device* device) {
-    Vulkan::Context context(0);
+    auto& context = device->GetGpuContext();
     constexpr std::uint64_t base = std::uint64_t{1} << 40;
     auto luid = device->GetHost()->GetAdapterLuid();
     Reject<std::invalid_argument>([&] { Vulkan::Timeline::ImportD3D12Fence(context, nullptr); });
     Require(std::memcmp(context.GetAdapterLuid().data(), &luid, sizeof(luid)) == 0, "Vulkan and D3D12 adapters differ");
+    Vulkan::AdapterLuid missing{};
+    missing.fill(std::byte{0xff});
+    Reject<std::out_of_range>([&] { Vulkan::Context unavailable(missing); });
+    Reject<std::out_of_range>([&] { context.GetQueue(5); });
     constexpr GUID fenceId{0x0A753DCF, 0xC4D8, 0x4B91, {0xAD, 0xF6, 0xBE, 0x5A, 0x60, 0xD9, 0x5A, 0x76}};
     constexpr GUID queueId{0x0EC870A6, 0x5D7E, 0x4C22, {0x8C, 0xFC, 0x5B, 0xAA, 0xE0, 0x76, 0x16, 0xED}};
     void* output = nullptr;
@@ -53,5 +57,11 @@ void AnyBox::Graphics::Tests::CheckVulkanTimeline(Device* device) {
     timeline.SignalOnQueue(0, base + 41);
     Windows::CheckHResult(queue->Signal(fence.get(), base + 37), "Signal Vulkan wait from D3D12 queue");
     Require(timeline.Wait(base + 41, 5000000000ull) && fence->GetCompletedValue() == base + 41, "D3D12 queue signal did not release the Vulkan queue wait");
+    for (std::uint32_t index = 1; index < 5; ++index) {
+        for (std::uint32_t earlier = 0; earlier < index; ++earlier) Require(context.GetQueue(index) != context.GetQueue(earlier), "Xbox GPU queues share one Vulkan queue");
+        auto value = base + 41 + index;
+        timeline.SignalOnQueue(index, value);
+        Require(timeline.Wait(value, 5000000000ull) && fence->GetCompletedValue() == value, "Xbox Vulkan queue did not signal the shared D3D12 fence");
+    }
     std::cout << "Verified 64-bit D3D12/Vulkan GPU timeline synchronization and Windows fence events\n" << std::flush;
 }

@@ -2,7 +2,11 @@
 #include <anybox/platform/WindowsError.hpp>
 #include <cstring>
 
-AnyBox::Vulkan::Context::Context(std::uint32_t adapterIndex, std::uint32_t queueCount) {
+AnyBox::Vulkan::Context::Context(std::uint32_t adapterIndex, std::uint32_t queueCount) : Context(AdapterSelection(adapterIndex), queueCount) {}
+
+AnyBox::Vulkan::Context::Context(const AdapterLuid& adapterLuid, std::uint32_t queueCount) : Context(AdapterSelection(adapterLuid), queueCount) {}
+
+AnyBox::Vulkan::Context::Context(const AdapterSelection& selection, std::uint32_t queueCount) {
     if (queueCount == 0) throw std::invalid_argument("Vulkan context requires a queue");
     module = LoadLibraryExW(L"vulkan-1.dll", nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
     if (!module) Windows::ThrowLastError("LoadLibraryExW Vulkan loader");
@@ -25,7 +29,7 @@ AnyBox::Vulkan::Context::Context(std::uint32_t adapterIndex, std::uint32_t queue
         auto create = RequireFunction<PFN_vkCreateInstance>(getInstanceProcAddr(VK_NULL_HANDLE, "vkCreateInstance"), "vkCreateInstance");
         Check(create(&info, nullptr, &instance), "Create Vulkan instance");
         loadInstanceFunctions();
-        selectAdapter(adapterIndex, queueCount);
+        selectAdapter(selection, queueCount);
         createDevice(queueCount);
         loadDeviceFunctions();
         queues.resize(queueCount);

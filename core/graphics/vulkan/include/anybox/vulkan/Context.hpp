@@ -8,11 +8,14 @@
 #include <array>
 #include <memory>
 #include <mutex>
+#include <variant>
 
 namespace AnyBox::Vulkan {
+using AdapterLuid = std::array<std::byte, VK_LUID_SIZE>;
 class Context {
 public:
     explicit Context(std::uint32_t adapterIndex, std::uint32_t queueCount = 1);
+    explicit Context(const AdapterLuid& adapterLuid, std::uint32_t queueCount = 1);
     ~Context();
     Context(const Context&) = delete;
     Context& operator=(const Context&) = delete;
@@ -26,13 +29,16 @@ public:
     VkQueue GetQueue(std::uint32_t index) const;
     VkExternalBufferProperties GetExternalBufferProperties(VkBufferUsageFlags usage) const;
     VkExternalSemaphoreProperties GetD3D12FenceProperties() const;
-    const std::array<std::byte, VK_LUID_SIZE>& GetAdapterLuid() const noexcept { return adapterLuid; }
+    const AdapterLuid& GetAdapterLuid() const noexcept { return adapterLuid; }
     void Submit(std::uint32_t queueIndex, const VkSubmitInfo& submission, VkFence fence = VK_NULL_HANDLE);
 
 private:
+    using AdapterSelection = std::variant<std::uint32_t, AdapterLuid>;
+    Context(const AdapterSelection& selection, std::uint32_t queueCount);
     void loadInstanceFunctions();
     void loadDeviceFunctions();
-    void selectAdapter(std::uint32_t adapterIndex, std::uint32_t queueCount);
+    void findAdapter(const AdapterSelection& selection);
+    void selectAdapter(const AdapterSelection& selection, std::uint32_t queueCount);
     void createDevice(std::uint32_t queueCount);
     void release() noexcept;
     HMODULE module = nullptr;
@@ -48,6 +54,6 @@ private:
     std::uint32_t queueFamily = 0;
     std::vector<VkQueue> queues;
     std::unique_ptr<std::mutex[]> queueMutexes;
-    std::array<std::byte, VK_LUID_SIZE> adapterLuid{};
+    AdapterLuid adapterLuid{};
 };
 }
