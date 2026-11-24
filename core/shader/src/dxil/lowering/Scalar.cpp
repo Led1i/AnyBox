@@ -1,4 +1,5 @@
 #include "Scalar.hpp"
+#include "Buffer.hpp"
 #include <cast.hpp>
 #include <stdexcept>
 
@@ -6,6 +7,17 @@ using namespace ShaderRecompiler;
 using AnyBox::Shader::Dxil::ScalarLowering;
 
 ScalarLowering::ScalarLowering(IrProgram& program, IrBuilder& builder) : program(program), builder(builder) {}
+
+void ScalarLowering::SetBuffers(BufferLowering& value) {
+    if (buffers) throw std::logic_error("DXIL buffer lowering is already configured");
+    buffers = &value;
+}
+
+void ScalarLowering::Emit(const LLVMBC::Instruction& instruction) {
+    auto* call = LLVMBC::dyn_cast<LLVMBC::CallInst>(&instruction);
+    if (call && buffers && buffers->Emit(*call, *this)) return;
+    (void)Get(instruction);
+}
 
 unsigned ScalarLowering::width(const LLVMBC::Value& value) {
     auto* type = value.getType();
@@ -73,6 +85,10 @@ IrValue& ScalarLowering::Get(const LLVMBC::Value& value) {
     } else if (auto* instruction = LLVMBC::dyn_cast<LLVMBC::CastInst>(&value)) {
         output = &cast(*instruction);
     } else if (auto* instruction = LLVMBC::dyn_cast<LLVMBC::ExtractValueInst>(&value)) {
+        if (buffers) {
+            output = buffers->Extract(*instruction, *this);
+            if (output) { values.emplace(&value, output); return *output; }
+        }
         if (instruction->getNumIndices() != 1) throw std::runtime_error("DXIL nested aggregate extraction is not implemented");
         auto& aggregate = Get(*instruction->getAggregateOperand());
         auto index = instruction->getIndices()[0];

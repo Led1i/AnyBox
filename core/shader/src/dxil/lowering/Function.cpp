@@ -8,6 +8,11 @@ using AnyBox::Shader::Dxil::FunctionLowering;
 
 FunctionLowering::FunctionLowering(IrProgram& program) : program(program), builder(program), scalar(program, builder) {}
 
+FunctionLowering::FunctionLowering(IrProgram& program, const ResourceLayout& layout, IResourceBindings& bindings) : FunctionLowering(program) {
+    buffers = std::make_unique<BufferLowering>(program, builder, layout, bindings);
+    scalar.SetBuffers(*buffers);
+}
+
 IrBlock& FunctionLowering::createBlock() {
     auto& block = program.CreateBlock();
     program.BlockOrder().push_back(&block);
@@ -68,7 +73,7 @@ void FunctionLowering::emitBlock(const LLVMBC::BasicBlock& source) {
                 emitTerminator(source, instruction);
                 terminated = true;
             } else {
-                (void)scalar.Get(instruction);
+                scalar.Emit(instruction);
             }
         }
     }

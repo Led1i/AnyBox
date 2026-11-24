@@ -6,11 +6,14 @@
 #include <unordered_map>
 
 namespace AnyBox::Shader::Dxil {
+class BufferLowering;
 class ScalarLowering {
 public:
     ScalarLowering(ShaderRecompiler::IrProgram& program, ShaderRecompiler::IrBuilder& builder);
     ShaderRecompiler::IrValue& Get(const LLVMBC::Value& value);
     void Bind(const LLVMBC::Value& source, ShaderRecompiler::IrValue& value);
+    void SetBuffers(BufferLowering& buffers);
+    void Emit(const LLVMBC::Instruction& instruction);
 
 private:
     using IrValue = ShaderRecompiler::IrValue;
@@ -28,6 +31,7 @@ private:
     IrValue& divide(IrValue& left, IrValue& right, bool isSigned, bool remainder, unsigned bits);
     ShaderRecompiler::IrProgram& program;
     ShaderRecompiler::IrBuilder& builder;
+    BufferLowering* buffers = nullptr;
     std::unordered_map<const LLVMBC::Value*, IrValue*> values;
 };
 }

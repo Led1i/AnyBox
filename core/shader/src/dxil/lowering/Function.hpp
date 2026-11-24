@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Scalar.hpp"
+#include "Buffer.hpp"
 #include <function.hpp>
 #include <vector>
 
@@ -8,6 +9,7 @@ namespace AnyBox::Shader::Dxil {
 class FunctionLowering {
 public:
     explicit FunctionLowering(ShaderRecompiler::IrProgram& program);
+    FunctionLowering(ShaderRecompiler::IrProgram& program, const ResourceLayout& layout, IResourceBindings& bindings);
     void Run(const LLVMBC::Function& function);
 
 private:
@@ -34,6 +36,7 @@ private:
     ShaderRecompiler::IrProgram& program;
     ShaderRecompiler::IrBuilder builder;
     ScalarLowering scalar;
+    std::unique_ptr<BufferLowering> buffers;
     std::unordered_map<const LLVMBC::BasicBlock*, IrBlock*> blocks;
     std::vector<const LLVMBC::BasicBlock*> order;
     std::vector<Edge> edges;

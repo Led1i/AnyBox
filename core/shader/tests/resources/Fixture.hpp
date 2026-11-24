@@ -47,6 +47,7 @@ public:
         return context.construct<LLVMBC::CallInst>(type, function, LLVMBC::Vector<LLVMBC::Value*>{LLVMBC::ConstantInt::get(word, 57), LLVMBC::ConstantInt::get(byte, category), LLVMBC::ConstantInt::get(word, 7), selected, LLVMBC::ConstantInt::get(boolean, dynamic)});
     }
     LLVMBC::Module& Module() { return module; }
+    LLVMBC::LLVMContext& Context() { return context; }
 
 private:
     AnyBox::Shader::DxilSession session;
