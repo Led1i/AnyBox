@@ -62,4 +62,5 @@ void BufferTests::CheckSpirv() {
     CheckLegacyHalfGpu(context);
     CheckFloatMinMax(context);
     CheckFloatMad(context);
+    CheckWaveFirstGpu(context);
 }

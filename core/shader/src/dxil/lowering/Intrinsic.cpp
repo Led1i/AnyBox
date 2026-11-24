@@ -14,6 +14,7 @@ IrValue& ScalarLowering::call(const LLVMBC::CallInst& instruction) {
     if (identifier == "dx.op.legacyF16ToF32") return legacyHalf(instruction);
     if (identifier == "dx.op.binary.f32") return floatBinaryIntrinsic(instruction);
     if (identifier == "dx.op.tertiary.f32") return floatTernaryIntrinsic(instruction);
+    if (identifier == "dx.op.waveIsFirstLane") return waveFirst(instruction);
     if (identifier == "dx.op.threadId.i32") return thread(instruction, 93);
     if (identifier == "dx.op.groupId.i32") return thread(instruction, 94);
     if (identifier == "dx.op.threadIdInGroup.i32") return thread(instruction, 95);

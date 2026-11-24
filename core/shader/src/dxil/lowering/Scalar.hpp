@@ -32,6 +32,7 @@ private:
     IrValue& call(const LLVMBC::CallInst& instruction);
     IrValue& globalLoad(const LLVMBC::CallInst& instruction, unsigned words);
     IrValue& thread(const LLVMBC::CallInst& instruction, unsigned opcode);
+    IrValue& waveFirst(const LLVMBC::CallInst& instruction);
     IrValue& bitField(const LLVMBC::CallInst& instruction, bool insert);
     IrValue& legacyHalf(const LLVMBC::CallInst& instruction);
     IrValue& floatBinaryIntrinsic(const LLVMBC::CallInst& instruction);

@@ -9,6 +9,7 @@ class FloatFixture {
 public:
     FloatFixture() : builder(program), scalar(program, builder) {
         using namespace ShaderRecompiler;
+        program.SetWaveSize(32);
         auto& block = program.CreateBlock();
         program.SetEntryBlock(block);
         program.BlockOrder().push_back(&block);

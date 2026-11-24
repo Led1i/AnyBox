@@ -18,7 +18,6 @@ std::size_t AnyBox::Shader::Tools::AuditCompute(std::span<const std::byte> code)
     Dxil::ArgumentBindings bindings(arguments);
     IrProgram program;
     program.Resources().userDataCount = arguments.GetUserRegisterCount();
-    Dxil::FunctionLowering(program, resources, bindings).Run(*entry.function);
     ShaderComputeInputInfo input;
     std::copy(entry.info.threads.begin(), entry.info.threads.end(), input.threadsNum);
     auto wave = GetComputeWaveSize(code);
@@ -26,6 +25,8 @@ std::size_t AnyBox::Shader::Tools::AuditCompute(std::span<const std::byte> code)
     input.waveSize = wave.value_or(entry.info.preferredWaveSize ? entry.info.preferredWaveSize : 32);
     input.hostSubgroupSize = 32;
     if (input.waveSize != input.hostSubgroupSize) throw std::runtime_error("Offline audit wave size adaptation is not implemented");
+    program.SetWaveSize(input.waveSize);
+    Dxil::FunctionLowering(program, resources, bindings).Run(*entry.function);
     auto target = AuditTarget();
     auto result = Dxil::CompileCompute(program, input, target, {0, 0, 0, 128});
     if (result.code.size() < 5 || result.code.front() != 0x07230203) throw std::runtime_error("Shader compiler returned invalid SPIR-V framing");
