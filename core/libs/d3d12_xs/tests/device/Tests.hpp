@@ -45,5 +45,6 @@ void CheckUnsupportedDeviceMethods(Device* device);
 void CheckPhysicalHeap(Device* device);
 void CheckPlacedBuffer(Device* device);
 void CheckDescriptorHeaps(Device* device);
+void CheckNullShaderViews(Device* device);
 void CheckVulkanTimeline(Device* device);
 }
