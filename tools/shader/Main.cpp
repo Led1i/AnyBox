@@ -1,4 +1,6 @@
 #include <anybox/shader/Inspection.hpp>
+#include <anybox/shader/Resources.hpp>
+#include <array>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
@@ -8,7 +10,7 @@
 
 int main(int argc, char** argv) {
     try {
-        if (argc != 3 || std::string_view(argv[1]) != "--inspect") throw std::invalid_argument("Usage: anybox_shader --inspect <shader.dxbc>");
+        if (argc != 3 || (std::string_view(argv[1]) != "--inspect" && std::string_view(argv[1]) != "--bindings")) throw std::invalid_argument("Usage: anybox_shader <--inspect|--bindings> <shader.dxbc>");
         std::ifstream input(std::filesystem::path(argv[2]), std::ios::binary | std::ios::ate);
         if (!input) throw std::runtime_error("Cannot open shader input");
         auto size = input.tellg();
@@ -16,8 +18,15 @@ int main(int argc, char** argv) {
         std::vector<std::byte> data(static_cast<std::size_t>(size));
         input.seekg(0);
         if (!input.read(reinterpret_cast<char*>(data.data()), size)) throw std::runtime_error("Cannot read shader input");
-        auto assembly = AnyBox::Shader::InspectDxil(data);
-        std::cout << assembly;
+        if (std::string_view(argv[1]) == "--inspect") {
+            std::cout << AnyBox::Shader::InspectDxil(data);
+        } else {
+            constexpr std::array classes{"SRV", "UAV", "CBV", "Sampler"};
+            constexpr std::array kinds{"raw", "structured", "constant"};
+            for (const auto& binding : AnyBox::Shader::ReadDxilBufferBindings(data)) {
+                std::cout << classes.at(static_cast<unsigned>(binding.resourceClass)) << " range=" << binding.rangeId << " space=" << binding.space << " register=" << binding.firstRegister << " count=" << binding.count << " kind=" << kinds.at(static_cast<unsigned>(binding.kind)) << " stride=" << binding.stride << " bytes=" << binding.byteSize << '\n';
+            }
+        }
         if (!std::cout) throw std::runtime_error("Cannot write shader assembly");
         return 0;
     } catch (const std::exception& error) {
