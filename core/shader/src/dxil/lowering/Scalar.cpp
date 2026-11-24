@@ -39,6 +39,11 @@ IrValue& ScalarLowering::signedValue(IrValue& value, unsigned bits) {
 void ScalarLowering::Bind(const LLVMBC::Value& source, IrValue& value) {
     if (values.contains(&source)) throw std::logic_error("DXIL value is already bound");
     auto bits = width(source);
+    if (value.IsPhi()) {
+        if (value.Type() != (bits == 1 ? IrType::Bool : IrType::U32)) throw std::logic_error("DXIL PHI binding has an incompatible IR type");
+        values.emplace(&source, &value);
+        return;
+    }
     auto& converted = narrow(value, bits);
     values.emplace(&source, &converted);
 }

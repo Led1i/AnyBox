@@ -11,6 +11,7 @@ target_include_directories(anybox_dxil SYSTEM PRIVATE "${PROJECT_SOURCE_DIR}/3rd
 target_include_directories(anybox_dxil PUBLIC include)
 
 add_library(anybox_dxil_lowering STATIC src/dxil/lowering/Scalar.cpp src/dxil/lowering/Integer.cpp src/dxil/lowering/Compare.cpp src/dxil/lowering/Cast.cpp)
+target_sources(anybox_dxil_lowering PRIVATE src/dxil/lowering/Function.cpp src/dxil/lowering/Flow.cpp src/dxil/lowering/Phi.cpp)
 target_link_libraries(anybox_dxil_lowering PUBLIC anybox_shader_recompiler PRIVATE llvm-bc anybox_options)
 target_include_directories(anybox_dxil_lowering SYSTEM PRIVATE "${PROJECT_SOURCE_DIR}/3rdparty/dxil-spirv/bc" "${PROJECT_SOURCE_DIR}/3rdparty/dxil-spirv/debug" "${PROJECT_SOURCE_DIR}/3rdparty/dxil-spirv/util")
 
@@ -19,6 +20,15 @@ target_link_libraries(anybox_shader_requirements PUBLIC anybox_container)
 target_include_directories(anybox_shader_requirements PUBLIC include)
 
 if(BUILD_TESTING)
+    add_executable(shader_flow_lowering_tests tests/flow/Loop.cpp tests/flow/Switch.cpp tests/flow/Evaluate.cpp)
+    target_include_directories(shader_flow_lowering_tests PRIVATE src/dxil ../graphics/container/tests)
+    target_include_directories(shader_flow_lowering_tests SYSTEM PRIVATE "${PROJECT_SOURCE_DIR}/3rdparty/dxil-spirv/util" "${PROJECT_SOURCE_DIR}/3rdparty/dxil-spirv/bc" "${PROJECT_SOURCE_DIR}/3rdparty/dxil-spirv/debug")
+    target_link_libraries(shader_flow_lowering_tests PRIVATE anybox_dxil_lowering llvm-bc anybox_test_support)
+    target_compile_definitions(shader_flow_lowering_tests PRIVATE ANYBOX_LIBRARY_NAME="shader_flow_lowering")
+    set_target_properties(shader_flow_lowering_tests PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${ANYBOX_RUNTIME_DIRECTORY}")
+    anybox_add_compiler_runtime(shader_flow_lowering_tests)
+    add_test(NAME shader.flow_lowering COMMAND shader_flow_lowering_tests)
+    set_tests_properties(shader.flow_lowering PROPERTIES TIMEOUT 15)
     add_executable(shader_integer_lowering_tests tests/lowering/Integer.cpp tests/lowering/Conversion.cpp)
     target_include_directories(shader_integer_lowering_tests PRIVATE src/dxil ../graphics/container/tests)
     target_include_directories(shader_integer_lowering_tests SYSTEM PRIVATE "${PROJECT_SOURCE_DIR}/3rdparty/dxil-spirv/util" "${PROJECT_SOURCE_DIR}/3rdparty/dxil-spirv/bc" "${PROJECT_SOURCE_DIR}/3rdparty/dxil-spirv/debug")
