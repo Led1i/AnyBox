@@ -1,5 +1,6 @@
 #include <anybox/shader/Inspection.hpp>
 #include "Audit.hpp"
+#include "NativeAudit.hpp"
 #include <anybox/shader/Resources.hpp>
 #include <anybox/shader/Compute.hpp>
 #include <array>
@@ -13,7 +14,7 @@
 int main(int argc, char** argv) {
     try {
         if (argc == 2 && std::string_view(argv[1]) == "--audit-stream") return AnyBox::Shader::Tools::AuditStream();
-        if (argc != 3 || (std::string_view(argv[1]) != "--inspect" && std::string_view(argv[1]) != "--bindings" && std::string_view(argv[1]) != "--compute")) throw std::invalid_argument("Usage: anybox_shader <--inspect|--bindings|--compute> <shader.dxbc> | --audit-stream");
+        if (argc != 3 || (std::string_view(argv[1]) != "--inspect" && std::string_view(argv[1]) != "--bindings" && std::string_view(argv[1]) != "--compute" && std::string_view(argv[1]) != "--native-info")) throw std::invalid_argument("Usage: anybox_shader <--inspect|--bindings|--compute|--native-info> <shader.dxbc> | --audit-stream");
         std::ifstream input(std::filesystem::path(argv[2]), std::ios::binary | std::ios::ate);
         if (!input) throw std::runtime_error("Cannot open shader input");
         auto size = input.tellg();
@@ -21,7 +22,9 @@ int main(int argc, char** argv) {
         std::vector<std::byte> data(static_cast<std::size_t>(size));
         input.seekg(0);
         if (!input.read(reinterpret_cast<char*>(data.data()), size)) throw std::runtime_error("Cannot read shader input");
-        if (std::string_view(argv[1]) == "--inspect") {
+        if (std::string_view(argv[1]) == "--native-info") {
+            std::cout << AnyBox::Shader::Tools::InspectNative(data);
+        } else if (std::string_view(argv[1]) == "--inspect") {
             std::cout << AnyBox::Shader::InspectDxil(data);
         } else if (std::string_view(argv[1]) == "--compute") {
             auto info = AnyBox::Shader::ReadDxilComputeInfo(data);

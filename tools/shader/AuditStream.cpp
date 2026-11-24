@@ -1,8 +1,7 @@
 #include "Audit.hpp"
+#include "NativeAudit.hpp"
 #include <anybox/graphics/container/Dxil.hpp>
-#include <algorithm>
 #include <array>
-#include <cstring>
 #include <iostream>
 #include <stdexcept>
 #include <string>
@@ -33,18 +32,17 @@ int AnyBox::Shader::Tools::AuditStream() {
             Graphics::Container::DxbcView container(data);
             auto part = container.FindPart(0x4C495844);
             if (!part) throw std::runtime_error("Legacy shader bytecode frontend is not implemented");
-            if (part->data.size() >= 24) {
-                std::array<std::byte, 8> range;
-                std::copy_n(part->data.begin() + 16, range.size(), range.begin());
-                auto offset = static_cast<std::uint64_t>(Integer(range, 0)) + 8;
-                auto length = Integer(range, 4);
-                if (length >= 4 && offset <= part->data.size() && length <= part->data.size() - offset && std::memcmp(part->data.data() + offset, "NOBC", 4) == 0) throw std::runtime_error("Native RDNA2-only container has no DXIL bitcode");
-            }
             Graphics::Container::DxilView dxil(part->data);
-            if ((dxil.GetProgramVersion() >> 16) != 5) throw std::runtime_error("Graphics shader DXIL frontend is not implemented");
-            auto words = AuditCompute(data);
-            ++compiled;
-            result = "compiled\t" + std::to_string(words);
+            if (!dxil.HasBitcode()) {
+                auto words = AuditNative(data);
+                ++compiled;
+                result = "compiled\t" + std::to_string(words);
+            } else {
+                if ((dxil.GetProgramVersion() >> 16) != 5) throw std::runtime_error("Graphics shader DXIL frontend is not implemented");
+                auto words = AuditCompute(data);
+                ++compiled;
+                result = "compiled\t" + std::to_string(words);
+            }
         } catch (const std::exception& error) {
             result = "failed\t" + std::string(error.what());
         }
