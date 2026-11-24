@@ -47,6 +47,15 @@ struct DeviceFunctions {
     PFN_vkQueueSubmit queueSubmit;
     PFN_vkWaitForFences waitForFences;
     PFN_vkQueueWaitIdle queueWaitIdle;
+    PFN_vkCreateShaderModule createShaderModule;
+    PFN_vkDestroyShaderModule destroyShaderModule;
+    PFN_vkCreatePipelineLayout createPipelineLayout;
+    PFN_vkDestroyPipelineLayout destroyPipelineLayout;
+    PFN_vkCreateComputePipelines createComputePipelines;
+    PFN_vkDestroyPipeline destroyPipeline;
+    PFN_vkCmdBindPipeline bindPipeline;
+    PFN_vkCmdPushConstants pushConstants;
+    PFN_vkCmdDispatch dispatch;
 };
 
 template<class TFunction>

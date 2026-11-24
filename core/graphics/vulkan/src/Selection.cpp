@@ -41,6 +41,9 @@ void AnyBox::Vulkan::Context::createDevice(std::uint32_t queueCount) {
     features.pNext = &address;
     instanceFunctions.getFeatures(physicalDevice, &features);
     if (!address.bufferDeviceAddress) throw std::runtime_error("Vulkan buffer device addresses are unsupported");
+    if (!features.features.shaderInt64) throw std::runtime_error("Vulkan shader 64-bit integers are unsupported");
+    VkPhysicalDeviceFeatures enabled{};
+    enabled.shaderInt64 = VK_TRUE;
     address.bufferDeviceAddressCaptureReplay = VK_FALSE;
     address.bufferDeviceAddressMultiDevice = VK_FALSE;
     std::vector<float> priorities(queueCount, 1.0f);
@@ -53,6 +56,7 @@ void AnyBox::Vulkan::Context::createDevice(std::uint32_t queueCount) {
     VkDeviceCreateInfo info{};
     info.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
     info.pNext = &address;
+    info.pEnabledFeatures = &enabled;
     info.queueCreateInfoCount = 1;
     info.pQueueCreateInfos = &queue;
     info.enabledExtensionCount = 1;

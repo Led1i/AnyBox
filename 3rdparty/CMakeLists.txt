@@ -33,3 +33,17 @@ anybox_add_zlib()
 
 include("${CMAKE_CURRENT_SOURCE_DIR}/../cmake/FFmpeg.cmake")
 add_subdirectory(Vulkan-Headers EXCLUDE_FROM_ALL)
+
+function(anybox_add_glslang)
+    set(BUILD_SHARED_LIBS OFF)
+    set(BUILD_EXTERNAL OFF)
+    set(GLSLANG_TESTS OFF)
+    set(GLSLANG_ENABLE_INSTALL OFF)
+    set(ENABLE_GLSLANG_BINARIES OFF)
+    set(ENABLE_HLSL OFF)
+    set(ENABLE_SPIRV ON)
+    set(ENABLE_OPT OFF)
+    add_subdirectory(glslang EXCLUDE_FROM_ALL)
+endfunction()
+
+anybox_add_glslang()

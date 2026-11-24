@@ -39,5 +39,14 @@ void AnyBox::Vulkan::Context::loadDeviceFunctions() {
     ANYBOX_VULKAN_FUNCTION(queueSubmit, vkQueueSubmit);
     ANYBOX_VULKAN_FUNCTION(waitForFences, vkWaitForFences);
     ANYBOX_VULKAN_FUNCTION(queueWaitIdle, vkQueueWaitIdle);
+    ANYBOX_VULKAN_FUNCTION(createShaderModule, vkCreateShaderModule);
+    ANYBOX_VULKAN_FUNCTION(destroyShaderModule, vkDestroyShaderModule);
+    ANYBOX_VULKAN_FUNCTION(createPipelineLayout, vkCreatePipelineLayout);
+    ANYBOX_VULKAN_FUNCTION(destroyPipelineLayout, vkDestroyPipelineLayout);
+    ANYBOX_VULKAN_FUNCTION(createComputePipelines, vkCreateComputePipelines);
+    ANYBOX_VULKAN_FUNCTION(destroyPipeline, vkDestroyPipeline);
+    ANYBOX_VULKAN_FUNCTION(bindPipeline, vkCmdBindPipeline);
+    ANYBOX_VULKAN_FUNCTION(pushConstants, vkCmdPushConstants);
+    ANYBOX_VULKAN_FUNCTION(dispatch, vkCmdDispatch);
 #undef ANYBOX_VULKAN_FUNCTION
 }

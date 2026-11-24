@@ -19,7 +19,9 @@ void AnyBox::Vulkan::Tests::CheckLayout(Context& context, Storage& storage, std:
     auto observed = copied.Map();
     Require(std::ranges::equal(observed, expected), "Vulkan GPU did not read the actual mapped XMem pages");
     for (std::size_t index = 0; index < observed.size(); ++index) observed[index] = static_cast<std::byte>((index * 37) ^ (index >> 8));
-    Copy(context, copied, imported, memory.size());
+    bool repeated = frames[0] == frames[1] && frames[1] == frames[2];
+    Copy(context, copied, imported, repeated ? PhysicalPageSize : memory.size());
     Require(std::ranges::equal(memory, observed), "Vulkan GPU writes did not reach the mapped XMem pages");
-    std::cout << "Verified " << memory.size() << " bytes across " << frames.size() << " mapped pages; GPU address 0x" << std::hex << address << std::dec << '\n';
+    CheckCompute(context, imported, copied, repeated);
+    std::cout << "Verified transfer and SPIR-V device-address reads/writes over " << memory.size() << " bytes across " << frames.size() << " mapped pages; GPU address 0x" << std::hex << address << std::dec << '\n';
 }
