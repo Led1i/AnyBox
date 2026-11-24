@@ -27,6 +27,7 @@ void CheckNative() {
     Require(UnpackXbch(packed) == data);
     for (std::size_t size = 0; size < packed.size(); ++size) Reject<std::invalid_argument>([&] { (void)UnpackXbch(std::span(packed).first(size)); });
     auto damaged = packed;
+    Require(!damaged.empty());
     damaged.back() ^= std::byte{1};
     Reject<std::invalid_argument>([&] { (void)UnpackXbch(damaged); });
     for (const auto& [offset, value] : std::array<std::pair<std::size_t, std::uint32_t>, 3>{{{0, 0}, {8, 0}, {16, 0}}}) {

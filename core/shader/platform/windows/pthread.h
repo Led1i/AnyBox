@@ -7,6 +7,11 @@
 
 using pthread_key_t = DWORD;
 
+inline int pthread_key_delete(pthread_key_t key) {
+    if (!FlsFree(key)) throw std::system_error(static_cast<int>(GetLastError()), std::system_category(), "Shader thread storage deletion failed");
+    return 0;
+}
+
 inline int pthread_key_create(pthread_key_t* key, void (*destroy)(void*)) {
     if (!key) throw std::invalid_argument("Shader thread storage key output is null");
     auto allocated = FlsAlloc(destroy);

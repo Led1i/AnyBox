@@ -4,6 +4,7 @@
 #include <Recompiler.hpp>
 #include <array>
 #include <vector>
+#include <bit>
 
 namespace {
 void Check(AnyBox::Vulkan::Context& context, unsigned scratchMask) {
@@ -11,14 +12,15 @@ void Check(AnyBox::Vulkan::Context& context, unsigned scratchMask) {
     Fixtures::Set(data, 0x13C, 32);
     Fixtures::Set(data, 0x140, 1);
     Fixtures::Set(data, 0x144, 1);
+    constexpr std::array<std::uint32_t, 5> body{0x7E040282, 0x34020082, 0xDC708000, 0x007F0001, 0xBF810000};
     std::vector<std::uint32_t> code;
+    code.reserve(body.size() + std::popcount(scratchMask & 3u) * 2);
     for (unsigned index = 0; index < 2; ++index) {
         if ((scratchMask & (1u << index)) != 0) {
             code.push_back(0xBA80F814 + index);
             code.push_back(0);
         }
     }
-    constexpr std::array<std::uint32_t, 5> body{0x7E040282, 0x34020082, 0xDC708000, 0x007F0001, 0xBF810000};
     code.insert(code.end(), body.begin(), body.end());
     auto bytes = (40 + code.size() * 4 + 15) & ~std::size_t{15};
     data.resize(0x140 + bytes);

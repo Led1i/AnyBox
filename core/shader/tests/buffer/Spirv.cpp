@@ -12,10 +12,10 @@
 namespace BufferTests { void CheckGpu(AnyBox::Vulkan::Context& context, const AnyBox::Shader::Dxil::ComputeCompilation& shader, std::uint32_t expected); }
 
 namespace {
-void CheckPackedField(AnyBox::Vulkan::Context& context, unsigned offset, std::uint32_t expected) {
+void CheckPackedField(AnyBox::Vulkan::Context& context, unsigned byteOffset, std::uint32_t expected) {
     using namespace ShaderRecompiler;
     BufferTests::Fixture fixture(true);
-    auto* load = fixture.Load(16, 1, offset);
+    auto* load = fixture.Load(16, 1, byteOffset);
     fixture.WriteOutput(fixture.Extract(load, 0));
     auto& program = fixture.Finish();
     auto target = BufferTests::Target();

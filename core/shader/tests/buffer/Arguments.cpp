@@ -38,7 +38,7 @@ void CheckSelection(AnyBox::Vulkan::Context& context) {
     using namespace AnyBox::Shader;
     using namespace ShaderRecompiler;
     BufferBinding binding{ResourceClass::ShaderResource, 0, 0, 4, 3, BufferKind::Raw};
-    BufferArgumentPlan plan(std::span(&binding, 1));
+    BufferArgumentPlan plan{std::span(&binding, 1)};
     Dxil::ArgumentBindings bindings(plan);
     IrProgram program;
     program.Resources().userDataCount = plan.GetUserRegisterCount();

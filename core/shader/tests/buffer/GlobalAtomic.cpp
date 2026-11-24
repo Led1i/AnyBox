@@ -33,12 +33,12 @@ void CheckPairs(AnyBox::Vulkan::Context& context, bool maximum) {
     std::array<std::uint32_t, 16> values{0x3F800000, 0xC0000000, 0, 0x80000000, 0x7F800000, 0xFF800000, 0x7FC12345, 0xFFC54321, 0x7F812345, 0xFF812345, 1, 0x80000001, 0x007FFFFF, 0x807FFFFF, 0x7F7FFFFF, 0xFF7FFFFF};
     std::vector<std::uint32_t> initial(512, 0xAAAAAAAA);
     std::vector<std::uint32_t> expected(512);
-    for (unsigned index = 0; index < 256; ++index) {
-        auto old = values[index / 16];
-        auto value = values[index % 16];
-        initial[index] = old;
-        expected[index] = Expected(old, value, maximum);
-        expected[index + 256] = old;
+    for (unsigned sample = 0; sample < 256; ++sample) {
+        auto oldBits = values[sample / 16];
+        auto inputBits = values[sample % 16];
+        initial[sample] = oldBits;
+        expected[sample] = Expected(oldBits, inputBits, maximum);
+        expected[sample + 256] = oldBits;
     }
     BufferTests::RunGpu(context, shader, expected, {4, 1, 1}, std::as_bytes(std::span(values)), {}, std::as_bytes(std::span(initial)));
 }

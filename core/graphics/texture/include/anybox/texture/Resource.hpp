@@ -4,6 +4,8 @@
 #include <anybox/descriptor/Texture.hpp>
 #include <anybox/vulkan/ImageView.hpp>
 #include <memory>
+#include <map>
+#include <mutex>
 
 namespace AnyBox::Texture {
 class Resource {

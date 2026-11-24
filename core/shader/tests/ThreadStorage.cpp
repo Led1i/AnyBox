@@ -20,7 +20,7 @@ void Destroy(void* data) {
 void CheckThreadStorage() {
     pthread_key_t key{};
     if (pthread_key_create(&key, Destroy) != 0) throw std::runtime_error("Shader thread storage allocation failed");
-    auto free = [key](void*) { FlsFree(key); };
+    auto free = [key](void*) { if (pthread_key_delete(key) != 0) std::terminate(); };
     std::unique_ptr<void, decltype(free)> owned(reinterpret_cast<void*>(1), free);
     std::atomic<unsigned> destroyed{0};
     std::array<std::exception_ptr, 2> errors{};

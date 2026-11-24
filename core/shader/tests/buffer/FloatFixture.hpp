@@ -51,13 +51,13 @@ public:
         auto* function = context.construct<LLVMBC::Function>(type, id, module);
         return context.construct<LLVMBC::CallInst>(type, function, std::move(arguments));
     }
-    void Expect(const LLVMBC::Value& value, std::uint32_t expected) {
+    void Expect(const LLVMBC::Value& value, std::uint32_t reference) {
         using namespace ShaderRecompiler;
         auto& result = scalar.Get(value);
         auto& bits = result.Type() == IrType::F32 ? builder.BitCastU32(result) : result;
-        output(bits, expected);
+        output(bits, reference);
     }
-    void Predicates(LLVMBC::Value* left, LLVMBC::Value* right, std::uint32_t expected) {
+    void Predicates(LLVMBC::Value* left, LLVMBC::Value* right, std::uint32_t reference) {
         using namespace ShaderRecompiler;
         IrValue* mask = &builder.Constant(0);
         for (unsigned predicate = 0; predicate < 16; ++predicate) {
@@ -65,7 +65,7 @@ public:
             auto& bit = builder.Select(scalar.Get(*comparison), builder.Constant(1u << predicate), builder.Constant(0));
             mask = &builder.BitwiseOr(*mask, bit);
         }
-        output(*mask, expected);
+        output(*mask, reference);
     }
     void Reject(const LLVMBC::Value& value) {
         bool caught = false;

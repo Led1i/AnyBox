@@ -6,16 +6,16 @@ using namespace ShaderRecompiler;
 using AnyBox::Shader::Dxil::FunctionLowering;
 
 void FunctionLowering::orderBlocks() {
-    auto& blocks = program.BlockOrder();
+    auto& blockOrder = program.BlockOrder();
     auto& metadata = program.Metadata().blockInfo;
-    if (blocks.size() != metadata.size()) throw std::logic_error("DXIL block order and metadata have different sizes");
+    if (blockOrder.size() != metadata.size()) throw std::logic_error("DXIL block order and metadata have different sizes");
     std::unordered_map<const IrBlock*, std::size_t> positions;
-    for (std::size_t index = 0; index < blocks.size(); ++index) {
-        if (!blocks[index] || !positions.emplace(blocks[index], index).second) throw std::logic_error("DXIL block order contains a null or repeated block");
+    for (std::size_t index = 0; index < blockOrder.size(); ++index) {
+        if (!blockOrder[index] || !positions.emplace(blockOrder[index], index).second) throw std::logic_error("DXIL block order contains a null or repeated block");
     }
     std::unordered_set<const IrBlock*> visited;
     std::vector<IrBlock*> ordered;
-    ordered.reserve(blocks.size());
+    ordered.reserve(blockOrder.size());
     std::vector<std::pair<IrBlock*, bool>> pending{{&program.EntryBlock(), false}};
     while (!pending.empty()) {
         auto [block, complete] = pending.back();
@@ -26,7 +26,7 @@ void FunctionLowering::orderBlocks() {
         pending.emplace_back(block, true);
         for (auto* successor : block->Successors()) pending.emplace_back(successor, false);
     }
-    if (ordered.size() != blocks.size()) throw std::runtime_error("DXIL lowered function contains unreachable blocks");
+    if (ordered.size() != blockOrder.size()) throw std::runtime_error("DXIL lowered function contains unreachable blocks");
     std::ranges::reverse(ordered);
     std::vector<BlockInfo> reordered;
     std::vector<std::unique_ptr<IrBlock>> storage;
@@ -39,5 +39,5 @@ void FunctionLowering::orderBlocks() {
     }
     metadata = std::move(reordered);
     program.Blocks() = std::move(storage);
-    blocks = std::move(ordered);
+    blockOrder = std::move(ordered);
 }

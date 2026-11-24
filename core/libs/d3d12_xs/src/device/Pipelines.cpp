@@ -24,7 +24,8 @@ HRESULT AnyBox::Graphics::Device::CreateComputePipelineStateX(Device* self, cons
         throw std::runtime_error("Xbox compute pipeline extensions are not implemented");
     }
     if (description->CachedPSO.CachedBlobSizeInBytes != 0) throw std::runtime_error("Xbox compute pipeline cache loading is not implemented");
-    if ((description->Flags & ~D3D12_PIPELINE_STATE_FLAG_TOOL_DEBUG) != 0) throw std::invalid_argument("Compute pipeline flags are unsupported");
+    constexpr std::uint32_t toolDebugFlag = 1;
+    if ((static_cast<std::uint32_t>(description->Flags) & ~toolDebugFlag) != 0) throw std::invalid_argument("Compute pipeline flags are unsupported");
     if (!description->CS.pShaderBytecode || description->CS.BytecodeLength == 0) throw std::invalid_argument("Compute shader bytecode is empty");
     auto code = std::span(static_cast<const std::byte*>(description->CS.pShaderBytecode), description->CS.BytecodeLength);
     ValidateComputeShader(*self, code);

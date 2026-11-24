@@ -82,13 +82,13 @@ void CheckStream() {
         InlineReader selected(record);
         Require(std::get<Dispatch>(selected.Next(state)).header == header);
         for (unsigned size = 1; size < 4; ++size) {
-            InlineReader truncated(std::span(record).first(size));
+            InlineReader truncated{std::span(record).first(size)};
             Reject<std::invalid_argument>([&] { truncated.Next(state); });
             Require(!truncated.Empty());
         }
     }
     auto reject = [&](std::initializer_list<std::uint32_t> record) {
-        InlineReader selected(std::span(record.begin(), record.size()));
+        InlineReader selected{std::span(record.begin(), record.size())};
         Reject<std::exception>([&] { selected.Next(state); });
         Require(!selected.Empty());
     };
