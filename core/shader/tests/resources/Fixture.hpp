@@ -13,7 +13,7 @@ namespace ResourceTests {
 class Fixture {
 public:
     Fixture() : module(context) {}
-    LLVMBC::MDOperand* Integer(std::uint32_t value, unsigned bits = 32) {
+    LLVMBC::MDOperand* Integer(std::uint64_t value, unsigned bits = 32) {
         return context.construct<LLVMBC::ConstantAsMetadata>(&module, LLVMBC::ConstantInt::get(LLVMBC::Type::getIntTy(context, bits), value));
     }
     LLVMBC::MDNode* Node(std::initializer_list<LLVMBC::MDOperand*> operands) {
@@ -54,4 +54,5 @@ private:
     LLVMBC::LLVMContext context;
     LLVMBC::Module module;
 };
+void CheckComputeEntries();
 }

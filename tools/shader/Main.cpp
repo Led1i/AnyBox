@@ -1,5 +1,6 @@
 #include <anybox/shader/Inspection.hpp>
 #include <anybox/shader/Resources.hpp>
+#include <anybox/shader/Compute.hpp>
 #include <array>
 #include <filesystem>
 #include <fstream>
@@ -10,7 +11,7 @@
 
 int main(int argc, char** argv) {
     try {
-        if (argc != 3 || (std::string_view(argv[1]) != "--inspect" && std::string_view(argv[1]) != "--bindings")) throw std::invalid_argument("Usage: anybox_shader <--inspect|--bindings> <shader.dxbc>");
+        if (argc != 3 || (std::string_view(argv[1]) != "--inspect" && std::string_view(argv[1]) != "--bindings" && std::string_view(argv[1]) != "--compute")) throw std::invalid_argument("Usage: anybox_shader <--inspect|--bindings|--compute> <shader.dxbc>");
         std::ifstream input(std::filesystem::path(argv[2]), std::ios::binary | std::ios::ate);
         if (!input) throw std::runtime_error("Cannot open shader input");
         auto size = input.tellg();
@@ -20,6 +21,9 @@ int main(int argc, char** argv) {
         if (!input.read(reinterpret_cast<char*>(data.data()), size)) throw std::runtime_error("Cannot read shader input");
         if (std::string_view(argv[1]) == "--inspect") {
             std::cout << AnyBox::Shader::InspectDxil(data);
+        } else if (std::string_view(argv[1]) == "--compute") {
+            auto info = AnyBox::Shader::ReadDxilComputeInfo(data);
+            std::cout << "entry=" << info.entryPoint << " model=cs_6_" << info.shaderModelMinor << " threads=" << info.threads[0] << ',' << info.threads[1] << ',' << info.threads[2] << " flags=" << info.flags << " wave=" << info.minimumWaveSize << ',' << info.maximumWaveSize << ',' << info.preferredWaveSize << '\n';
         } else {
             constexpr std::array classes{"SRV", "UAV", "CBV", "Sampler"};
             constexpr std::array kinds{"raw", "structured", "constant"};

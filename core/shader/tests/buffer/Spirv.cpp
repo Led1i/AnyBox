@@ -1,6 +1,7 @@
 #include "Fixture.hpp"
 #include "Fixtures.hpp"
 #include "ComputeCompiler.hpp"
+#include "Target.hpp"
 #include <spirv/unified1/spirv.hpp>
 
 namespace BufferTests { void CheckGpu(const AnyBox::Shader::Dxil::ComputeCompilation& shader, std::uint32_t expected); }
@@ -12,15 +13,7 @@ void CheckPackedField(unsigned offset, std::uint32_t expected) {
     auto* load = fixture.Load(16, 1, offset);
     fixture.WriteOutput(fixture.Extract(load, 0));
     auto& program = fixture.Finish();
-    constexpr std::array<std::uint32_t, 5> capabilities{spv::CapabilityShader, spv::CapabilityInt64, spv::CapabilityGroupNonUniform, spv::CapabilityPhysicalStorageBufferAddresses, spv::CapabilityStorageBuffer8BitAccess};
-    constexpr std::array<std::string_view, 3> extensions{"SPV_KHR_storage_buffer_storage_class", "SPV_KHR_physical_storage_buffer", "SPV_KHR_8bit_storage"};
-    SpirvTargetOptions target{};
-    target.vulkanVersion = 0x00402000;
-    target.spirvVersion = 0x00010500;
-    target.subgroupSize = 32;
-    target.bdaAbiVersion = 1;
-    target.supportedCapabilities = capabilities;
-    target.supportedExtensions = extensions;
+    auto target = BufferTests::Target();
     ShaderComputeInputInfo input;
     input.threadsNum[0] = input.threadsNum[1] = input.threadsNum[2] = 1;
     input.waveSize = input.hostSubgroupSize = 32;
@@ -48,4 +41,5 @@ void CheckPackedField(unsigned offset, std::uint32_t expected) {
 void BufferTests::CheckSpirv() {
     CheckPackedField(28, 0xBEBB);
     CheckPackedField(30, 0xC4C1);
+    CheckThreads();
 }

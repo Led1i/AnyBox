@@ -31,6 +31,7 @@ void CheckInvalid(unsigned stride, unsigned firstRegister, unsigned count) {
 
 int main() {
     return AnyBox::Tests::Run([] {
+        ResourceTests::CheckComputeEntries();
         for (unsigned category : {0u, 1u}) {
             CheckBinding(category, 0);
             CheckBinding(category, 32);
