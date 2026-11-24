@@ -4,6 +4,7 @@
 #include "NativeFixtures.hpp"
 #include "Recompiler.hpp"
 #include <array>
+#include <string_view>
 
 void CheckSpirvValidation(std::span<const std::uint32_t> code);
 
@@ -53,4 +54,14 @@ void CheckNativeCompute() {
     Reject<std::invalid_argument>([&] { (void)LowerNativeCompute(frontend, invalid, mode, target); });
     target.subgroupSize = 16;
     Reject<std::invalid_argument>([&] { (void)LowerNativeCompute(frontend, state, mode, target); });
+    auto legacy = MakeComputeProgram();
+    Set(legacy, 0x168, 0xD5400000);
+    Set(legacy, 0x16C, 0x00080200);
+    Set(legacy, 0x170, 0xBF810000);
+    NativeFrontend fused(legacy);
+    Require(fused.GetDecoded().instructions.front().op == ShaderRecompiler::RdnaOpcode::VMadLegacyF32);
+    bool rejected = false;
+    try { (void)LowerNativeCompute(fused, state, mode, BufferTests::Target()); }
+    catch (const std::runtime_error& error) { rejected = std::string_view(error.what()).find("RDNA2 fused legacy FMA") != std::string_view::npos; }
+    Require(rejected);
 }
