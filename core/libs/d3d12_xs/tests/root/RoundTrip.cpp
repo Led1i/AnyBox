@@ -68,9 +68,11 @@ void Errors() {
     Reject<std::invalid_argument>([&] { D3D12SerializeVersionedRootSignature(nullptr, &blob, &diagnostics); });
     Reject<std::invalid_argument>([&] { D3D12SerializeVersionedRootSignature(nullptr, nullptr, nullptr); });
     D3D12_VERSIONED_ROOT_SIGNATURE_DESC invalid{};
-    invalid.Version = static_cast<D3D_ROOT_SIGNATURE_VERSION>(99);
-    Reject<std::system_error>([&] { D3D12SerializeVersionedRootSignature(&invalid, &blob, &diagnostics); });
-    Require(!blob && !diagnostics, "Failed root signature serialization retained outputs");
+    for (auto version : {0U, 3U, 99U, UINT32_MAX}) {
+        invalid.Version = static_cast<D3D_ROOT_SIGNATURE_VERSION>(version);
+        Reject<std::invalid_argument>([&] { D3D12SerializeVersionedRootSignature(&invalid, &blob, &diagnostics); });
+        Require(!blob && !diagnostics, "Failed root signature serialization retained outputs");
+    }
     std::array<std::byte, 16> bytes{};
     void* object = bytes.data();
     Reject<std::invalid_argument>([&] { D3D12CreateRootSignatureDeserializer(nullptr, 0, DeserializerId, &object); });

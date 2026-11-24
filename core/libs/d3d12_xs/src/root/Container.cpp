@@ -8,7 +8,7 @@
 std::uint32_t AnyBox::Graphics::GetRootSignatureFlags(const D3D12_VERSIONED_ROOT_SIGNATURE_DESC& description) {
     if (description.Version == D3D_ROOT_SIGNATURE_VERSION_1_0) return description.Desc_1_0.Flags;
     if (description.Version == D3D_ROOT_SIGNATURE_VERSION_1_1) return description.Desc_1_1.Flags;
-    return 0;
+    throw std::invalid_argument("Unsupported Xbox root signature version");
 }
 
 void AnyBox::Graphics::SetRootSignatureFlags(D3D12_VERSIONED_ROOT_SIGNATURE_DESC& description, std::uint32_t flags) {
