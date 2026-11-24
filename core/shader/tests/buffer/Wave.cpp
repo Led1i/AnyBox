@@ -1,63 +1,9 @@
-#include "FloatFixture.hpp"
+#include "WaveKernel.hpp"
 #include "Fixtures.hpp"
 #include <Recompiler.hpp>
 #include <bit>
 
 namespace {
-ShaderRecompiler::IrProgram Make(std::uint64_t mask, unsigned waveSize) {
-    using namespace ShaderRecompiler;
-    ResourceTests::Fixture source;
-    auto& context = source.Context();
-    auto* word = LLVMBC::Type::getInt32Ty(context);
-    auto* boolean = LLVMBC::Type::getInt1Ty(context);
-    source.Module().add_value_name(110, "dx.op.waveIsFirstLane");
-    auto* signature = context.construct<LLVMBC::FunctionType>(context, boolean, LLVMBC::Vector<LLVMBC::Type*>{word});
-    auto* function = context.construct<LLVMBC::Function>(signature, 110, source.Module());
-    auto* call = context.construct<LLVMBC::CallInst>(signature, function, LLVMBC::Vector<LLVMBC::Value*>{LLVMBC::ConstantInt::get(word, 110)});
-    IrProgram program;
-    program.SetWaveSize(waveSize);
-    auto& entry = program.CreateBlock();
-    auto& body = program.CreateBlock();
-    auto& exit = program.CreateBlock();
-    program.SetEntryBlock(entry);
-    program.BlockOrder() = {&entry, &body, &exit};
-    entry.AddBranch(&body);
-    entry.AddBranch(&exit);
-    body.AddBranch(&exit);
-    auto& metadata = program.Metadata().blockInfo;
-    metadata.resize(3);
-    for (unsigned index = 0; index < 3; ++index) metadata[index].id = index;
-    metadata[0].terminator.kind = TerminatorKind::ConditionalBranch;
-    metadata[0].terminator.condition = BranchCondition::ScalarInstruction;
-    metadata[0].terminator.trueBlock = 1;
-    metadata[0].terminator.falseBlock = metadata[0].terminator.mergeBlock = 2;
-    metadata[1].terminator.kind = TerminatorKind::Branch;
-    metadata[1].terminator.trueBlock = 2;
-    IrBuilder builder(program);
-    builder.SetInsertionPoint(entry);
-    auto& lane = builder.Emit(IrOpcode::LaneId, IrType::U32, {});
-    auto& low = builder.Constant(static_cast<std::uint32_t>(mask));
-    auto& high = builder.Constant(static_cast<std::uint32_t>(mask >> 32));
-    auto& selected = builder.Select(builder.ULessThan(lane, builder.Constant(32)), low, high);
-    auto& shift = builder.BitwiseAnd(lane, builder.Constant(31));
-    auto& active = builder.INotEqual(builder.BitwiseAnd(builder.ShiftRightLogical(selected, shift), builder.Constant(1)), builder.Constant(0));
-    metadata[0].condition = &active;
-    (void)builder.Emit(IrOpcode::Reference, IrType::Void, {&active});
-    auto& global = builder.Emit(IrOpcode::GetBuiltin, IrType::U32, {&builder.Constant(static_cast<unsigned>(StageInputKind::GlobalInvocationId)), &builder.Constant(0)});
-    builder.SetInsertionPoint(body);
-    AnyBox::Shader::Dxil::ScalarLowering scalar(program, builder);
-    auto& elected = scalar.Get(*call);
-    auto& result = builder.Select(elected, builder.Constant(1), builder.Constant(0));
-    auto& offset = builder.ShiftLeftLogical(global, builder.Constant(2));
-    auto& address = builder.Emit(IrOpcode::GetAddressResource, IrType::AddressResource, {&offset, &builder.Constant(2)});
-    MemoryInfo memory;
-    memory.kind = ResourceKind::Global;
-    memory.addressIsFull = true;
-    program.Resources().memoryInfo.push_back(memory);
-    (void)builder.Emit(IrOpcode::StoreAddressU32, IrType::Void, {&address, &offset, &builder.Constant(2), &result, &active}, MemoryFlags{0, 0});
-    ValidateProgram(program, true);
-    return program;
-}
 
 void CheckInvalid(AnyBox::Vulkan::Context& context) {
     BufferTests::FloatFixture fixture;
@@ -86,10 +32,10 @@ void BufferTests::CheckWaveFirstGpu(AnyBox::Vulkan::Context& context) {
     for (unsigned waveSize : {32u, 64u}) {
         for (auto mask : masks) {
             if (waveSize == 64) {
-                Fixtures::Reject<std::runtime_error>([&] { (void)Make(mask, waveSize); });
+                Fixtures::Reject<std::runtime_error>([&] { (void)MakeWaveKernel(mask, waveSize); });
                 continue;
             }
-            auto program = Make(mask, waveSize);
+            auto program = MakeWaveKernel(mask, waveSize);
             ShaderRecompiler::ShaderComputeInputInfo info;
             info.threadsNum[0] = waveSize;
             info.threadsNum[1] = info.threadsNum[2] = 1;

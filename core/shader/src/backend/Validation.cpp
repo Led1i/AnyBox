@@ -1,11 +1,11 @@
 #include "Validation.hpp"
+#include "Environment.hpp"
 #include <spirv-tools/libspirv.h>
 #include <memory>
 #include <stdexcept>
 #include <string>
 
-namespace {
-spv_target_env Environment(std::uint32_t version) {
+spv_target_env AnyBox::Shader::GetSpirvEnvironment(std::uint32_t version) {
     switch (version & ~0xFFFu) {
         case 0x400000: return SPV_ENV_VULKAN_1_0;
         case 0x401000: return SPV_ENV_VULKAN_1_1;
@@ -15,10 +15,9 @@ spv_target_env Environment(std::uint32_t version) {
         default: throw std::invalid_argument("Shader validation target Vulkan version is not supported");
     }
 }
-}
 
 void AnyBox::Shader::ValidateSpirv(std::span<const std::uint32_t> code, std::uint32_t vulkanVersion) {
-    std::unique_ptr<spv_context_t, decltype(&spvContextDestroy)> context(spvContextCreate(Environment(vulkanVersion)), &spvContextDestroy);
+    std::unique_ptr<spv_context_t, decltype(&spvContextDestroy)> context(spvContextCreate(GetSpirvEnvironment(vulkanVersion)), &spvContextDestroy);
     if (!context) throw std::bad_alloc();
     spv_diagnostic raw = nullptr;
     auto status = spvValidateBinary(context.get(), code.data(), code.size(), &raw);

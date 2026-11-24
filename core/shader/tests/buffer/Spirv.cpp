@@ -63,4 +63,5 @@ void BufferTests::CheckSpirv() {
     CheckFloatMinMax(context);
     CheckFloatMad(context);
     CheckWaveFirstGpu(context);
+    CheckWaveReductionGpu(context);
 }
