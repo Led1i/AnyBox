@@ -10,6 +10,7 @@ target_sources(d3d12_xs PRIVATE src/root/Serialized.cpp src/root/Deserializer.cp
 target_sources(d3d12_xs PRIVATE src/root/Description.cpp)
 target_sources(d3d12_xs PRIVATE src/device/Pipelines.cpp src/device/Features.cpp src/pipeline/Shader.cpp src/pipeline/State.cpp)
 target_link_libraries(d3d12_xs PRIVATE anybox_container)
+target_link_libraries(d3d12_xs PRIVATE anybox_shader_requirements)
 target_sources(d3d12_xs PRIVATE src/memory/Configuration.cpp)
 target_sources(d3d12_xs PRIVATE src/device/Creation.cpp src/device/Lifetime.cpp src/device/Properties.cpp src/device/Table.cpp)
 target_sources(d3d12_xs PRIVATE src/device/Queues.cpp src/queue/Lifetime.cpp src/queue/Properties.cpp src/queue/Table.cpp)
