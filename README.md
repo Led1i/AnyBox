@@ -4,8 +4,8 @@ AnyBox is a compatibility layer for running Xbox Series X|S executables natively
 
 ## Status
 
-Xbox shader pipeline integration is in development. The test app does not render a frame yet. It currently reaches graphics initialization and compute pipeline creation.
-Work on full shader support is in progress.
+Xbox shader pipeline integration is in development. Even the test app does not render a frame yet. It currently reaches graphics initialization and compute pipeline creation.
+Work on full shader support now.
 
 Seven system libraries have been created. Implementations exist for 37 exported functions; three exports remain stubs. Some implemented functions still have unsupported modes. Launch has been tested with the test app's executable.
 
