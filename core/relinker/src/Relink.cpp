@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <string>
 
-AnyBox::Relinker::RelinkResult AnyBox::Relinker::LowerCacheWriteback(Image& image) {
+AnyBox::Relinker::RelinkResult AnyBox::Relinker::Relink(Image& image, const Cpu& cpu, bool forceCacheWriteback) {
     Decoder decoder;
     RelinkResult result;
     auto entries = image.EntryPoints();
@@ -38,8 +38,12 @@ AnyBox::Relinker::RelinkResult AnyBox::Relinker::LowerCacheWriteback(Image& imag
                     if (target >= image.GetBase() && target - image.GetBase() <= UINT32_MAX && image.IsExecutable(static_cast<std::uint32_t>(target - image.GetBase()))) entries.push_back(static_cast<std::uint32_t>(target - image.GetBase()));
                 }
             }
-            if (auto replacement = decoder.LowerWriteback(instruction, code)) {
-                std::ranges::copy(std::span(replacement->bytes).first(replacement->length), image.GetBytes().begin() + static_cast<std::ptrdiff_t>(offset));
+            if (!cpu.Supports(instruction) || (forceCacheWriteback && instruction.native.mnemonic == ZYDIS_MNEMONIC_CLWB)) {
+                auto replacement = decoder.LowerWriteback(instruction, code);
+                if (!replacement) cpu.Require(instruction, address);
+                auto bytes = std::span(replacement->bytes).first(replacement->length);
+                cpu.Require(decoder.Decode(bytes), address);
+                std::ranges::copy(bytes, image.GetBytes().begin() + static_cast<std::ptrdiff_t>(offset));
                 result.writebackAddresses.push_back(address);
             }
             if (category == ZYDIS_CATEGORY_UNCOND_BR || category == ZYDIS_CATEGORY_RET || instruction.native.mnemonic == ZYDIS_MNEMONIC_INT3 || instruction.native.mnemonic == ZYDIS_MNEMONIC_UD2) break;

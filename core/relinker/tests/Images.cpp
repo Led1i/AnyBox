@@ -4,6 +4,12 @@
 #include <cstring>
 
 namespace {
+AnyBox::Relinker::RelinkResult LowerCacheWriteback(AnyBox::Relinker::Image& image) {
+    AnyBox::Relinker::CpuState state;
+    state.basic[3] = 1U << 19;
+    return AnyBox::Relinker::Relink(image, AnyBox::Relinker::Cpu(state), true);
+}
+
 template<class TValue>
 void Put(std::vector<std::byte>& bytes, std::size_t offset, TValue value) { std::memcpy(bytes.data() + offset, &value, sizeof(value)); }
 
@@ -60,6 +66,20 @@ void AnyBox::Relinker::Tests::CheckImages() {
     }
     Require(image.GetBytes()[515] == std::byte{0x40} && image.GetBytes()[519] == std::byte{0x39}, "PE cache replacement encoding changed");
     Require(LowerCacheWriteback(image).writebackAddresses.empty(), "PE cache lowering is not idempotent");
+
+    CpuState nativeState;
+    nativeState.structured[1] = 1U << 24;
+    Image nativeImage(original);
+    Require(Relink(nativeImage, Cpu(nativeState)).writebackAddresses.empty() && std::ranges::equal(nativeImage.GetBytes(), original), "Supported CLWB was rewritten without a request");
+    Reject([&] { Image invalid(original); Relink(invalid, Cpu(nativeState), true); });
+    Reject([&] { Image invalid(original); Relink(invalid, Cpu(CpuState{})); });
+
+    const std::array<std::uint8_t, 12> branch{0x85, 0xC0, 0x74, 0x01, 0xC3, 0x66, 0x0F, 0x78, 0xC0, 1, 1, 0xC3};
+    Reject([&] { Image invalid(Fixture(branch)); Relink(invalid, Cpu(CpuState{})); });
+    auto fallthrough = branch;
+    fallthrough[3] = 7;
+    fallthrough[4] = 0x90;
+    Reject([&] { Image invalid(Fixture(fallthrough)); Relink(invalid, Cpu(CpuState{})); });
 
     auto signedBytes = original;
     signedBytes.resize(1568, std::byte{0xA7});

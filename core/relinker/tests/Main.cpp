@@ -6,6 +6,7 @@ int main() {
         AnyBox::Relinker::Tests::CheckWriteback();
         AnyBox::Relinker::Tests::CheckExecution();
         AnyBox::Relinker::Tests::CheckImages();
+        AnyBox::Relinker::Tests::CheckCpu();
         return 0;
     } catch (const std::exception& error) {
         std::cerr << error.what() << '\n';

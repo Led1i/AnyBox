@@ -8,4 +8,5 @@ inline void Require(bool condition, const char* message) { if (!condition) throw
 void CheckWriteback();
 void CheckExecution();
 void CheckImages();
+void CheckCpu();
 }
