@@ -8,7 +8,7 @@ Initial development. The test app has not been confirmed to run fully.
 
 Work on full shader support is in progress.
 
-Seven system libraries have been created, with 29 completed exported functions. Eleven exported functions remain incomplete. Launch has been tested with the test app's executable.
+Seven system libraries have been created. Implementations exist for 37 exported functions; three exports remain stubs. Some implemented functions still have unsupported modes. Launch has been tested with the test app's executable.
 
 Unimplemented functions throw a C++ exception. Cross-library stack unwinding and destructor execution are verified by tests. The test app reaches an unimplemented function and terminates with an unhandled MSVC-compatible C++ exception; its call stack is visible in the debugger. Destructor execution during unwinding through the test app's code has not been verified.
 
