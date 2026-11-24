@@ -51,3 +51,16 @@ std::size_t AnyBox::Shader::Tools::AuditNative(std::span<const std::byte> contai
     if (compute) throw std::runtime_error("Native compute SPIR-V generated with a candidate floating profile; initial floating flags are not verified");
     throw std::runtime_error("Xbox native stage parameters frontend is not implemented");
 }
+
+std::string AnyBox::Shader::Tools::InspectNativeIr(std::span<const std::byte> container) {
+    auto programs = Graphics::Container::UnpackNativePrograms(container);
+    std::ostringstream output;
+    for (std::size_t index = 0; index < programs.size(); ++index) {
+        auto state = Graphics::Container::ReadNativeComputeState(programs[index]);
+        NativeFrontend frontend(programs[index]);
+        ShaderRecompiler::ShaderFloatMode candidate{state.floatControl, false, false, false};
+        auto lowered = LowerNativeCompute(frontend, state, candidate, AuditTarget());
+        output << "program=" << index << " candidateFloatingProfile=true\n" << ShaderRecompiler::ProgramToString(lowered.program);
+    }
+    return output.str();
+}

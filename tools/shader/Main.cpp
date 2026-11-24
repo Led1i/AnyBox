@@ -14,7 +14,7 @@
 int main(int argc, char** argv) {
     try {
         if (argc == 2 && std::string_view(argv[1]) == "--audit-stream") return AnyBox::Shader::Tools::AuditStream();
-        if (argc != 3 || (std::string_view(argv[1]) != "--inspect" && std::string_view(argv[1]) != "--bindings" && std::string_view(argv[1]) != "--compute" && std::string_view(argv[1]) != "--native-info" && std::string_view(argv[1]) != "--native-audit")) throw std::invalid_argument("Usage: anybox_shader <--inspect|--bindings|--compute|--native-info|--native-audit> <shader.dxbc> | --audit-stream");
+        if (argc != 3 || (std::string_view(argv[1]) != "--inspect" && std::string_view(argv[1]) != "--bindings" && std::string_view(argv[1]) != "--compute" && std::string_view(argv[1]) != "--native-info" && std::string_view(argv[1]) != "--native-ir" && std::string_view(argv[1]) != "--native-audit")) throw std::invalid_argument("Usage: anybox_shader <--inspect|--bindings|--compute|--native-info|--native-ir|--native-audit> <shader.dxbc> | --audit-stream");
         std::ifstream input(std::filesystem::path(argv[2]), std::ios::binary | std::ios::ate);
         if (!input) throw std::runtime_error("Cannot open shader input");
         auto size = input.tellg();
@@ -27,6 +27,8 @@ int main(int argc, char** argv) {
             std::cout << "words=" << words << '\n';
         } else if (std::string_view(argv[1]) == "--native-info") {
             std::cout << AnyBox::Shader::Tools::InspectNative(data);
+        } else if (std::string_view(argv[1]) == "--native-ir") {
+            std::cout << AnyBox::Shader::Tools::InspectNativeIr(data);
         } else if (std::string_view(argv[1]) == "--inspect") {
             std::cout << AnyBox::Shader::InspectDxil(data);
         } else if (std::string_view(argv[1]) == "--compute") {
