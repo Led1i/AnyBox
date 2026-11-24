@@ -1,5 +1,6 @@
 #include <anybox/graphics/commands/RootState.hpp>
 #include <algorithm>
+#include <cstring>
 #include <stdexcept>
 
 using namespace AnyBox::Graphics::Commands;
@@ -42,7 +43,7 @@ void RootState::Write(std::uint32_t parameter, std::uint32_t offset, std::span<c
     if (offset > size || words.size() > size - offset) throw std::out_of_range("Root state write exceeds the parameter size");
     auto& selected = parameters[parameter];
     if (selected.kind != RootParameterKind::Constants && (offset != 0 || words.size() != size)) throw std::invalid_argument("Root descriptor and table updates must replace the entire argument");
-    std::copy(words.begin(), words.end(), selected.words.begin() + offset);
+    if (!words.empty()) std::memmove(selected.words.data() + offset, words.data(), words.size_bytes());
     std::fill_n(selected.initialized.begin() + offset, words.size(), true);
 }
 

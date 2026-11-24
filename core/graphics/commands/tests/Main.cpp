@@ -44,6 +44,8 @@ void CheckState() {
     state.Write(1, 3, second);
     std::array expected{11u, 21u, 22u};
     Require(std::ranges::equal(state.Read(1, 2, 3), expected));
+    state.Write(1, 3, state.Read(1, 2, 3));
+    Require(std::ranges::equal(state.Read(1, 3, 3), expected));
     state.Write(0, 0, second);
     state.Write(2, 0, std::span(first).first(1));
     Require(state.Read(0, 0, 2)[1] == 22 && state.Read(2, 0, 1)[0] == 11);

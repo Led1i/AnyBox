@@ -4,6 +4,7 @@
 
 void CheckBufferArguments();
 void CheckRootArguments();
+void CheckRootWriter();
 
 namespace {
 void CheckBinding(unsigned category, unsigned stride) {
@@ -37,6 +38,7 @@ int main() {
         ResourceTests::CheckComputeEntries();
         CheckBufferArguments();
         CheckRootArguments();
+        CheckRootWriter();
         for (unsigned category : {0u, 1u}) {
             CheckBinding(category, 0);
             CheckBinding(category, 32);

@@ -3,6 +3,23 @@
 #include "Target.hpp"
 #include "arguments/RootBindings.hpp"
 #include "ComputeCompiler.hpp"
+#include <anybox/shader/RootArgumentWriter.hpp>
+
+namespace {
+class Resources : public AnyBox::Shader::IRootResources {
+public:
+    AnyBox::Shader::RootBufferValue ResolveDescriptor(const AnyBox::Shader::BufferBinding& binding, std::uint64_t address) override {
+        Fixtures::Require(binding.resourceClass == AnyBox::Shader::ResourceClass::UnorderedAccess && address == 0x200000000);
+        ++calls;
+        return {address, 240};
+    }
+    AnyBox::Shader::RootBufferValue ResolveTable(const AnyBox::Shader::BufferBinding&, std::uint32_t, std::uint32_t) override { throw std::runtime_error("Unexpected root constant test descriptor table"); }
+    unsigned GetCallCount() const { return calls; }
+
+private:
+    unsigned calls = 0;
+};
+}
 
 void BufferTests::CheckRootConstants(AnyBox::Vulkan::Context& context) {
     using namespace AnyBox::Shader;
@@ -30,17 +47,21 @@ void BufferTests::CheckRootConstants(AnyBox::Vulkan::Context& context) {
         input.waveSize = input.hostSubgroupSize = 32;
         auto shader = Dxil::CompileCompute(program, input, Target(), {0, 0, 0, 128});
 
+        AnyBox::Graphics::Commands::RootState state(root);
+        std::array descriptor{0u, 2u};
+        state.Write(0, 0, descriptor);
+        std::vector<std::uint32_t> values(byteSize / 4);
+        auto constantBytes = std::as_writable_bytes(std::span(values));
+        for (unsigned byte = 0; byte < constantBytes.size(); ++byte) constantBytes[byte] = static_cast<std::byte>((byte * 3 + 7) & 255);
+        state.Write(1, 0, values);
+        const auto& registers = shader.bindings.layout.userDataRegisters;
+        RootArgumentWriter writer(plan, registers);
+        std::vector<std::uint32_t> packed(writer.GetWordCount());
+        Resources resources;
+        writer.Write(state, resources, packed);
+        Fixtures::Require(resources.GetCallCount() == 1);
         std::vector<std::uint32_t> userData(plan.GetUserRegisterCount());
-        for (const auto& range : plan.GetRanges()) {
-            auto offset = range.firstUserRegister;
-            if (range.kind == RootArgumentKind::Buffer) {
-                userData[offset + 1] = 2;
-                userData[offset + 2] = 240;
-                continue;
-            }
-            auto bytes = std::as_writable_bytes(std::span(userData).subspan(offset, range.wordCount));
-            for (unsigned byte = 0; byte < bytes.size(); ++byte) bytes[byte] = static_cast<std::byte>((byte * 3 + 7) & 255);
-        }
+        for (std::size_t index = 0; index < registers.size(); ++index) userData[registers[index]] = packed[index];
         std::array<std::uint32_t, 60> expected{};
         auto bytes = std::as_writable_bytes(std::span(expected));
         for (unsigned kind = 0; kind < 3; ++kind) {
