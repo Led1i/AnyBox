@@ -75,7 +75,8 @@ IrValue& ScalarLowering::Get(const LLVMBC::Value& value) {
         if (condition.Type() != IrType::Bool) throw std::runtime_error("DXIL select requires a scalar boolean condition");
         output = &builder.Select(condition, Get(*instruction->getOperand(1)), Get(*instruction->getOperand(2)));
     } else {
-        throw std::runtime_error("DXIL scalar instruction or unbound value is not implemented");
+        auto diagnostic = "DXIL scalar value is not implemented: kind=" + std::to_string(static_cast<unsigned>(value.get_value_kind()));
+        throw std::runtime_error(diagnostic);
     }
     if (output->Type() != resultType) throw std::logic_error("DXIL scalar lowering produced an incompatible result type");
     values.emplace(&value, output);

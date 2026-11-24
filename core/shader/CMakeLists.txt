@@ -33,6 +33,7 @@ target_sources(anybox_dxil_lowering PRIVATE src/dxil/lowering/Function.cpp src/d
 target_sources(anybox_dxil_lowering PRIVATE src/dxil/lowering/WideBinary.cpp src/dxil/lowering/WideCompare.cpp)
 target_sources(anybox_dxil_lowering PRIVATE src/dxil/lowering/Intrinsic.cpp)
 target_sources(anybox_dxil_lowering PRIVATE src/dxil/lowering/GlobalLoad.cpp)
+target_sources(anybox_dxil_lowering PRIVATE src/dxil/lowering/GlobalAtomic.cpp)
 target_sources(anybox_dxil_lowering PRIVATE src/dxil/lowering/Buffer.cpp src/dxil/lowering/BufferRead.cpp src/dxil/lowering/BufferLoad.cpp)
 target_sources(anybox_dxil_lowering PRIVATE src/dxil/lowering/Thread.cpp)
 target_sources(anybox_dxil_lowering PRIVATE src/dxil/lowering/Wave.cpp)

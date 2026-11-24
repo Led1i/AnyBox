@@ -9,7 +9,7 @@
 #include <vector>
 
 namespace BufferTests {
-void RunGpu(AnyBox::Vulkan::Context& context, const AnyBox::Shader::Dxil::ComputeCompilation& shader, std::span<const std::uint32_t> expected, const std::array<std::uint32_t, 3>& groups, std::span<const std::byte> inputData, std::span<const std::uint32_t> userData) {
+void RunGpu(AnyBox::Vulkan::Context& context, const AnyBox::Shader::Dxil::ComputeCompilation& shader, std::span<const std::uint32_t> expected, const std::array<std::uint32_t, 3>& groups, std::span<const std::byte> inputData, std::span<const std::uint32_t> userData, std::span<const std::byte> outputData) {
     namespace Abi = ShaderRecompiler::BdaAbi;
     using namespace AnyBox::Vulkan;
     if (!context.SupportsByteStorage()) throw std::runtime_error("DXIL BDA test requires Vulkan byte storage support");
@@ -24,13 +24,18 @@ void RunGpu(AnyBox::Vulkan::Context& context, const AnyBox::Shader::Dxil::Comput
     };
     static_assert(sizeof(PageTable) == 80);
     auto table = Buffer::Allocate(context, sizeof(PageTable), usage, properties);
-    PageTable pages{{Abi::Version, 2, sizeof(Abi::Range), 0}, {{{0x100000000, 0x100000040, input.GetAddress(), Abi::Read, 0}, {0x200000000, 0x200000000 + output.GetSize(), output.GetAddress(), Abi::Write, 0}}}};
+    auto outputPermissions = Abi::Write | (outputData.empty() ? 0 : Abi::Read);
+    PageTable pages{{Abi::Version, 2, sizeof(Abi::Range), 0}, {{{0x100000000, 0x100000040, input.GetAddress(), Abi::Read, 0}, {0x200000000, 0x200000000 + output.GetSize(), output.GetAddress(), outputPermissions, 0}}}};
     for (std::size_t index = 0; index < input.Map().size(); ++index) input.Map()[index] = static_cast<std::byte>((index * 3 + 7) & 255);
     if (!inputData.empty()) {
         if (inputData.size() != input.GetSize()) throw std::runtime_error("DXIL GPU test input data has an invalid size");
         std::memcpy(input.Map().data(), inputData.data(), inputData.size());
     }
     std::memset(output.Map().data(), 255, output.Map().size());
+    if (!outputData.empty()) {
+        if (outputData.size() != output.GetSize()) throw std::runtime_error("DXIL GPU test output data has an invalid size");
+        std::memcpy(output.Map().data(), outputData.data(), outputData.size());
+    }
     std::memset(faults.Map().data(), 0, faults.Map().size());
     std::memcpy(table.Map().data(), &pages, sizeof(pages));
     Descriptors descriptors(context, table, faults);
