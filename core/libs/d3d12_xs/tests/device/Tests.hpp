@@ -36,6 +36,7 @@ void CheckFences(Device* device);
 void CheckAllocators(Device* device);
 void CheckLists(Device* device);
 void CheckRoots(Device* device);
+void CheckRootLayouts(Device* device);
 void CheckSynchronization(Device* device);
 void CheckInlineCommands(Device* device);
 void CheckDxgi(Device* device);

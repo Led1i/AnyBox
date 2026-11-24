@@ -42,4 +42,5 @@ void AnyBox::Graphics::Tests::CheckRoots(Device* device) {
     const std::array<std::byte, 8> malformed{};
     Reject<std::invalid_argument>([&] { create(device, 0, malformed.data(), malformed.size(), RootSignatureId, &output); });
     Require(!output, "Malformed root signature retained an output interface");
+    CheckRootLayouts(device);
 }
