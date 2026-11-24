@@ -7,7 +7,7 @@ using namespace ShaderRecompiler;
 using namespace AnyBox::Shader;
 using namespace AnyBox::Shader::Dxil;
 
-void BufferLowering::load(const LLVMBC::CallInst& instruction, unsigned bits, ScalarLowering& scalar) {
+void BufferLowering::load(const LLVMBC::CallInst& instruction, unsigned bits, ScalarLowering& scalar, bool floating) {
     if (instruction.getNumArgOperands() != 6) throw std::runtime_error("DXIL raw buffer load has an invalid argument count");
     if (constant(instruction, 0, 32) != 139) throw std::runtime_error("DXIL raw buffer load opcode is invalid");
     auto mask = constant(instruction, 4, 8);
@@ -17,7 +17,8 @@ void BufferLowering::load(const LLVMBC::CallInst& instruction, unsigned bits, Sc
     if (!result || result->getTypeID() != LLVMBC::Type::TypeID::StructTyID || result->getStructNumElements() != 5) throw std::runtime_error("DXIL raw buffer load result must contain five members");
     for (unsigned index = 0; index < 5; ++index) {
         auto* member = result->getStructElementType(index);
-        if (!member->isIntegerTy() || member->getIntegerBitWidth() != (index == 4 ? 32 : bits)) throw std::runtime_error("DXIL raw buffer load result member type is invalid");
+        bool valid = floating && index < 4 ? member->getTypeID() == LLVMBC::Type::TypeID::FloatTyID : member->isIntegerTy() && member->getIntegerBitWidth() == (index == 4 ? 32 : bits);
+        if (!valid) throw std::runtime_error("DXIL raw buffer load result member type is invalid");
     }
     auto access = resolve(instruction, scalar, false);
     std::array<IrValue*, 5> output{};
@@ -25,6 +26,7 @@ void BufferLowering::load(const LLVMBC::CallInst& instruction, unsigned bits, Sc
         if ((mask & (1u << component)) == 0) continue;
         auto part = this->component(access, bits, component);
         output[component] = &read(part.address, part.active, bits, access.binding.globallyCoherent);
+        if (floating) output[component] = &builder.BitCastF32(*output[component]);
     }
     aggregates.emplace(&instruction, output);
 }

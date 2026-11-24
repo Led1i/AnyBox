@@ -4,6 +4,8 @@
 #include "lowering/Function.hpp"
 #include <optional>
 
+namespace AnyBox::Vulkan { class Context; }
+
 namespace BufferTests {
 class TransferBindings : public AnyBox::Shader::Dxil::IResourceBindings {
 public:
@@ -20,7 +22,7 @@ private:
 
 class TransferFixture {
 public:
-    TransferFixture(unsigned bits, bool structured, bool readOnly = false) : bits(bits), bindings(15 * bits / 2) {
+    TransferFixture(unsigned bits, bool structured, bool readOnly = false, bool floating = false) : bits(bits), floating(floating), bindings(15 * bits / 2) {
         auto& context = source.Context();
         auto& module = source.Module();
         auto* resources = source.Node({source.Node({source.Buffer(0, structured ? 32 : 0)}), source.Node({source.Buffer(1, 0)}), source.Null(), source.Null()});
@@ -31,12 +33,13 @@ public:
         auto* output = source.Handle(1, 4);
         block->add_instruction(input);
         block->add_instruction(output);
-        auto* element = LLVMBC::Type::getIntTy(context, bits);
+        auto* element = floating ? LLVMBC::Type::getFloatTy(context) : LLVMBC::Type::getIntTy(context, bits);
         auto* word = LLVMBC::Type::getInt32Ty(context);
         auto* result = LLVMBC::StructType::get(context, {element, element, element, element, word}, "result");
         auto payload = bits / 2;
         auto* offset = structured ? static_cast<LLVMBC::Value*>(integer(32, 32 - payload)) : LLVMBC::UndefValue::get(word);
-        auto* loaded = call("dx.op.rawBufferLoad.i" + std::to_string(bits), bits, result, {integer(32, 139), input, integer(32, structured ? 1 : 64 - payload), offset, integer(8, 15), integer(32, bits / 8)});
+        auto suffix = floating ? std::string("f32") : "i" + std::to_string(bits);
+        auto* loaded = call("dx.op.rawBufferLoad." + suffix, bits, result, {integer(32, 139), input, integer(32, structured ? 1 : 64 - payload), offset, integer(8, 15), integer(32, bits / 8)});
         std::array<LLVMBC::Value*, 4> values{};
         for (unsigned index = 0; index < 4; ++index) {
             auto* extracted = context.construct<LLVMBC::ExtractValueInst>(element, loaded, LLVMBC::Vector<unsigned>{index});
@@ -76,19 +79,22 @@ private:
     void store(LLVMBC::Value* handle, unsigned offset, unsigned mask, const std::array<LLVMBC::Value*, 4>& values) {
         auto& context = source.Context();
         auto* word = LLVMBC::Type::getInt32Ty(context);
-        auto* element = LLVMBC::Type::getIntTy(context, bits);
+        auto* element = floating ? LLVMBC::Type::getFloatTy(context) : LLVMBC::Type::getIntTy(context, bits);
         LLVMBC::Vector<LLVMBC::Value*> arguments{integer(32, 140), handle, integer(32, offset), LLVMBC::UndefValue::get(word)};
         for (unsigned index = 0; index < 4; ++index) arguments.push_back(mask & (1u << index) ? values[index] : LLVMBC::UndefValue::get(element));
         arguments.push_back(integer(8, mask));
         arguments.push_back(integer(32, bits / 8));
-        (void)call("dx.op.rawBufferStore.i" + std::to_string(bits), 100 + bits, LLVMBC::Type::getVoidTy(context), std::move(arguments));
+        auto suffix = floating ? std::string("f32") : "i" + std::to_string(bits);
+        (void)call("dx.op.rawBufferStore." + suffix, 100 + bits, LLVMBC::Type::getVoidTy(context), std::move(arguments));
     }
     ResourceTests::Fixture source;
     unsigned bits;
+    bool floating;
     TransferBindings bindings;
     std::optional<AnyBox::Shader::Dxil::ResourceLayout> layout;
     LLVMBC::BasicBlock* block;
 };
 
-void CheckTransfers();
+void CheckTransfers(AnyBox::Vulkan::Context& context);
+void CheckFloatTransfers(AnyBox::Vulkan::Context& context);
 }

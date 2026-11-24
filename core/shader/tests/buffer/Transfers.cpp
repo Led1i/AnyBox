@@ -2,7 +2,7 @@
 #include "Target.hpp"
 #include "Fixtures.hpp"
 
-void BufferTests::CheckTransfers() {
+void BufferTests::CheckTransfers(AnyBox::Vulkan::Context& context) {
     using namespace ShaderRecompiler;
     for (unsigned bits : {16u, 32u, 64u}) {
         for (bool structured : {false, true}) {
@@ -24,7 +24,7 @@ void BufferTests::CheckTransfers() {
                     }
                 }
             }
-            RunGpu(shader, expected, {1, 1, 1});
+            RunGpu(context, shader, expected, {1, 1, 1});
         }
         TransferFixture invalid(bits, false, true);
         Fixtures::Reject<std::runtime_error>([&] { (void)invalid.Lower(); });

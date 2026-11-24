@@ -3,12 +3,14 @@
 #include "ComputeCompiler.hpp"
 #include "Target.hpp"
 #include "TransferFixture.hpp"
+#include "FloatFixture.hpp"
+#include <anybox/vulkan/Context.hpp>
 #include <spirv/unified1/spirv.hpp>
 
-namespace BufferTests { void CheckGpu(const AnyBox::Shader::Dxil::ComputeCompilation& shader, std::uint32_t expected); }
+namespace BufferTests { void CheckGpu(AnyBox::Vulkan::Context& context, const AnyBox::Shader::Dxil::ComputeCompilation& shader, std::uint32_t expected); }
 
 namespace {
-void CheckPackedField(unsigned offset, std::uint32_t expected) {
+void CheckPackedField(AnyBox::Vulkan::Context& context, unsigned offset, std::uint32_t expected) {
     using namespace ShaderRecompiler;
     BufferTests::Fixture fixture(true);
     auto* load = fixture.Load(16, 1, offset);
@@ -35,13 +37,16 @@ void CheckPackedField(unsigned offset, std::uint32_t expected) {
         offset += words;
     }
     Fixtures::Require(physicalAddress && program.Info().usesDma && program.Info().bdaWrites);
-    BufferTests::CheckGpu(result, expected);
+    BufferTests::CheckGpu(context, result, expected);
 }
 }
 
 void BufferTests::CheckSpirv() {
-    CheckPackedField(28, 0xBEBB);
-    CheckPackedField(30, 0xC4C1);
-    CheckThreads();
-    CheckTransfers();
+    AnyBox::Vulkan::Context context(0);
+    CheckPackedField(context, 28, 0xBEBB);
+    CheckPackedField(context, 30, 0xC4C1);
+    CheckThreads(context);
+    CheckTransfers(context);
+    CheckFloats(context);
+    CheckFloatTransfers(context);
 }

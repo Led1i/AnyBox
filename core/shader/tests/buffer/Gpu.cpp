@@ -9,10 +9,9 @@
 #include <vector>
 
 namespace BufferTests {
-void RunGpu(const AnyBox::Shader::Dxil::ComputeCompilation& shader, std::span<const std::uint32_t> expected, const std::array<std::uint32_t, 3>& groups) {
+void RunGpu(AnyBox::Vulkan::Context& context, const AnyBox::Shader::Dxil::ComputeCompilation& shader, std::span<const std::uint32_t> expected, const std::array<std::uint32_t, 3>& groups, std::span<const std::byte> inputData) {
     namespace Abi = ShaderRecompiler::BdaAbi;
     using namespace AnyBox::Vulkan;
-    Context context(0);
     if (!context.SupportsByteStorage()) throw std::runtime_error("DXIL BDA test requires Vulkan byte storage support");
     constexpr auto usage = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT;
     constexpr auto properties = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
@@ -27,6 +26,10 @@ void RunGpu(const AnyBox::Shader::Dxil::ComputeCompilation& shader, std::span<co
     auto table = Buffer::Allocate(context, sizeof(PageTable), usage, properties);
     PageTable pages{{Abi::Version, 2, sizeof(Abi::Range), 0}, {{{0x100000000, 0x100000040, input.GetAddress(), Abi::Read, 0}, {0x200000000, 0x200000000 + output.GetSize(), output.GetAddress(), Abi::Write, 0}}}};
     for (std::size_t index = 0; index < input.Map().size(); ++index) input.Map()[index] = static_cast<std::byte>((index * 3 + 7) & 255);
+    if (!inputData.empty()) {
+        if (inputData.size() != input.GetSize()) throw std::runtime_error("DXIL GPU test input data has an invalid size");
+        std::memcpy(input.Map().data(), inputData.data(), inputData.size());
+    }
     std::memset(output.Map().data(), 255, output.Map().size());
     std::memset(faults.Map().data(), 0, faults.Map().size());
     std::memcpy(table.Map().data(), &pages, sizeof(pages));
@@ -57,7 +60,7 @@ void RunGpu(const AnyBox::Shader::Dxil::ComputeCompilation& shader, std::span<co
     }
 }
 
-void CheckGpu(const AnyBox::Shader::Dxil::ComputeCompilation& shader, std::uint32_t expected) {
-    RunGpu(shader, std::span(&expected, 1), {1, 1, 1});
+void CheckGpu(AnyBox::Vulkan::Context& context, const AnyBox::Shader::Dxil::ComputeCompilation& shader, std::uint32_t expected) {
+    RunGpu(context, shader, std::span(&expected, 1), {1, 1, 1});
 }
 }

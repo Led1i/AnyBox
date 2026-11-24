@@ -1,7 +1,20 @@
 #include "Function.hpp"
 #include <unordered_map>
+#include <bit>
 
 using AnyBox::Shader::Dxil::FunctionLowering;
+
+namespace {
+bool SameConstant(const ShaderRecompiler::IrValue& first, const ShaderRecompiler::IrValue& second) {
+    if (!first.HasImmediate() || !second.HasImmediate()) return false;
+    switch (first.Type()) {
+        case ShaderRecompiler::IrType::Bool: return first.ImmediateBool() == second.ImmediateBool();
+        case ShaderRecompiler::IrType::U64: return first.ImmediateU64() == second.ImmediateU64();
+        case ShaderRecompiler::IrType::F32: return std::bit_cast<std::uint32_t>(first.ImmediateF32()) == std::bit_cast<std::uint32_t>(second.ImmediateF32());
+        default: return first.ImmediateU32() == second.ImmediateU32();
+    }
+}
+}
 
 void FunctionLowering::connectPhis() {
     for (const auto& phi : phis) {
@@ -13,7 +26,7 @@ void FunctionLowering::connectPhis() {
             auto& value = scalar.Get(*input);
             if (auto previous = incoming.find(predecessor); previous != incoming.end()) {
                 auto* first = previous->second;
-                bool sameConstant = first->HasImmediate() && value.HasImmediate() && (first->Type() == ShaderRecompiler::IrType::Bool ? first->ImmediateBool() == value.ImmediateBool() : first->Type() == ShaderRecompiler::IrType::U64 ? first->ImmediateU64() == value.ImmediateU64() : first->ImmediateU32() == value.ImmediateU32());
+                bool sameConstant = SameConstant(*first, value);
                 if (first != &value && !sameConstant) throw std::runtime_error("DXIL PHI repeats a predecessor with different incoming values");
                 continue;
             }

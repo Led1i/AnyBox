@@ -14,6 +14,7 @@ public:
     void Bind(const LLVMBC::Value& source, ShaderRecompiler::IrValue& value);
     void SetBuffers(BufferLowering& buffers);
     void Emit(const LLVMBC::Instruction& instruction);
+    static ShaderRecompiler::IrType GetType(const LLVMBC::Value& value);
 
 private:
     using IrValue = ShaderRecompiler::IrValue;
@@ -29,6 +30,10 @@ private:
     IrValue& call(const LLVMBC::CallInst& instruction);
     IrValue& globalLoad(const LLVMBC::CallInst& instruction, unsigned words);
     IrValue& thread(const LLVMBC::CallInst& instruction, unsigned opcode);
+    IrValue& floatBinary(const LLVMBC::BinaryOperator& instruction);
+    IrValue& floatCompare(const LLVMBC::FCmpInst& instruction);
+    IrValue& floatCast(const LLVMBC::CastInst& instruction);
+    IrValue& negate(const LLVMBC::UnaryOperator& instruction);
     IrValue& divide(IrValue& left, IrValue& right, bool isSigned, bool remainder, unsigned bits);
     ShaderRecompiler::IrProgram& program;
     ShaderRecompiler::IrBuilder& builder;

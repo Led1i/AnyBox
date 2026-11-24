@@ -3,6 +3,8 @@
 #include "ComputeCompiler.hpp"
 #include <spirv/unified1/spirv.hpp>
 
+namespace AnyBox::Vulkan { class Context; }
+
 namespace BufferTests {
 inline ShaderRecompiler::SpirvTargetOptions Target() {
     static constexpr std::array<std::uint32_t, 5> capabilities{spv::CapabilityShader, spv::CapabilityInt64, spv::CapabilityGroupNonUniform, spv::CapabilityPhysicalStorageBufferAddresses, spv::CapabilityStorageBuffer8BitAccess};
@@ -17,6 +19,6 @@ inline ShaderRecompiler::SpirvTargetOptions Target() {
     return target;
 }
 
-void RunGpu(const AnyBox::Shader::Dxil::ComputeCompilation& shader, std::span<const std::uint32_t> expected, const std::array<std::uint32_t, 3>& groups);
-void CheckThreads();
+void RunGpu(AnyBox::Vulkan::Context& context, const AnyBox::Shader::Dxil::ComputeCompilation& shader, std::span<const std::uint32_t> expected, const std::array<std::uint32_t, 3>& groups, std::span<const std::byte> inputData = {});
+void CheckThreads(AnyBox::Vulkan::Context& context);
 }

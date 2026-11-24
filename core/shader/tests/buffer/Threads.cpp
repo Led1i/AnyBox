@@ -3,7 +3,7 @@
 #include "Target.hpp"
 #include "Fixtures.hpp"
 
-void BufferTests::CheckThreads() {
+void BufferTests::CheckThreads(AnyBox::Vulkan::Context& gpu) {
     using namespace ShaderRecompiler;
     ResourceTests::Fixture source;
     auto& context = source.Context();
@@ -64,5 +64,5 @@ void BufferTests::CheckThreads() {
             }
         }
     }
-    RunGpu(shader, expected, {2, 2, 2});
+    RunGpu(gpu, shader, expected, {2, 2, 2});
 }

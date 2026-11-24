@@ -5,7 +5,7 @@
 using namespace ShaderRecompiler;
 using AnyBox::Shader::Dxil::BufferLowering;
 
-void BufferLowering::store(const LLVMBC::CallInst& instruction, unsigned bits, ScalarLowering& scalar) {
+void BufferLowering::store(const LLVMBC::CallInst& instruction, unsigned bits, ScalarLowering& scalar, bool floating) {
     if (instruction.getNumArgOperands() != 10 || !instruction.getType() || instruction.getType()->getTypeID() != LLVMBC::Type::TypeID::VoidTyID) throw std::runtime_error("DXIL raw buffer store has an invalid signature");
     if (constant(instruction, 0, 32) != 140) throw std::runtime_error("DXIL raw buffer store opcode is invalid");
     auto mask = constant(instruction, 8, 8);
@@ -13,13 +13,15 @@ void BufferLowering::store(const LLVMBC::CallInst& instruction, unsigned bits, S
     if (mask == 0 || mask > 15 || !std::has_single_bit(alignment)) throw std::runtime_error("DXIL raw buffer store mask or alignment is invalid");
     for (unsigned index = 4; index < 8; ++index) {
         auto* type = instruction.getArgOperand(index)->getType();
-        if (!type || !type->isIntegerTy() || type->getIntegerBitWidth() != bits) throw std::runtime_error("DXIL raw buffer store value type is invalid");
+        bool valid = type && (floating ? type->getTypeID() == LLVMBC::Type::TypeID::FloatTyID : type->isIntegerTy() && type->getIntegerBitWidth() == bits);
+        if (!valid) throw std::runtime_error("DXIL raw buffer store value type is invalid");
     }
     auto access = resolve(instruction, scalar, true);
     for (unsigned index = 0; index < 4; ++index) {
         if ((mask & (1u << index)) == 0) continue;
         auto part = component(access, bits, index);
-        write(part.address, part.active, scalar.Get(*instruction.getArgOperand(4 + index)), bits, access.binding.globallyCoherent);
+        auto& value = scalar.Get(*instruction.getArgOperand(4 + index));
+        write(part.address, part.active, floating ? builder.BitCastU32(value) : value, bits, access.binding.globallyCoherent);
     }
 }
 
