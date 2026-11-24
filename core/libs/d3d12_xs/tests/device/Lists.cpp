@@ -10,14 +10,15 @@ void CheckList(AnyBox::Graphics::Device* device, D3D12_COMMAND_LIST_TYPE type, b
     using namespace AnyBox::Graphics::Tests;
     auto createAllocator = Method<decltype(&Device::CreateCommandAllocator)>(device, 9);
     auto createList = Method<decltype(&Device::CreateCommandList)>(device, 12);
+    auto interfaceId = static_cast<std::uint32_t>(type) == 0x10 ? DmaListId : type == D3D12_COMMAND_LIST_TYPE_COPY ? GraphicsListId : XboxGraphicsListId;
     void* output = nullptr;
     Require(createAllocator(device, type, AllocatorId, &output) == 0 && output, "List test allocator creation failed");
     auto* allocator = static_cast<Allocator*>(output);
     if (extended) {
         XboxListDescription description{type, 2, 1, 0};
-        Require(Method<decltype(&Device::CreateCommandListX)>(device, 73)(device, &description, allocator, nullptr, XboxGraphicsListId, &output) == 0 && output, "Deferred Xbox command list creation failed");
+        Require(Method<decltype(&Device::CreateCommandListX)>(device, 73)(device, &description, allocator, nullptr, interfaceId, &output) == 0 && output, "Deferred Xbox command list creation failed");
     } else {
-        Require(createList(device, 0, type, allocator, nullptr, XboxGraphicsListId, &output) == 0 && output, "Xbox command list creation failed");
+        Require(createList(device, 0, type, allocator, nullptr, interfaceId, &output) == 0 && output, "Xbox command list creation failed");
     }
     auto* list = static_cast<CommandList*>(output);
     auto close = Method<decltype(&CommandList::Close)>(list, 9);
@@ -25,7 +26,7 @@ void CheckList(AnyBox::Graphics::Device* device, D3D12_COMMAND_LIST_TYPE type, b
     auto query = Method<decltype(&CommandList::QueryInterface)>(list, 0);
     auto release = Method<decltype(&CommandList::Release)>(list, 2);
     Require(Method<decltype(&CommandList::GetType)>(list, 8)(list) == type, "Xbox list type changed across the ABI");
-    for (const auto& id : {CommandListId, GraphicsListId, XboxGraphicsListId, UnknownId, ObjectId, DeviceChildId}) {
+    for (const auto& id : {CommandListId, interfaceId, UnknownId, ObjectId, DeviceChildId}) {
         void* identity = nullptr;
         Require(query(list, id, &identity) == 0 && identity == list, "Command list COM identity changed");
         Require(release(static_cast<CommandList*>(identity)) == 1, "Command list query did not retain its reference");

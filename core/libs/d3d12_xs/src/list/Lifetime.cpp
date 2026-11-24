@@ -21,10 +21,12 @@ AnyBox::Graphics::CommandList* AnyBox::Graphics::CommandList::From(void* object)
 }
 
 bool AnyBox::Graphics::CommandList::SupportsCreation(D3D12_COMMAND_LIST_TYPE type, const Guid& interfaceId) noexcept {
-    if (interfaceId == DmaListId) return static_cast<std::uint32_t>(type) == 0x10;
-    return interfaceId == CommandListId || interfaceId == GraphicsListId || interfaceId == XboxGraphicsListId || interfaceId == UnknownId || interfaceId == ObjectId || interfaceId == DeviceChildId;
+    if (static_cast<std::uint32_t>(type) == 0x10) return interfaceId == DmaListId;
+    if (type == D3D12_COMMAND_LIST_TYPE_COPY) return interfaceId == GraphicsListId;
+    if (type != D3D12_COMMAND_LIST_TYPE_DIRECT && type != D3D12_COMMAND_LIST_TYPE_BUNDLE && type != D3D12_COMMAND_LIST_TYPE_COMPUTE) return false;
+    return interfaceId == GraphicsListId || interfaceId == XboxGraphicsListId;
 }
 
-bool AnyBox::Graphics::CommandList::Supports(const Guid& interfaceId) const noexcept { return SupportsCreation(type, interfaceId); }
+bool AnyBox::Graphics::CommandList::Supports(const Guid& interfaceId) const noexcept { return interfaceId == UnknownId || interfaceId == ObjectId || interfaceId == DeviceChildId || interfaceId == CommandListId || SupportsCreation(type, interfaceId); }
 
 D3D12_COMMAND_LIST_TYPE AnyBox::Graphics::CommandList::GetType(CommandList* self) { return self->type; }
