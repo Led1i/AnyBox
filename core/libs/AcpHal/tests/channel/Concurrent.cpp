@@ -33,7 +33,7 @@ void CheckConcurrentChannel() {
     AcpHalMessage message{};
     for (std::size_t i = 0; i < 512; ++i) {
         Require(channel->PopMessage(&message) && message.type == 0x10, "Concurrent ACP completion was lost");
-        Require(completed.insert(message.id).second, "Concurrent ACP completion was duplicated");
+        Require(completed.insert(message.id.Get()).second, "Concurrent ACP completion was duplicated");
     }
     Require(*completed.begin() == 0 && *completed.rbegin() == 511, "Concurrent ACP completion identifier changed");
     Require(channel->Disconnect() == 0, "ACP disconnect did not return success");

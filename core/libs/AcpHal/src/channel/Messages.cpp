@@ -2,6 +2,14 @@
 
 #include <stdexcept>
 
+AcpHalMessage AnyBox::AcpHal::Channel::createMessage(std::uint32_t type, std::uint32_t frame, std::uint64_t id) {
+    AcpHalMessage message{};
+    message.type = type;
+    message.frame = frame;
+    message.id.Set(id);
+    return message;
+}
+
 void AnyBox::AcpHal::Channel::push(AcpHalMessage message) {
     if (count == messages.size()) throw std::overflow_error("ACP message queue is full");
     messages[(head + count) % messages.size()] = message;
@@ -26,7 +34,7 @@ bool AnyBox::AcpHal::Channel::PopMessage(AcpHalMessage* message) {
     auto elapsed = (now - nextFrame) / framePeriod + 1;
     frameNumber += static_cast<std::uint64_t>(elapsed);
     nextFrame += framePeriod * elapsed;
-    *message = {2, 0, frameNumber, 0};
+    *message = createMessage(2, static_cast<std::uint32_t>(frameNumber), 0);
     return true;
 }
 

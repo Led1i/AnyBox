@@ -17,7 +17,7 @@ std::int32_t AnyBox::AcpHal::Channel::SubmitCommand(std::uint32_t type, std::uin
     if (samples == 0 || samples > 48000) throw std::invalid_argument("ACP frame length is invalid");
     auto period = std::chrono::duration_cast<Clock::duration>(std::chrono::duration<std::int64_t, std::ratio<1, 48000>>(samples));
     if (period <= Clock::duration::zero()) throw std::invalid_argument("ACP frame period is below the clock resolution");
-    push({0x10, 0, 0, id});
+    push(createMessage(0x10, static_cast<std::uint32_t>(frameNumber), id));
     frameSamples = samples;
     framePeriod = period;
     frameNumber = 0;

@@ -8,13 +8,14 @@
 #include <thread>
 
 void CheckConcurrentChannel();
+void CheckMessageLayout();
 
 int main() {
     try {
         using namespace AnyBox::Tests;
         IAcpHal* channel = nullptr;
         Require(AcpHalCreate(&channel) == 0 && channel != nullptr, "ACP factory did not create a channel");
-        AcpHalMessage message{0x1234, 0, 0, 0};
+        AcpHalMessage message{0x1234, 0, 0, 0, {}, 0};
         Require(!channel->PopMessage(&message) && message.type == 0x1234, "Empty ACP queue changed its output");
         ExpectException<std::invalid_argument>([] { AcpHalCreate(nullptr); });
         ExpectException<std::invalid_argument>([&] { channel->Connect(0, 2); });
@@ -32,13 +33,13 @@ int main() {
         ExpectException<std::overflow_error>([&] { channel->SubmitCommand(2, 5, immediate, &samples, 0); });
         for (std::uint64_t i = 0; i < 4; ++i) {
             Require(channel->PopMessage(&message), "ACP completion was lost");
-            Require(message.type == 0x10 && message.id == i + 1, "ACP completion order changed");
+            Require(message.type == 0x10 && message.id.Get() == i + 1, "ACP completion order changed");
         }
         auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(2);
         bool frame = false;
         while (std::chrono::steady_clock::now() < deadline) {
             if (channel->PopMessage(&message)) {
-                frame = message.type == 2 && message.value > 0;
+                frame = message.type == 2 && message.frame > 0;
                 break;
             }
             std::this_thread::yield();
@@ -53,6 +54,7 @@ int main() {
         Require(channel->PopMessage(&message) && message.type == 0x80, "Reconnect lost its disconnect notification");
         channel->Release();
         CheckConcurrentChannel();
+        CheckMessageLayout();
         return 0;
     } catch (const std::exception& error) {
         std::cerr << error.what() << '\n';

@@ -21,6 +21,7 @@ public:
 
 private:
     using Clock = std::chrono::steady_clock;
+    static AcpHalMessage createMessage(std::uint32_t type, std::uint32_t frame, std::uint64_t id);
     void push(AcpHalMessage message);
     bool frameDue(Clock::time_point now) const;
     std::mutex mutex;
