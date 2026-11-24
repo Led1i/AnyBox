@@ -47,4 +47,17 @@ void AnyBox::Tests::CheckAllocation() {
     Require(static_cast<std::byte*>(normal)[0xFDFFF] == std::byte{0x37}, "SHAPE allocation overwrote the normal pool");
     ApuFree(normal);
     ApuFree(shape);
+
+    for (auto alignment : {0x20000u, 0x40000u, 0x80000u}) {
+        for (auto pool : {1u, 2u}) {
+            void* allocation = nullptr;
+            std::uint32_t address = 0;
+            Require(ApuAlloc(&allocation, &address, 13, alignment, pool) == 0, "Large aligned APU allocation failed");
+            Require(address % alignment == 0, "APU bus address does not meet the requested alignment");
+            Require(ApuIsVirtualAddressValid(allocation, alignment), "Valid APU bus alignment was rejected");
+            Require(ApuMapApuAddress(address + alignment - 1) == static_cast<std::byte*>(allocation) + alignment - 1, "Rounded APU allocation range is incomplete");
+            std::memset(allocation, 0x71, alignment);
+            ApuFree(allocation);
+        }
+    }
 }

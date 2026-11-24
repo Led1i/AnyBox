@@ -9,17 +9,16 @@
 
 void* AnyBox::AcpHal::Pool::Allocate(std::uint32_t size, std::uint32_t alignment) {
     if (size == 0) throw std::invalid_argument("APU allocation size must be nonzero");
-    if (!std::has_single_bit(alignment) || alignment < 4 || alignment > 0x10000) throw std::invalid_argument("Unsupported APU alignment");
+    if (!std::has_single_bit(alignment) || alignment < 4) throw std::invalid_argument("Invalid APU alignment");
     alignment = std::max(alignment, 256U);
     if (size > std::numeric_limits<std::uint32_t>::max() - (alignment - 1)) throw std::overflow_error("APU allocation size overflows");
     size = (size + alignment - 1) & ~(alignment - 1);
     std::lock_guard lock(mutex);
     auto* base = memory.get();
     if (!base) throw std::logic_error("APU heap has not been created");
-    auto baseValue = reinterpret_cast<std::uintptr_t>(base);
     for (auto it = blocks.begin(); it != blocks.end(); ++it) {
         if (it->allocated) continue;
-        auto padding = (alignment - (baseValue + it->offset) % alignment) % alignment;
+        auto padding = (alignment - (static_cast<std::uint64_t>(busBase) + it->offset) % alignment) % alignment;
         if (padding > it->size || size > it->size - padding) continue;
         auto start = it->offset + padding;
         auto remaining = it->size - padding - size;

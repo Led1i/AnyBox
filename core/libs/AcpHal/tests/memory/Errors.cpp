@@ -15,7 +15,7 @@ void AnyBox::Tests::CheckErrors() {
     void* output = foreign.data();
     ExpectException<std::invalid_argument>([&] { ApuAlloc(&output, nullptr, 0, 64, 1); });
     ExpectException<std::invalid_argument>([&] { ApuAlloc(&output, nullptr, 64, 3, 1); });
-    ExpectException<std::invalid_argument>([&] { ApuAlloc(&output, nullptr, 64, 0x20000, 1); });
+    ExpectException<std::invalid_argument>([&] { ApuAlloc(&output, nullptr, 64, 0x30000, 1); });
     ExpectException<std::invalid_argument>([&] { ApuAlloc(&output, nullptr, 64, 64, 3); });
     ExpectException<std::bad_alloc>([&] { ApuAlloc(&output, nullptr, 0x100001, 256, 1); });
     Require(output == nullptr, "Failed APU allocation did not clear its output");
