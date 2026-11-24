@@ -29,6 +29,15 @@ public:
     Device* GetParent() const noexcept { return device; }
     static bool Supports(const Guid& interfaceId) noexcept { return interfaceId == RootSignatureId || interfaceId == UnknownId || interfaceId == ObjectId || interfaceId == DeviceChildId; }
     static constexpr std::size_t GetVtableOffset() { return offsetof(RootSignature, vtable); }
+    static RootSignature* From(void* object, Device* owner) {
+        if (!object) throw std::invalid_argument("Root signature object is null");
+        const ObjectTable* table;
+        std::memcpy(&table, object, sizeof(table));
+        if (table != &GetObjectTable<RootSignature>()) throw std::invalid_argument("Foreign root signature object is unsupported");
+        auto* signature = static_cast<RootSignature*>(object);
+        if (signature->device != owner) throw std::invalid_argument("Root signature and pipeline devices differ");
+        return signature;
+    }
 
 private:
     friend class ObjectLifetime<RootSignature>;

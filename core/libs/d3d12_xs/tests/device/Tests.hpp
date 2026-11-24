@@ -4,6 +4,7 @@
 #include <anybox/ExceptionTest.hpp>
 #include <cstring>
 #include <stdexcept>
+#include <vector>
 
 namespace AnyBox::Graphics::Tests {
 inline void Require(bool condition, const char* message) {
@@ -36,6 +37,8 @@ void CheckFences(Device* device);
 void CheckAllocators(Device* device);
 void CheckLists(Device* device);
 void CheckRoots(Device* device);
+void CheckPipelines(Device* device);
+std::vector<std::byte> CompileComputeShader();
 void CheckRootLayouts(Device* device);
 void CheckSynchronization(Device* device);
 void CheckInlineCommands(Device* device);

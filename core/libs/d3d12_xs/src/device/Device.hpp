@@ -48,6 +48,7 @@ public:
     static std::uint32_t AddRef(Device* self);
     static std::uint32_t Release(Device* self);
     ID3D12Device* GetHost() const noexcept { return host; }
+    std::array<std::uint32_t, 2> GetWaveLimits();
     Vulkan::Context& GetGpuContext() const noexcept { return *gpuContext; }
     Texture::AddressSpace& GetTextureAddresses() noexcept { return textureAddresses; }
     bool Matches(const D3D12XboxCreateDeviceParameters& value) const noexcept;
@@ -65,6 +66,7 @@ public:
     static HRESULT CreateCommandList(Device* self, std::uint32_t nodeMask, D3D12_COMMAND_LIST_TYPE type, void* allocator, void* initialState, const Guid& interfaceId, void** list);
     static HRESULT CreateCommandListX(Device* self, const XboxListDescription* description, void* allocator, void* initialState, const Guid& interfaceId, void** list);
     static HRESULT CreateRootSignature(Device* self, std::uint32_t nodeMask, const void* data, std::size_t size, const Guid& interfaceId, void** signature);
+    static HRESULT CreateComputePipelineStateX(Device* self, const D3D12_COMPUTE_PIPELINE_STATE_DESC* description, std::uint32_t extensionCount, const void* extensions, const Guid& interfaceId, void** pipeline);
     static HRESULT CreateDescriptorHeap(Device* self, const D3D12_DESCRIPTOR_HEAP_DESC* description, const Guid& interfaceId, void** heap);
     static void CreateShaderResourceView(Device* self, void* resource, const D3D12_SHADER_RESOURCE_VIEW_DESC* description, std::uint64_t destination);
     static void CreateShaderResourceViewX(Device* self, const D3D12_RESOURCE_DESC* resource, const XboxShaderViewDescription* description, std::uint64_t destination);
@@ -98,6 +100,8 @@ private:
     Vulkan::Buffer* nullConstantBuffer = nullptr;
     std::uint64_t nullConstantAddress = 0;
     Texture::AddressSpace textureAddresses;
+    std::once_flag waveInitialization;
+    std::array<std::uint32_t, 2> waveLimits{};
 };
 
 static_assert(std::is_standard_layout_v<Device>);
