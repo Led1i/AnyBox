@@ -4,6 +4,7 @@
 #include <array>
 #include <cstdint>
 #include <vector>
+#include <unordered_set>
 
 namespace AnyBox::Relinker {
 struct Section {
@@ -25,6 +26,8 @@ public:
     bool IsExecutable(std::uint32_t address) const noexcept;
     std::span<const std::byte> Code(std::uint32_t address) const;
     std::vector<std::uint32_t> EntryPoints() const;
+    std::unordered_set<std::uint32_t> ImportSlots() const;
+    bool IsReadOnly(std::uint32_t address, std::size_t size) const noexcept;
     void Finalize();
 
 private:

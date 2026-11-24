@@ -2,11 +2,15 @@
 #include <anybox/relinker/Decoder.hpp>
 #include <algorithm>
 #include <string>
+#include "ControlFlow.hpp"
 
 AnyBox::Relinker::RelinkResult AnyBox::Relinker::Relink(Image& image, const Cpu& cpu, bool forceCacheWriteback) {
     Decoder decoder;
     RelinkResult result;
     auto entries = image.EntryPoints();
+    auto imports = image.ImportSlots();
+    std::uint64_t unresolvedCount = 0;
+    std::uint32_t firstUnresolved = 0;
     std::vector<std::uint8_t> visited(image.GetBytes().size());
     while (!entries.empty()) {
         auto address = entries.back();
@@ -29,12 +33,9 @@ AnyBox::Relinker::RelinkResult AnyBox::Relinker::Relink(Image& image, const Cpu&
             ++result.instructionCount;
             auto category = instruction.native.meta.category;
             if (category == ZYDIS_CATEGORY_CALL || category == ZYDIS_CATEGORY_COND_BR || category == ZYDIS_CATEGORY_UNCOND_BR) {
-                for (std::size_t index = 0; index < instruction.native.operand_count_visible; ++index) {
-                    const auto& operand = instruction.operands[index];
-                    if (operand.type != ZYDIS_OPERAND_TYPE_IMMEDIATE || !operand.imm.is_relative) continue;
-                    ZyanU64 target = 0;
-                    if (!ZYAN_SUCCESS(ZydisCalcAbsoluteAddress(&instruction.native, &operand, image.GetBase() + address, &target))) throw std::runtime_error("Cannot resolve PE control flow target");
-                    if (target >= image.GetBase() && target - image.GetBase() <= UINT32_MAX && image.IsExecutable(static_cast<std::uint32_t>(target - image.GetBase()))) entries.push_back(static_cast<std::uint32_t>(target - image.GetBase()));
+                if (!FollowTransfer(image, instruction, address, imports, entries)) {
+                    if (unresolvedCount == 0) firstUnresolved = address;
+                    ++unresolvedCount;
                 }
             }
             if (!cpu.Supports(instruction) || (forceCacheWriteback && instruction.native.mnemonic == ZYDIS_MNEMONIC_CLWB)) {
@@ -50,6 +51,7 @@ AnyBox::Relinker::RelinkResult AnyBox::Relinker::Relink(Image& image, const Cpu&
             address += length;
         }
     }
+    if (unresolvedCount != 0) throw std::runtime_error("Unresolved PE control flow transfers: " + std::to_string(unresolvedCount) + "; first RVA " + std::to_string(firstUnresolved));
     ZydisDecoder scanner{};
     if (!ZYAN_SUCCESS(ZydisDecoderInit(&scanner, ZYDIS_MACHINE_MODE_LONG_64, ZYDIS_STACK_WIDTH_64))) throw std::runtime_error("Cannot initialize the PE cache instruction scan");
     for (const auto& section : image.GetSections()) {

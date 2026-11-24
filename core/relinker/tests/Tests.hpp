@@ -9,4 +9,5 @@ void CheckWriteback();
 void CheckExecution();
 void CheckImages();
 void CheckCpu();
+void CheckControlFlow();
 }
