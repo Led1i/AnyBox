@@ -1,4 +1,5 @@
 #include "Channel.hpp"
+#include "../shape/Runtime.hpp"
 
 #include <anybox/Unimplemented.hpp>
 
@@ -11,7 +12,13 @@ std::int32_t AnyBox::AcpHal::Channel::SubmitCommand(std::uint32_t type, std::uin
     if (!data) throw std::invalid_argument("ACP command payload is null");
     std::lock_guard lock(mutex);
     if (!connected) throw std::logic_error("ACP channel is not connected");
-    if (type != 2) ANYBOX_NOT_IMPLEMENTED();
+    if (type != 2 && type != 5 && type != 7 && type != 18) ANYBOX_NOT_IMPLEMENTED();
+    if (count == messages.size()) throw std::overflow_error("ACP message queue is full");
+    if (type != 2) {
+        SubmitShapeCommand(type, data);
+        push(createMessage(0x10, static_cast<std::uint32_t>(frameNumber), id));
+        return 0;
+    }
     std::uint32_t samples;
     std::memcpy(&samples, data, sizeof(samples));
     if (samples == 0 || samples > 48000) throw std::invalid_argument("ACP frame length is invalid");

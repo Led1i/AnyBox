@@ -27,7 +27,7 @@ int main() {
         auto immediate = std::numeric_limits<std::uint32_t>::max();
         ExpectException<std::invalid_argument>([&] { channel->SubmitCommand(2, 1, 0, &samples, 0); });
         ExpectException<std::invalid_argument>([&] { channel->SubmitCommand(2, 1, immediate, nullptr, 0); });
-        ExpectException<std::runtime_error>([&] { channel->SubmitCommand(18, 1, immediate, &samples, 0); });
+        ExpectException<std::logic_error>([&] { channel->SubmitCommand(18, 1, immediate, &samples, 0); });
         Require(channel->GetNumMessages() == 0, "Rejected ACP command queued completion");
         for (std::uint64_t i = 0; i < 4; ++i) Require(channel->SubmitCommand(2, i + 1, immediate, &samples, 0) == 0, "ACP configuration failed");
         ExpectException<std::overflow_error>([&] { channel->SubmitCommand(2, 5, immediate, &samples, 0); });

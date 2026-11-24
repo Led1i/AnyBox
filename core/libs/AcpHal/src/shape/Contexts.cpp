@@ -1,5 +1,6 @@
 #include <AcpHal.hpp>
 #include "../memory/Heap.hpp"
+#include "Runtime.hpp"
 
 #include <array>
 #include <cstring>
@@ -7,10 +8,6 @@
 #include <stdexcept>
 
 namespace {
-
-std::mutex contextMutex;
-std::array<void*, 5> ownedContexts{};
-bool allocated = false;
 
 void Release(std::array<void*, 5>& allocations) {
     for (auto*& allocation : allocations) {
@@ -21,6 +18,11 @@ void Release(std::array<void*, 5>& allocations) {
 
 }
 
+AnyBox::AcpHal::ShapeRuntime& AnyBox::AcpHal::GetShapeRuntime() {
+    static ShapeRuntime runtime;
+    return runtime;
+}
+
 std::int32_t AcpHalAllocateShapeContexts(AcpHalShapeContexts* shapeContexts) noexcept(false) {
     if (!shapeContexts) throw std::invalid_argument("SHAPE context descriptor is null");
     const auto& counts = shapeContexts->counts;
@@ -29,8 +31,10 @@ std::int32_t AcpHalAllocateShapeContexts(AcpHalShapeContexts* shapeContexts) noe
     }
     if (counts[4] > 512 || counts[5] > 3584) throw std::invalid_argument("SHAPE context count exceeds its limit");
     if ((counts[0] || counts[5]) && counts[0] != counts[4] + counts[5]) throw std::invalid_argument("Inconsistent SHAPE context counts");
-    std::lock_guard lock(contextMutex);
-    if (allocated) throw std::logic_error("SHAPE contexts already exist");
+    auto& runtime = AnyBox::AcpHal::GetShapeRuntime();
+    std::lock_guard lock(runtime.mutex);
+    if (runtime.allocated) throw std::logic_error("SHAPE contexts already exist");
+    std::vector<std::unique_ptr<AnyBox::AcpHal::XmaContext>> decoders(counts[4]);
     AnyBox::AcpHal::GetHeap().Initialize();
     std::array<void*, 5> replacement{};
     AcpHalShapeContexts result = *shapeContexts;
@@ -56,16 +60,21 @@ std::int32_t AcpHalAllocateShapeContexts(AcpHalShapeContexts* shapeContexts) noe
         Release(replacement);
         throw;
     }
-    ownedContexts = replacement;
-    allocated = true;
+    runtime.allocations = replacement;
+    runtime.descriptor = result;
+    runtime.decoders = std::move(decoders);
+    runtime.allocated = true;
     *shapeContexts = result;
     return 0;
 }
 
 std::int32_t AcpHalReleaseShapeContexts() noexcept(false) {
-    std::lock_guard lock(contextMutex);
-    if (!allocated) throw std::logic_error("SHAPE contexts do not exist");
-    Release(ownedContexts);
-    allocated = false;
+    auto& runtime = AnyBox::AcpHal::GetShapeRuntime();
+    std::lock_guard lock(runtime.mutex);
+    if (!runtime.allocated) throw std::logic_error("SHAPE contexts do not exist");
+    runtime.decoders.clear();
+    Release(runtime.allocations);
+    runtime.descriptor = {};
+    runtime.allocated = false;
     return 0;
 }
