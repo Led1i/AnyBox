@@ -23,7 +23,7 @@ target_sources(d3d12_xs PRIVATE src/frame/Ancillary.cpp src/frame/Events.cpp src
 target_sources(d3d12_xs PRIVATE src/device/Resources.cpp src/resource/Backing.cpp src/resource/Lifetime.cpp src/resource/Properties.cpp src/resource/Table.cpp)
 target_sources(d3d12_xs PRIVATE src/object/PrivateData.cpp)
 target_sources(d3d12_xs PRIVATE src/device/DescriptorHeaps.cpp src/descriptor/Backing.cpp src/descriptor/Lifetime.cpp src/descriptor/Properties.cpp src/descriptor/Table.cpp)
-target_sources(d3d12_xs PRIVATE src/descriptor/NullViews.cpp src/descriptor/UnorderedViews.cpp)
+target_sources(d3d12_xs PRIVATE src/descriptor/ShaderViews.cpp src/descriptor/UnorderedViews.cpp)
 target_sources(d3d12_xs PRIVATE src/descriptor/ConstantViews.cpp)
 target_sources(d3d12_xs PRIVATE src/descriptor/RawShaderViews.cpp)
 target_sources(d3d12_xs PRIVATE src/descriptor/RawBuffer.cpp)

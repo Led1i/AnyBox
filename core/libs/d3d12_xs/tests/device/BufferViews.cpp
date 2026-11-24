@@ -59,6 +59,19 @@ void AnyBox::Graphics::Tests::CheckBufferViews(Device* device, Resource* resourc
     shader.address = base;
     Method<decltype(&Device::CreateShaderResourceViewX)>(device, 70)(device, &metadata, &shader, destination);
     Require(words[4] == encoded[4] && words[5] == encoded[5] && words[6] == encoded[6] && words[7] == 0x30014FAC, "Xbox raw SRV and UAV did not preserve their distinct channel mappings");
+    auto shaderEncoded = words;
+    auto shaderCreate = Method<decltype(&Device::CreateShaderResourceView)>(device, 18);
+    words.fill(UINT32_MAX);
+    shaderCreate(device, resource, &shader.view, destination);
+    Require(words == shaderEncoded, "Resource shader view differs from its explicit address encoding");
+    shader.view.Buffer.StructureByteStride = 4;
+    Reject<std::invalid_argument>([&] { shaderCreate(device, resource, &shader.view, destination); });
+    shader.view.Buffer.StructureByteStride = 0;
+    shader.view.Buffer.FirstElement = width / 4;
+    Reject<std::out_of_range>([&] { shaderCreate(device, resource, &shader.view, destination); });
+    shader.view.Buffer.FirstElement = 0;
+    Reject<std::invalid_argument>([&] { shaderCreate(nullptr, resource, &shader.view, destination); });
+    Require(words == shaderEncoded, "Rejected shader view changed its destination");
 
     D3D12_DESCRIPTOR_HEAP_DESC heapDescription{D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 1, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE, 0};
     void* output = nullptr;
@@ -69,5 +82,8 @@ void AnyBox::Graphics::Tests::CheckBufferViews(Device* device, Resource* resourc
     auto scratch = Vulkan::Buffer::Allocate(device->GetGpuContext(), 32, VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
     Vulkan::Tests::Copy(device->GetGpuContext(), heap->GetGpuBuffer(), scratch, 32);
     Require(std::ranges::equal(scratch.Map(), std::as_bytes(std::span(encoded).subspan(4, 8))), "GPU did not observe the Xbox raw unordered descriptor in write-combined memory");
+    shaderCreate(device, resource, &shader.view, pointer);
+    Vulkan::Tests::Copy(device->GetGpuContext(), heap->GetGpuBuffer(), scratch, 32);
+    Require(std::ranges::equal(scratch.Map(), std::as_bytes(std::span(shaderEncoded).subspan(4, 8))), "GPU did not observe the Xbox raw shader descriptor in write-combined memory");
     Require(Method<decltype(&DescriptorHeap::Release)>(heap, 2)(heap) == 0, "Raw unordered view heap was not released");
 }

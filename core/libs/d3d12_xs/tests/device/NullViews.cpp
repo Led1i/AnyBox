@@ -26,7 +26,7 @@ void AnyBox::Graphics::Tests::CheckNullShaderViews(Device* device) {
     Require(words[0] == 0x123456789AB0 && words[1] == 0x1400000000000 && words[2] == UINT64_MAX && words[3] == UINT64_MAX, "Xbox acceleration structure descriptor layout changed");
     Reject<std::invalid_argument>([&] { create(device, nullptr, nullptr, 0); });
     Reject<std::invalid_argument>([&] { create(device, nullptr, nullptr, address + 1); });
-    Reject<std::runtime_error>([&] { create(device, reinterpret_cast<void*>(1), nullptr, address); });
+    Reject<std::invalid_argument>([&] { create(device, reinterpret_cast<void*>(1), nullptr, address); });
 
     D3D12_DESCRIPTOR_HEAP_DESC heapDescription{D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 1, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE, 0};
     void* output = nullptr;
