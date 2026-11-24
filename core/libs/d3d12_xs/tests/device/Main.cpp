@@ -60,6 +60,9 @@ int main(int argc, char** argv) {
         CheckInlineCommands(device);
         CheckDxgi(device);
         CheckFrameConfiguration(device);
+        CheckFrameTimeline();
+        CheckFrameEvents(device);
+        CheckFrameAncillary(device);
         auto unavailable = Method<void (*)(void*, ...)>(device, 127);
         Reject<std::runtime_error>([&] { unavailable(device, nullptr, nullptr, nullptr); });
         if (validation) CheckValidation(device);

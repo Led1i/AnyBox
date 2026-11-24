@@ -1,11 +1,12 @@
 #include "Device.hpp"
 #include "../dxgi/Device.hpp"
+#include "../frame/Clock.hpp"
 #include <algorithm>
 #include <limits>
 #include <stdexcept>
 
 AnyBox::Graphics::Device::Device(ID3D12Device* host, const D3D12XboxCreateDeviceParameters& parameters) : vtable(&GetDeviceTable()), host(host), parameters(parameters) { host->AddRef(); }
-AnyBox::Graphics::Device::~Device() { host->Release(); }
+AnyBox::Graphics::Device::~Device() { delete frameClock; host->Release(); }
 
 bool AnyBox::Graphics::Device::Supports(const Guid& interfaceId) noexcept { return interfaceId == UnknownId || interfaceId == ObjectId || std::ranges::find(DeviceInterfaces, interfaceId) != DeviceInterfaces.end(); }
 

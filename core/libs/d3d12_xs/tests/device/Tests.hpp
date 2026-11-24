@@ -38,4 +38,7 @@ void CheckSynchronization(Device* device);
 void CheckInlineCommands(Device* device);
 void CheckDxgi(Device* device);
 void CheckFrameConfiguration(Device* device);
+void CheckFrameTimeline();
+void CheckFrameEvents(Device* device);
+void CheckFrameAncillary(Device* device);
 }

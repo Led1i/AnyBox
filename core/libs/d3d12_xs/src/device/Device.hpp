@@ -29,6 +29,8 @@ const DeviceTable& GetDeviceTable();
 struct XboxQueueDescription;
 struct XboxListDescription;
 class DxgiDevice;
+class FrameClock;
+struct FrameAncillary;
 GUID NativeGuid(const Guid& value);
 void CheckGraphicsResult(HRESULT result, const char* operation);
 
@@ -56,6 +58,8 @@ public:
     static HRESULT GetDeviceRemovedReason(Device* self);
     static LUID GetAdapterLuid(Device* self);
     static HRESULT SetFrameIntervalX(Device* self, void* output, std::uint32_t intervalMicroseconds, std::uint32_t periodicity, std::uint32_t flags);
+    static HRESULT ScheduleFrameEventX(Device* self, std::uint32_t type, std::uint32_t offsetMicroseconds, const FrameAncillary* ancillary, std::uint32_t flags);
+    static HRESULT WaitFrameEventX(Device* self, std::uint32_t type, std::uint32_t timeoutMilliseconds, const FrameAncillary* ancillary, std::uint32_t flags, std::uint64_t* token);
     FrameConfiguration GetFrameConfiguration() const {
         std::scoped_lock lock(frameMutex);
         return frameConfiguration;
@@ -72,6 +76,7 @@ private:
     DxgiDevice* dxgiDevice = nullptr;
     mutable std::mutex frameMutex;
     FrameConfiguration frameConfiguration;
+    FrameClock* frameClock = nullptr;
 };
 
 static_assert(std::is_standard_layout_v<Device>);
