@@ -3,6 +3,8 @@
 #include <limits>
 #include <stdexcept>
 
+void CheckColorTargets();
+
 namespace {
 template<class TException, class TCallable>
 void Reject(TCallable&& callable) {
@@ -59,6 +61,6 @@ void CheckInvalid() {
 }
 
 int main() {
-    try { CheckReferences(); CheckInvalid(); return 0; }
+    try { CheckReferences(); CheckInvalid(); CheckColorTargets(); return 0; }
     catch (const std::exception& error) { std::cerr << error.what() << '\n'; return 1; }
 }
