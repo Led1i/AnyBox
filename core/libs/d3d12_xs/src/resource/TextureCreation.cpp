@@ -20,7 +20,7 @@ std::unique_ptr<AnyBox::Graphics::TextureBacking> AnyBox::Graphics::CreateTextur
     if (description.Layout != D3D12_TEXTURE_LAYOUT_UNKNOWN) throw std::runtime_error("Committed texture explicit layout is not implemented");
     D3D12_RESOURCE_DESC base{};
     std::memcpy(&base, &description, offsetof(D3D12_RESOURCE_DESC, Flags) + sizeof(base.Flags));
-    auto allocation = ComputeTextureAllocation(base);
+    auto allocation = ComputeTextureSurface(base);
     CheckLayout(description, layout);
     if (clearValue && ((description.Flags & D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET) == 0 || clearValue->Format != description.Format)) throw std::invalid_argument("Committed texture clear value is incompatible with its description");
 
@@ -35,5 +35,5 @@ std::unique_ptr<AnyBox::Graphics::TextureBacking> AnyBox::Graphics::CreateTextur
     if ((description.Flags & D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET) != 0) image.usage |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
     if ((description.Flags & D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS) != 0) image.usage |= VK_IMAGE_USAGE_STORAGE_BIT;
     Descriptor::Texture2DDescription guest{image.extent.width, image.extent.height, image.arrayLayers, image.mipLevels, format.hardwareFormat, ComputeTextureSwizzleMode(base)};
-    return std::unique_ptr<TextureBacking>(new TextureBacking{Texture::Resource(device->GetTextureAddresses(), device->GetGpuContext(), image, guest, allocation.SizeInBytes), properties, flags, layout});
+    return std::unique_ptr<TextureBacking>(new TextureBacking{Texture::Resource(device->GetTextureAddresses(), device->GetGpuContext(), image, guest, allocation.size), properties, flags, layout, {allocation.pixelPitch, allocation.pixelHeight}});
 }

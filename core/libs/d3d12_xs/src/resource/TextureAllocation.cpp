@@ -34,6 +34,11 @@ std::uint32_t AnyBox::Graphics::ComputeTextureSwizzleMode(const D3D12_RESOURCE_D
 }
 
 D3D12_RESOURCE_ALLOCATION_INFO AnyBox::Graphics::ComputeTextureAllocation(const D3D12_RESOURCE_DESC& description) {
+    auto surface = ComputeTextureSurface(description);
+    return {surface.size, surface.alignment};
+}
+
+AnyBox::Address::SurfaceLayout AnyBox::Graphics::ComputeTextureSurface(const D3D12_RESOURCE_DESC& description) {
     if (description.Dimension != D3D12_RESOURCE_DIMENSION_TEXTURE2D) throw std::runtime_error("Texture allocation dimension is not implemented");
     if (description.Width == 0 || description.Width > 16384 || description.Height == 0 || description.Height > 16384 || description.DepthOrArraySize == 0 || description.DepthOrArraySize > 2048) throw std::invalid_argument("Texture allocation dimensions are invalid");
     if (description.MipLevels == 0) throw std::runtime_error("Implicit texture mip count is not implemented");
@@ -55,6 +60,5 @@ D3D12_RESOURCE_ALLOCATION_INFO AnyBox::Graphics::ComputeTextureAllocation(const 
     input.resourceType = 1;
     input.flags = (flags & 1) | ((flags & 8) == 0 ? 1U << 9 : 0) | ((flags & 4) != 0 ? 1U << 10 : 0) | (1U << 16);
     static const Address::Context context({13, 0x8F, 0x28, 0});
-    auto output = context.Compute(input);
-    return {output.size, output.alignment};
+    return context.Compute(input);
 }

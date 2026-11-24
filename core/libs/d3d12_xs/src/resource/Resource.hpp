@@ -28,6 +28,10 @@ public:
         if (!texture) throw std::logic_error("Buffer resource has no texture backing");
         return texture->allocation;
     }
+    Descriptor::SurfacePitch GetTexturePitch() const {
+        if (!texture) throw std::logic_error("Buffer resource has no texture pitch");
+        return texture->pitch;
+    }
     static bool Supports(const Guid& interfaceId) noexcept;
     static Resource* From(void* value, Device* owner);
     const D3D12_RESOURCE_DESC1& GetMetadata() const noexcept { return description; }
