@@ -10,7 +10,7 @@ AnyBox::Graphics::Allocator::~Allocator() {
 
 AnyBox::Graphics::Allocator* AnyBox::Graphics::Allocator::From(void* object) {
     if (!object) throw std::invalid_argument("Allocator is null");
-    const DeviceTable* table;
+    const ObjectTable* table;
     std::memcpy(&table, object, sizeof(table));
     if (table != &GetAllocatorTable()) throw std::invalid_argument("Foreign fence interface is unsupported");
     return static_cast<Allocator*>(object);

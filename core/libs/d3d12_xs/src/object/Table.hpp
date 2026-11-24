@@ -10,8 +10,8 @@ template<class TObject, std::size_t TSlot>
 [[noreturn]] void UnsupportedObjectMethod(void*, ...) { throw std::runtime_error(std::string(ANYBOX_LIBRARY_NAME) + "!Object method " + std::to_string(TSlot) + " is not implemented"); }
 
 template<class TObject, std::size_t... TSlots>
-DeviceTable MakeObjectTable(std::index_sequence<TSlots...>) {
-    DeviceTable table{MethodAddress(&UnsupportedObjectMethod<TObject, TSlots>)...};
+ObjectTable MakeObjectTable(std::index_sequence<TSlots...>) {
+    ObjectTable table{MethodAddress(&UnsupportedObjectMethod<TObject, TSlots>)...};
     table[0] = MethodAddress(&TObject::QueryInterface);
     table[1] = MethodAddress(&TObject::AddRef);
     table[2] = MethodAddress(&TObject::Release);
@@ -24,8 +24,8 @@ DeviceTable MakeObjectTable(std::index_sequence<TSlots...>) {
 }
 
 template<class TObject>
-const DeviceTable& GetObjectTable() {
-    static const auto table = MakeObjectTable<TObject>(std::make_index_sequence<128>{});
+const ObjectTable& GetObjectTable() {
+    static const auto table = MakeObjectTable<TObject>(std::make_index_sequence<std::tuple_size_v<ObjectTable>>{});
     return table;
 }
 }

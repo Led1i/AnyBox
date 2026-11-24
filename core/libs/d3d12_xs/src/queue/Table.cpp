@@ -8,9 +8,9 @@ template<std::size_t TSlot>
 [[noreturn]] void Unsupported(void*, ...) { throw std::runtime_error(std::string(ANYBOX_LIBRARY_NAME) + "!Queue method " + std::to_string(TSlot) + " is not implemented"); }
 
 template<std::size_t... TSlots>
-AnyBox::Graphics::DeviceTable MakeTable(std::index_sequence<TSlots...>) {
+AnyBox::Graphics::ObjectTable MakeTable(std::index_sequence<TSlots...>) {
     using namespace AnyBox::Graphics;
-    DeviceTable result{MethodAddress(&Unsupported<TSlots>)...};
+    ObjectTable result{MethodAddress(&Unsupported<TSlots>)...};
     result[0] = MethodAddress(&Queue::QueryInterface);
     result[1] = MethodAddress(&Queue::AddRef);
     result[2] = MethodAddress(&Queue::Release);
@@ -32,7 +32,7 @@ AnyBox::Graphics::DeviceTable MakeTable(std::index_sequence<TSlots...>) {
 }
 }
 
-const AnyBox::Graphics::DeviceTable& AnyBox::Graphics::GetQueueTable() {
-    static const auto table = MakeTable(std::make_index_sequence<128>{});
+const AnyBox::Graphics::ObjectTable& AnyBox::Graphics::GetQueueTable() {
+    static const auto table = MakeTable(std::make_index_sequence<std::tuple_size_v<ObjectTable>>{});
     return table;
 }

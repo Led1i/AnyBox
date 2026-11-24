@@ -10,7 +10,7 @@ AnyBox::Graphics::Fence::~Fence() {
 
 AnyBox::Graphics::Fence* AnyBox::Graphics::Fence::From(void* object) {
     if (!object) throw std::invalid_argument("Fence is null");
-    const DeviceTable* table;
+    const ObjectTable* table;
     std::memcpy(&table, object, sizeof(table));
     if (table != &GetFenceTable()) throw std::invalid_argument("Foreign fence interface is unsupported");
     return static_cast<Fence*>(object);

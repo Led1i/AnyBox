@@ -40,6 +40,6 @@ AnyBox::Graphics::DeviceTable MakeTable(std::index_sequence<TSlots...>) {
 }
 
 const AnyBox::Graphics::DeviceTable& AnyBox::Graphics::GetDeviceTable() {
-    static const auto table = MakeTable(std::make_index_sequence<128>{});
+    static const auto table = MakeTable(std::make_index_sequence<std::tuple_size_v<DeviceTable>>{});
     return table;
 }

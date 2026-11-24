@@ -6,7 +6,7 @@
 namespace AnyBox::Graphics {
 inline constexpr Guid FenceId{0x0A753DCF, 0xC4D8, 0x4B91, {0xAD, 0xF6, 0xBE, 0x5A, 0x60, 0xD9, 0x5A, 0x76}};
 inline constexpr Guid Fence1Id{0x433685FE, 0xE22B, 0x4CA0, {0xA8, 0xDB, 0xB5, 0xB4, 0xF4, 0xDD, 0x0E, 0x4A}};
-const DeviceTable& GetFenceTable();
+const ObjectTable& GetFenceTable();
 
 class Fence : public ObjectLifetime<Fence> {
 public:
@@ -23,7 +23,7 @@ public:
 
 private:
     friend class ObjectLifetime<Fence>;
-    const DeviceTable* vtable;
+    const ObjectTable* vtable;
     std::atomic<std::uint32_t>& getReferences() noexcept { return references; }
     std::atomic<std::uint32_t> references{1};
     ID3D12Fence* host;

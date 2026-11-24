@@ -20,7 +20,7 @@ public:
     static bool Supports(const Guid& interfaceId) noexcept { return interfaceId == TInterfaceId || interfaceId == UnknownId || interfaceId == ObjectId || interfaceId == DeviceChildId || (TPageable && interfaceId == PageableId); }
     static Self* From(void* object) {
         if (!object) throw std::invalid_argument("Graphics object is null");
-        const DeviceTable* table;
+        const ObjectTable* table;
         std::memcpy(&table, object, sizeof(table));
         if (table != &GetObjectTable<Self>()) throw std::invalid_argument("Foreign graphics object interface is unsupported");
         return static_cast<Self*>(object);
@@ -28,7 +28,7 @@ public:
 
 private:
     friend class ObjectLifetime<Self>;
-    const DeviceTable* vtable;
+    const ObjectTable* vtable;
     std::atomic<std::uint32_t>& getReferences() noexcept { return references; }
     std::atomic<std::uint32_t> references{1};
     TNative* host;

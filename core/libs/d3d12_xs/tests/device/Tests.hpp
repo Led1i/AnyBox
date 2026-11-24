@@ -41,4 +41,5 @@ void CheckFrameConfiguration(Device* device);
 void CheckFrameTimeline();
 void CheckFrameEvents(Device* device);
 void CheckFrameAncillary(Device* device);
+void CheckUnsupportedDeviceMethods(Device* device);
 }

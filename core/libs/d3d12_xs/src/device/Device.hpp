@@ -15,7 +15,8 @@
 
 namespace AnyBox::Graphics {
 using DeviceMethod = std::array<std::byte, sizeof(void (*)())>;
-using DeviceTable = std::array<DeviceMethod, 128>;
+using ObjectTable = std::array<DeviceMethod, 128>;
+using DeviceTable = std::array<DeviceMethod, 256>;
 
 template<class TFunction>
 DeviceMethod MethodAddress(TFunction function) {
