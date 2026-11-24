@@ -4,7 +4,7 @@
 #include <iterator>
 #include <stdexcept>
 
-void AnyBox::Shader::EmitNativeLegacyFma(ShaderRecompiler::IrProgram& program, ShaderRecompiler::IrBlock& block, const ShaderRecompiler::RdnaInstruction& source, const ShaderRecompiler::TranslateOptions& options, const ShaderRecompiler::RoundingState& rounding) {
+void AnyBox::Shader::EmitNativeLegacyFma(ShaderRecompiler::IrProgram& program, ShaderRecompiler::IrBlock& block, const ShaderRecompiler::RdnaInstruction& source, const ShaderRecompiler::TranslateOptions& options, const ShaderRecompiler::RoundingState& rounding, const NativeWindowMode& window) {
     using namespace ShaderRecompiler;
     TranslationContext context(program, block, NumVectorRegs);
     context.SetFloatMode(options.floatMode);
@@ -12,6 +12,9 @@ void AnyBox::Shader::EmitNativeLegacyFma(ShaderRecompiler::IrProgram& program, S
     context.SetFloat32DenormPreserve(options.float32DenormPreserve);
     context.SetFloat32FlushToZero(options.float32FlushToZero);
     context.SetFloat32FlushDeclared(options.float32FlushDeclared);
+    context.SetSharedVectorRegisters(options.sharedVectorBase, options.sharedVectorCount);
+    context.SetVectorWindowActive(window.active);
+    if (window.synchronizeBefore) context.SyncVectorWindow(window.active);
     auto instruction = source;
     instruction.op = RdnaOpcode::VFmaF32;
     instruction.opcodeId = 0x14B;
