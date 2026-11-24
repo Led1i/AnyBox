@@ -1,0 +1,11 @@
+add_library(anybox_xma STATIC src/Lifetime.cpp src/Decode.cpp)
+target_include_directories(anybox_xma PUBLIC include)
+target_link_libraries(anybox_xma PUBLIC anybox_options PRIVATE anybox_ffmpeg_avcodec)
+
+if(BUILD_TESTING)
+    add_executable(xma_frame_tests tests/Frame.cpp)
+    target_link_libraries(xma_frame_tests PRIVATE anybox_xma)
+    set_target_properties(xma_frame_tests PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${ANYBOX_RUNTIME_DIRECTORY}")
+    add_test(NAME audio.xma_frame COMMAND xma_frame_tests)
+    set_tests_properties(audio.xma_frame PROPERTIES TIMEOUT 15)
+endif()
