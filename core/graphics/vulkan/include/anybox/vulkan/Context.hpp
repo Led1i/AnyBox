@@ -28,6 +28,7 @@ public:
     std::uint32_t GetQueueFamily() const noexcept { return queueFamily; }
     VkQueue GetQueue(std::uint32_t index) const;
     VkExternalBufferProperties GetExternalBufferProperties(VkBufferUsageFlags usage) const;
+    VkImageFormatProperties GetImageFormatProperties(const VkPhysicalDeviceImageFormatInfo2& description) const;
     VkExternalSemaphoreProperties GetD3D12FenceProperties() const;
     const AdapterLuid& GetAdapterLuid() const noexcept { return adapterLuid; }
     void Submit(std::uint32_t queueIndex, const VkSubmitInfo& submission, VkFence fence = VK_NULL_HANDLE);

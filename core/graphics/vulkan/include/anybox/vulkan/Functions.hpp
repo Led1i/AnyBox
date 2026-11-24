@@ -22,6 +22,7 @@ struct InstanceFunctions {
     PFN_vkGetDeviceProcAddr getDeviceProcAddr;
     PFN_vkGetPhysicalDeviceExternalBufferProperties getExternalBufferProperties;
     PFN_vkGetPhysicalDeviceExternalSemaphoreProperties getExternalSemaphoreProperties;
+    PFN_vkGetPhysicalDeviceImageFormatProperties2 getImageFormatProperties;
 };
 
 struct DeviceFunctions {
@@ -63,6 +64,12 @@ struct DeviceFunctions {
     PFN_vkImportSemaphoreWin32HandleKHR importSemaphore;
     PFN_vkGetSemaphoreCounterValue getSemaphoreValue;
     PFN_vkWaitSemaphores waitSemaphores;
+    PFN_vkCreateImage createImage;
+    PFN_vkDestroyImage destroyImage;
+    PFN_vkGetImageMemoryRequirements2 getImageRequirements;
+    PFN_vkBindImageMemory bindImageMemory;
+    PFN_vkCmdClearColorImage clearColorImage;
+    PFN_vkCmdCopyImageToBuffer copyImageToBuffer;
 };
 
 template<class TFunction>

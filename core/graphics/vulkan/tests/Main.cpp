@@ -16,6 +16,7 @@ int main() {
         CheckLayout(context, storage, repeated);
         std::array<std::uint64_t, 3> separate{frames[0], storage.GetExtraFrame(), frames[2]};
         CheckLayout(context, storage, separate);
+        CheckImages(context);
         return 0;
     } catch (const std::exception& error) {
         std::cerr << error.what() << '\n';

@@ -12,6 +12,7 @@ void AnyBox::Vulkan::Context::loadInstanceFunctions() {
     instanceFunctions.getDeviceProcAddr = RequireFunction<PFN_vkGetDeviceProcAddr>(getInstanceProcAddr(instance, "vkGetDeviceProcAddr"), "vkGetDeviceProcAddr");
     instanceFunctions.getExternalBufferProperties = RequireFunction<PFN_vkGetPhysicalDeviceExternalBufferProperties>(getInstanceProcAddr(instance, "vkGetPhysicalDeviceExternalBufferProperties"), "vkGetPhysicalDeviceExternalBufferProperties");
     instanceFunctions.getExternalSemaphoreProperties = RequireFunction<PFN_vkGetPhysicalDeviceExternalSemaphoreProperties>(getInstanceProcAddr(instance, "vkGetPhysicalDeviceExternalSemaphoreProperties"), "vkGetPhysicalDeviceExternalSemaphoreProperties");
+    instanceFunctions.getImageFormatProperties = RequireFunction<PFN_vkGetPhysicalDeviceImageFormatProperties2>(getInstanceProcAddr(instance, "vkGetPhysicalDeviceImageFormatProperties2"), "vkGetPhysicalDeviceImageFormatProperties2");
 }
 
 void AnyBox::Vulkan::Context::loadDeviceFunctions() {
@@ -54,5 +55,11 @@ void AnyBox::Vulkan::Context::loadDeviceFunctions() {
     ANYBOX_VULKAN_FUNCTION(importSemaphore, vkImportSemaphoreWin32HandleKHR);
     ANYBOX_VULKAN_FUNCTION(getSemaphoreValue, vkGetSemaphoreCounterValue);
     ANYBOX_VULKAN_FUNCTION(waitSemaphores, vkWaitSemaphores);
+    ANYBOX_VULKAN_FUNCTION(createImage, vkCreateImage);
+    ANYBOX_VULKAN_FUNCTION(destroyImage, vkDestroyImage);
+    ANYBOX_VULKAN_FUNCTION(getImageRequirements, vkGetImageMemoryRequirements2);
+    ANYBOX_VULKAN_FUNCTION(bindImageMemory, vkBindImageMemory);
+    ANYBOX_VULKAN_FUNCTION(clearColorImage, vkCmdClearColorImage);
+    ANYBOX_VULKAN_FUNCTION(copyImageToBuffer, vkCmdCopyImageToBuffer);
 #undef ANYBOX_VULKAN_FUNCTION
 }

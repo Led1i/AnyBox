@@ -50,6 +50,9 @@ void AnyBox::Vulkan::Context::createDevice(std::uint32_t queueCount) {
     if (!timeline.timelineSemaphore) throw std::runtime_error("Vulkan timeline semaphores are unsupported");
     VkPhysicalDeviceFeatures enabled{};
     enabled.shaderInt64 = VK_TRUE;
+    enabled.textureCompressionBC = features.features.textureCompressionBC;
+    enabled.textureCompressionETC2 = features.features.textureCompressionETC2;
+    enabled.textureCompressionASTC_LDR = features.features.textureCompressionASTC_LDR;
     address.bufferDeviceAddressCaptureReplay = VK_FALSE;
     address.bufferDeviceAddressMultiDevice = VK_FALSE;
     std::vector<float> priorities(queueCount, 1.0f);

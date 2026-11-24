@@ -37,5 +37,6 @@ private:
 };
 
 void CheckLayout(Context& context, Storage& storage, std::span<const std::uint64_t> frames);
+void CheckImages(Context& context);
 std::vector<std::uint32_t> CompileCompute(const char* source);
 }
