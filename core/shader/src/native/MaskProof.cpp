@@ -1,6 +1,5 @@
 #include "FirstLane.hpp"
 #include "BitProof.hpp"
-#include <algorithm>
 #include <unordered_set>
 
 namespace {
@@ -54,10 +53,7 @@ bool Implies(const IrProgram& program, const IrValue* mask, const IrValue* condi
     if (mask->Opcode() == IrOpcode::LogicalOr && mask->ArgumentCount() == 2) return Implies(program, mask->Argument(0), condition, depth - 1, steps) && Implies(program, mask->Argument(1), condition, depth - 1, steps);
     if (!mask->IsPhi() || mask->ArgumentCount() == 0 || mask->ArgumentCount() != mask->PhiBlockCount()) return false;
     auto* header = mask->Parent();
-    auto position = std::ranges::find(program.BlockOrder(), header);
-    if (position == program.BlockOrder().end()) return false;
-    const auto& metadata = program.Metadata().blockInfo.at(static_cast<std::size_t>(position - program.BlockOrder().begin()));
-    if (!metadata.terminator.loopHeader || condition->Parent() == nullptr || condition->Parent() == header || !Dominates(program, condition->Parent(), header)) return false;
+    if (condition->Parent() == nullptr || condition->Parent() == header || !Dominates(program, condition->Parent(), header)) return false;
     bool entered = false;
     bool repeated = false;
     for (std::size_t index = 0; index < mask->ArgumentCount(); ++index) {

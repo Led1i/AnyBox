@@ -93,6 +93,9 @@ void CheckSelectedMask(bool guarded) {
 void CheckFirstLaneGuards() {
     CheckSelectedMask(true);
     CheckSelectedMask(false);
+    Fixture unmarked(true, true, false, true);
+    unmarked.program.Metadata().blockInfo[1].terminator.loopHeader = false;
+    Fixtures::Require(AnyBox::Shader::SimplifyFirstLaneGuards(unmarked.program) == 1);
     for (bool duplicate : {false, true}) {
         Fixture fixture(true, duplicate, false, true);
         Fixtures::Require(AnyBox::Shader::SimplifyFirstLaneGuards(fixture.program) == 1);
