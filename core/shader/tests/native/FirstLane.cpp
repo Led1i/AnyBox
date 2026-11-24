@@ -65,9 +65,34 @@ struct Fixture {
         ValidateProgram(program, true);
     }
 };
+
+void CheckSelectedMask(bool guarded) {
+    IrProgram program;
+    auto& block = program.CreateBlock();
+    program.SetEntryBlock(block);
+    program.BlockOrder() = {&block};
+    program.Metadata().blockInfo.resize(1);
+    IrBuilder builder(program);
+    builder.SetInsertionPoint(block);
+    auto& condition = builder.INotEqual(builder.GetUserData(static_cast<ScalarReg>(0)), builder.Constant(0));
+    auto& selector = builder.INotEqual(builder.GetUserData(static_cast<ScalarReg>(1)), builder.Constant(0));
+    auto& other = builder.INotEqual(builder.GetUserData(static_cast<ScalarReg>(2)), builder.Constant(0));
+    auto& narrow = builder.LogicalAnd(condition, other);
+    auto& mask = builder.Select(selector, narrow, guarded ? condition : other);
+    auto& payload = builder.Constant(32);
+    auto& value = builder.Select(condition, payload, builder.Constant(3));
+    auto& read = builder.Emit(IrOpcode::ReadFirstLane, IrType::U32, {&value, &mask});
+    ValidateProgram(program, true);
+
+    Fixtures::Require(AnyBox::Shader::SimplifyFirstLaneGuards(program) == (guarded ? 1 : 0));
+    Fixtures::Require(read.Argument(0) == (guarded ? &payload : &value) && read.Argument(1) == &mask);
+    ValidateProgram(program, true);
+}
 }
 
 void CheckFirstLaneGuards() {
+    CheckSelectedMask(true);
+    CheckSelectedMask(false);
     for (bool duplicate : {false, true}) {
         Fixture fixture(true, duplicate, false, true);
         Fixtures::Require(AnyBox::Shader::SimplifyFirstLaneGuards(fixture.program) == 1);

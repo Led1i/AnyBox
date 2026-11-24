@@ -6,7 +6,7 @@
 #include <array>
 
 namespace {
-ShaderRecompiler::IrProgram Make(bool optimize, bool bits) {
+ShaderRecompiler::IrProgram Make(bool optimize, bool bits, bool selectedMask) {
     using namespace ShaderRecompiler;
     IrProgram program;
     auto& entry = program.CreateBlock();
@@ -37,7 +37,10 @@ ShaderRecompiler::IrProgram Make(bool optimize, bool bits) {
         return builder.INotEqual(builder.BitwiseAnd(builder.ShiftRightLogical(builder.Constant(word), selector), builder.Constant(1)), builder.Constant(0));
     };
     auto& eligible = bits ? bit(0xFFFF0000) : builder.LogicalNot(builder.ULessThan(lane, builder.Constant(16)));
-    auto& initial = bits ? bit(0xFF0F0000) : eligible;
+    auto& base = bits ? bit(0xFF0F0000) : eligible;
+    auto& selector = builder.INotEqual(builder.BitwiseAnd(lane, builder.Constant(1)), builder.Constant(0));
+    auto& narrower = builder.LogicalAnd(base, builder.UGreaterThan(lane, builder.Constant(19)));
+    auto& initial = selectedMask ? builder.Select(selector, narrower, base) : base;
     auto& payload = builder.ShiftLeftLogical(builder.IAdd(lane, builder.Constant(1)), builder.Constant(5));
     auto& low = builder.ShiftLeftLogical(lane, builder.Constant(2));
     builder.SetInsertionPoint(header);
@@ -65,9 +68,11 @@ ShaderRecompiler::IrProgram Make(bool optimize, bool bits) {
 }
 
 void BufferTests::CheckFirstLaneGpu(AnyBox::Vulkan::Context& context) {
-    for (bool bits : {false, true}) {
+    for (unsigned variant = 0; variant < 4; ++variant) {
+        bool bits = (variant & 1) != 0;
+        bool selectedMask = (variant & 2) != 0;
         for (bool optimize : {false, true}) {
-            auto program = Make(optimize, bits);
+            auto program = Make(optimize, bits, selectedMask);
             ShaderRecompiler::ShaderComputeInputInfo input;
             input.threadsNum[0] = 32;
             input.threadsNum[1] = input.threadsNum[2] = 1;
@@ -76,7 +81,9 @@ void BufferTests::CheckFirstLaneGpu(AnyBox::Vulkan::Context& context) {
             std::array<std::uint32_t, 32> expected;
             expected.fill(UINT32_MAX);
             for (unsigned lane = 0; lane < 32; ++lane) {
-                if ((bits ? 0xFF0F0000U : 0xFFFF0000U) & (1U << lane)) expected[lane] = (lane + 1) << 5;
+                bool active = ((bits ? 0xFF0F0000U : 0xFFFF0000U) & (1U << lane)) != 0;
+                if (selectedMask && (lane & 1) != 0 && lane <= 19) active = false;
+                if (active) expected[lane] = (lane + 1) << 5;
             }
             RunGpu(context, shader, expected, {1, 1, 1});
         }

@@ -48,6 +48,7 @@ bool Implies(const IrProgram& program, const IrValue* mask, const IrValue* condi
     if (mask == condition || (mask->HasImmediate() && !mask->ImmediateBool()) || (condition->HasImmediate() && condition->ImmediateBool())) return true;
     if (depth == 0) return false;
     if (AnyBox::Shader::NativeBitPredicateImplies(mask, condition, steps)) return true;
+    if (mask->Opcode() == IrOpcode::SelectU1 && mask->ArgumentCount() == 3) return Implies(program, mask->Argument(1), condition, depth - 1, steps) && Implies(program, mask->Argument(2), condition, depth - 1, steps);
     if (mask->Opcode() == IrOpcode::LogicalAnd && mask->ArgumentCount() == 2) return Implies(program, mask->Argument(0), condition, depth - 1, steps) || Implies(program, mask->Argument(1), condition, depth - 1, steps);
     if (mask->Opcode() == IrOpcode::LogicalOr && mask->ArgumentCount() == 2) return Implies(program, mask->Argument(0), condition, depth - 1, steps) && Implies(program, mask->Argument(1), condition, depth - 1, steps);
     if (!mask->IsPhi() || mask->ArgumentCount() == 0 || mask->ArgumentCount() != mask->PhiBlockCount()) return false;
