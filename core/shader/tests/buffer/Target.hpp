@@ -23,4 +23,5 @@ void RunGpu(AnyBox::Vulkan::Context& context, const AnyBox::Shader::ComputeCompi
 void CheckThreads(AnyBox::Vulkan::Context& context);
 void CheckNativeGpu(AnyBox::Vulkan::Context& context);
 void CheckNativeFma(AnyBox::Vulkan::Context& context);
+void CheckFirstLaneGpu(AnyBox::Vulkan::Context& context);
 }

@@ -1,4 +1,5 @@
 #include "Optimize.hpp"
+#include "FirstLane.hpp"
 #include <Optimization/ConstantFolder.hpp>
 #include <Optimization/DeadCodeEliminator.hpp>
 #include <Optimization/ReadLaneEliminator.hpp>
@@ -28,5 +29,6 @@ void AnyBox::Shader::OptimizeNativeProgram(ShaderRecompiler::IrProgram& program,
     DeadCodeEliminator{}.EliminateUnobservedPhis(program);
     DeadCodeEliminator{}.Eliminate(program);
     if (GotoPhiRefiner{}.Refine(program).replacedOperands != 0) Simplify(program);
+    if (SimplifyFirstLaneGuards(program) != 0) Simplify(program);
     ValidateProgram(program, true);
 }
