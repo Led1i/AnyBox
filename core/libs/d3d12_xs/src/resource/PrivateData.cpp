@@ -1,6 +1,5 @@
 #include "Resource.hpp"
 #include "../object/PrivateData.hpp"
-#include <anybox/platform/WindowsError.hpp>
 #include <cwchar>
 #include <limits>
 

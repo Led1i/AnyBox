@@ -6,6 +6,9 @@
 #include <memory>
 #include <mutex>
 #include <vector>
+#include <cstddef>
+#include <cstdint>
+#include <type_traits>
 
 namespace AnyBox::Graphics {
 class PrivateData {

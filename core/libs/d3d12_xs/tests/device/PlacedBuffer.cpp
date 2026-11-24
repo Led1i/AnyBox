@@ -45,6 +45,10 @@ void AnyBox::Graphics::Tests::CheckPlacedBuffer(Device* device) {
     Require(address[17] == std::byte{0x73}, "Xbox buffer mapping is not coherent with title memory");
     CheckPlacedBufferTransfer(device, resource, {address, 2 * page}, false);
     CheckResourceMetadata(device, resource);
+    auto properties = Method<decltype(&Resource::GetHeapProperties)>(resource, 14);
+    D3D12_HEAP_PROPERTIES heap{};
+    Reject<std::invalid_argument>([&] { properties(resource, nullptr, nullptr); });
+    Reject<std::runtime_error>([&] { properties(resource, &heap, nullptr); });
     Reject<std::logic_error>([&] { XMemMapPhysicalPages(address, 2, nullptr); });
     Reject<std::invalid_argument>([&] { create(device, pointer, nullptr, D3D12_BARRIER_LAYOUT_UNDEFINED, nullptr, ResourceId, &output); });
     Require(!output, "Rejected placed resource creation retained its output");

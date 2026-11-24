@@ -1,5 +1,4 @@
 #include "PrivateData.hpp"
-#include <anybox/platform/WindowsError.hpp>
 #include <dxgi.h>
 #include <cstring>
 
