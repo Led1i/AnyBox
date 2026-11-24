@@ -55,4 +55,5 @@ void BufferTests::CheckSpirv() {
     CheckConstants(context);
     CheckBitFields(context);
     CheckNativeGpu(context);
+    CheckNativeFma(context);
 }

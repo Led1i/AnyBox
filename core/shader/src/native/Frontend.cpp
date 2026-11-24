@@ -1,5 +1,6 @@
 #include <anybox/shader/Native.hpp>
 #include <anybox/graphics/container/Native.hpp>
+#include "Decode.hpp"
 #include <RdnaDecoder/RdnaInstructionDecoder.hpp>
 #include <ControlFlow/GraphBuilder.hpp>
 #include <ControlFlow/Structurizer.hpp>
@@ -14,7 +15,7 @@ AnyBox::Shader::NativeFrontend::NativeFrontend(std::span<const std::byte> progra
     for (std::size_t word = 0; word < code.size(); ++word) {
         for (unsigned byte = 0; byte < 4; ++byte) code[word] |= std::to_integer<std::uint32_t>(bytes[word * 4 + byte]) << (byte * 8);
     }
-    decoded = ShaderRecompiler::RdnaInstructionDecoder{}.Decode(code);
+    decoded = DecodeNativeProgram(code);
     graph = ShaderRecompiler::GraphBuilder{}.Build(decoded);
     if (graph.unsupported) throw std::runtime_error(graph.unsupportedReason);
     ShaderRecompiler::Structurizer{}.Structurize(graph);

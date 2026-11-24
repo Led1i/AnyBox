@@ -1,19 +1,16 @@
 #include <anybox/shader/NativeCompute.hpp>
 #include "Optimize.hpp"
 #include "ScratchWrites.hpp"
+#include "Slices.hpp"
 #include <Translation/InstructionTranslator.hpp>
 #include <Optimization/SsaBuilder.hpp>
 #include <Recompiler.hpp>
 #include <spirv/unified1/spirv.hpp>
 #include <algorithm>
 #include <stdexcept>
-#include <string>
 
 AnyBox::Shader::NativeComputeTranslation AnyBox::Shader::LowerNativeCompute(const NativeFrontend& frontend, const Graphics::Container::NativeComputeState& state, const ShaderRecompiler::ShaderFloatMode& floatMode, const ShaderRecompiler::SpirvTargetOptions& target) {
     using namespace ShaderRecompiler;
-    for (const auto& instruction : frontend.GetDecoded().instructions) {
-        if (instruction.family == RdnaInstructionFamily::VOP3 && instruction.opcodeId == 0x140) throw std::runtime_error("Xbox RDNA2 fused legacy FMA lowering is not implemented at pc " + std::to_string(instruction.programCounter));
-    }
     constexpr std::uint32_t supported = 0x3E | 0x380 | 0x400 | 0x1800 | 0xFF8000;
     if ((state.resourceControl & ~supported) != 0) throw std::runtime_error("Xbox native compute scratch, traps and exception modes are not implemented");
     auto userRegisters = (state.resourceControl >> 1) & 31;
@@ -55,7 +52,7 @@ AnyBox::Shader::NativeComputeTranslation AnyBox::Shader::LowerNativeCompute(cons
     options.float32FlushDeclared = supports(spv::CapabilityDenormFlushToZero);
     options.float32DenormPreserve = target.float32DenormPreserve;
     auto adjusted = RemoveUnusedScratchWrites(frontend.GetDecoded());
-    result.program = InstructionTranslator{}.Translate(adjusted ? *adjusted : frontend.GetDecoded(), frontend.GetGraph(), options);
+    result.program = TranslateNativeProgram(adjusted ? *adjusted : frontend.GetDecoded(), frontend.GetGraph(), options);
     SsaBuilder{}.Rewrite(result.program);
     OptimizeNativeProgram(result.program, input.waveSize);
     return result;
