@@ -15,7 +15,7 @@ struct XboxListDescription {
     D3D12_COMMAND_LIST_TYPE type;
     std::uint32_t flags;
     std::uint32_t nodeMask;
-    std::uint32_t scratchCount;
+    std::uint32_t barrierBatchSize;
 };
 
 class CommandList : public ObjectLifetime<CommandList> {

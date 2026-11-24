@@ -34,6 +34,6 @@ HRESULT AnyBox::Graphics::Device::CreateCommandListX(Device* self, const XboxLis
     if (!list) throw std::invalid_argument("Xbox command list output is null");
     *list = nullptr;
     if (!description) throw std::invalid_argument("Xbox command list description is null");
-    if ((description->flags & ~std::uint32_t{2}) != 0 || description->scratchCount != 0) throw std::runtime_error("Xbox command list recording flags and scratch configuration are not implemented");
+    if ((description->flags & ~std::uint32_t{2}) != 0 || description->barrierBatchSize != 0) throw std::runtime_error("Xbox command list recording flags and barrier batch configuration are not implemented");
     return CreateCommandList(self, description->nodeMask, description->type, allocator, initialState, interfaceId, list);
 }
