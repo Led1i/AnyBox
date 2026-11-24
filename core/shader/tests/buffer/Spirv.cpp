@@ -57,4 +57,5 @@ void BufferTests::CheckSpirv() {
     CheckNativeGpu(context);
     CheckNativeFma(context);
     CheckFirstLaneGpu(context);
+    CheckBallotLoopGpu(context);
 }

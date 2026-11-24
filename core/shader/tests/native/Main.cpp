@@ -13,6 +13,7 @@ void CheckDescriptorChoices();
 void CheckFirstLaneGuards();
 void CheckBallotFirstLaneGuards();
 void CheckBooleanFirstLaneGuards();
+void CheckBallotLoopGuards();
 
 int main() {
     return AnyBox::Tests::Run([] {
@@ -25,6 +26,7 @@ int main() {
         CheckFirstLaneGuards();
         CheckBallotFirstLaneGuards();
         CheckBooleanFirstLaneGuards();
+        CheckBallotLoopGuards();
         using namespace Fixtures;
         auto data = MakeNativeProgram();
         AnyBox::Shader::NativeFrontend frontend(data);

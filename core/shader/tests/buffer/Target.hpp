@@ -24,4 +24,5 @@ void CheckThreads(AnyBox::Vulkan::Context& context);
 void CheckNativeGpu(AnyBox::Vulkan::Context& context);
 void CheckNativeFma(AnyBox::Vulkan::Context& context);
 void CheckFirstLaneGpu(AnyBox::Vulkan::Context& context);
+void CheckBallotLoopGpu(AnyBox::Vulkan::Context& context);
 }

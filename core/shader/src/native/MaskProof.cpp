@@ -1,43 +1,10 @@
 #include "FirstLane.hpp"
 #include "BitProof.hpp"
-#include <unordered_set>
+#include "MaskFlow.hpp"
 
 namespace {
 using namespace ShaderRecompiler;
-
-bool Dominates(const IrProgram& program, const IrBlock* first, const IrBlock* second) {
-    std::vector<const IrBlock*> pending{second};
-    std::unordered_set<const IrBlock*> visited;
-    for (std::size_t next = 0; next < pending.size(); ++next) {
-        auto* block = pending[next];
-        if (block == first || !visited.insert(block).second) continue;
-        if (block == program.BlockOrder().front() || block->Predecessors().empty()) return false;
-        pending.insert(pending.end(), block->Predecessors().begin(), block->Predecessors().end());
-    }
-    return true;
-}
-
-bool SamePhi(const IrValue* first, const IrValue* second) {
-    if (first == second) return true;
-    if (!first->IsPhi() || !second->IsPhi() || first->Parent() != second->Parent() || first->ArgumentCount() != second->ArgumentCount() || second->PhiBlockCount() != second->ArgumentCount()) return false;
-    for (std::size_t index = 0; index < first->ArgumentCount(); ++index) {
-        bool matched = false;
-        for (std::size_t other = 0; other < second->ArgumentCount(); ++other) {
-            matched |= first->PhiBlock(index) == second->PhiBlock(other) && first->Argument(index)->Resolve() == second->Argument(other)->Resolve();
-        }
-        if (!matched) return false;
-    }
-    return true;
-}
-
-bool Narrows(const IrValue* value, const IrValue* phi, unsigned depth, unsigned& steps) {
-    if (steps == 0) return false;
-    --steps;
-    value = value->Resolve();
-    if (SamePhi(value, phi)) return true;
-    if (depth == 0 || value->Opcode() != IrOpcode::LogicalAnd || value->ArgumentCount() != 2) return false;
-    return Narrows(value->Argument(0), phi, depth - 1, steps) || Narrows(value->Argument(1), phi, depth - 1, steps);
-}
+using namespace AnyBox::Shader;
 
 bool Implies(const IrProgram& program, const IrValue* mask, const IrValue* condition, unsigned depth, unsigned& steps) {
     if (steps == 0) return false;
@@ -47,7 +14,7 @@ bool Implies(const IrProgram& program, const IrValue* mask, const IrValue* condi
     if (mask == condition || (mask->HasImmediate() && !mask->ImmediateBool()) || (condition->HasImmediate() && condition->ImmediateBool())) return true;
     if (depth == 0) return false;
     if (AnyBox::Shader::NativeBitPredicateImplies(mask, condition, steps)) return true;
-    if (AnyBox::Shader::NativeBallotPredicateImplies(mask, condition, program.WaveSize(), steps)) return true;
+    if (NativeBallotPredicateImplies(program, mask, condition, steps)) return true;
     if (condition->Opcode() == IrOpcode::LogicalAnd && condition->ArgumentCount() == 2 && Implies(program, mask, condition->Argument(0), depth - 1, steps) && Implies(program, mask, condition->Argument(1), depth - 1, steps)) return true;
     if (condition->Opcode() == IrOpcode::LogicalOr && condition->ArgumentCount() == 2 && (Implies(program, mask, condition->Argument(0), depth - 1, steps) || Implies(program, mask, condition->Argument(1), depth - 1, steps))) return true;
     if (mask->Opcode() == IrOpcode::SelectU1 && mask->ArgumentCount() == 3) return Implies(program, mask->Argument(1), condition, depth - 1, steps) && Implies(program, mask->Argument(2), condition, depth - 1, steps);
@@ -55,13 +22,13 @@ bool Implies(const IrProgram& program, const IrValue* mask, const IrValue* condi
     if (mask->Opcode() == IrOpcode::LogicalOr && mask->ArgumentCount() == 2) return Implies(program, mask->Argument(0), condition, depth - 1, steps) && Implies(program, mask->Argument(1), condition, depth - 1, steps);
     if (!mask->IsPhi() || mask->ArgumentCount() == 0 || mask->ArgumentCount() != mask->PhiBlockCount()) return false;
     auto* header = mask->Parent();
-    if (condition->Parent() == nullptr || condition->Parent() == header || !Dominates(program, condition->Parent(), header)) return false;
+    if (condition->Parent() == nullptr || condition->Parent() == header || !MaskDominates(program, condition->Parent(), header)) return false;
     bool entered = false;
     bool repeated = false;
     for (std::size_t index = 0; index < mask->ArgumentCount(); ++index) {
         auto* incoming = mask->Argument(index)->Resolve();
-        if (Dominates(program, header, mask->PhiBlock(index))) {
-            if (!Narrows(incoming, mask, depth - 1, steps)) return false;
+        if (MaskDominates(program, header, mask->PhiBlock(index))) {
+            if (!MaskNarrows(incoming, mask, IrOpcode::LogicalAnd, depth - 1, steps) && !Implies(program, incoming, condition, depth - 1, steps)) return false;
             repeated = true;
         } else {
             if (!Implies(program, incoming, condition, depth - 1, steps)) return false;
