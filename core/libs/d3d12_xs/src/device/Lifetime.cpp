@@ -1,4 +1,5 @@
 #include "Device.hpp"
+#include "../dxgi/Device.hpp"
 #include <algorithm>
 #include <limits>
 #include <stdexcept>
@@ -11,6 +12,10 @@ bool AnyBox::Graphics::Device::Supports(const Guid& interfaceId) noexcept { retu
 std::int32_t AnyBox::Graphics::Device::QueryInterface(Device* self, const Guid& interfaceId, void** object) {
     if (!object) throw std::invalid_argument("Graphics device interface output is null");
     *object = nullptr;
+    if (interfaceId == DxgiDeviceId || interfaceId == DxgiObjectId) {
+        *object = DxgiDevice::Acquire(self);
+        return 0;
+    }
     if (!Supports(interfaceId)) throw std::invalid_argument("Unsupported graphics device interface");
     AddRef(self);
     *object = self;

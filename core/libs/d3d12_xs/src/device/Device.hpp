@@ -9,6 +9,7 @@
 #include <array>
 #include <atomic>
 #include <cstring>
+#include <mutex>
 #include <type_traits>
 
 namespace AnyBox::Graphics {
@@ -26,6 +27,7 @@ DeviceMethod MethodAddress(TFunction function) {
 const DeviceTable& GetDeviceTable();
 struct XboxQueueDescription;
 struct XboxListDescription;
+class DxgiDevice;
 GUID NativeGuid(const Guid& value);
 void CheckGraphicsResult(HRESULT result, const char* operation);
 
@@ -54,11 +56,14 @@ public:
     static LUID GetAdapterLuid(Device* self);
 
 private:
+    friend class DxgiDevice;
     const DeviceTable* vtable;
     std::atomic<std::uint32_t> references{1};
     std::atomic<std::uint32_t> computeQueues{0};
     ID3D12Device* host;
     D3D12XboxCreateDeviceParameters parameters;
+    std::mutex dxgiMutex;
+    DxgiDevice* dxgiDevice = nullptr;
 };
 
 static_assert(std::is_standard_layout_v<Device>);
