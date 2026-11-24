@@ -1,6 +1,7 @@
 #include "Device.hpp"
 #include "../pipeline/Shader.hpp"
 #include "../pipeline/State.hpp"
+#include "../pipeline/Offline.hpp"
 #include <memory>
 
 namespace {
@@ -37,6 +38,11 @@ HRESULT AnyBox::Graphics::Device::CreateComputePipelineStateX(Device* self, cons
         root = embedded.get();
     }
 
+    if (RequiresPreparedCompute(*self, code)) {
+        auto offline = std::make_unique<OfflinePipeline>(*self, *root, LoadPreparedCompute(code));
+        *pipeline = new PipelineState(std::move(offline), self, root);
+        return S_OK;
+    }
     auto native = *description;
     native.pRootSignature = root->GetHost();
     void* host = nullptr;

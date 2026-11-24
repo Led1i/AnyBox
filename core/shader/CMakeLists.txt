@@ -10,6 +10,7 @@ anybox_add_spirv_tools()
 include(src/backend/Backend.cmake)
 include(src/artifact/Artifact.cmake)
 include(src/runtime/Runtime.cmake)
+include(src/dxil/arguments/Arguments.cmake)
 
 add_library(anybox_native_shader STATIC src/native/Frontend.cpp)
 target_sources(anybox_native_shader PRIVATE src/native/Compute.cpp)
@@ -23,12 +24,10 @@ target_link_libraries(anybox_native_shader PUBLIC anybox_compute_shader anybox_c
 target_include_directories(anybox_native_shader PUBLIC include)
 target_include_directories(anybox_native_shader SYSTEM PUBLIC "${PROJECT_SOURCE_DIR}/3rdparty/anyps5/core/shader/recompiler" "${PROJECT_SOURCE_DIR}/3rdparty/anyps5/core/shader/recompiler/ControlFlow/include")
 
-add_library(anybox_dxil STATIC src/dxil/Inspection.cpp src/dxil/Module.cpp src/dxil/arguments/Plan.cpp)
-target_sources(anybox_dxil PRIVATE src/dxil/arguments/RootPlan.cpp src/dxil/arguments/RootMatch.cpp)
-target_sources(anybox_dxil PRIVATE src/dxil/arguments/Writer.cpp)
+add_library(anybox_dxil STATIC src/dxil/Inspection.cpp src/dxil/Module.cpp)
 target_sources(anybox_dxil PRIVATE src/dxil/ResourceLayout.cpp src/dxil/BufferProperties.cpp)
 target_sources(anybox_dxil PRIVATE src/dxil/ComputeEntry.cpp)
-target_link_libraries(anybox_dxil PUBLIC anybox_container anybox_commands PRIVATE llvm-bc)
+target_link_libraries(anybox_dxil PUBLIC anybox_shader_arguments PRIVATE llvm-bc)
 target_include_directories(anybox_dxil SYSTEM PRIVATE "${PROJECT_SOURCE_DIR}/3rdparty/dxil-spirv/util" "${PROJECT_SOURCE_DIR}/3rdparty/dxil-spirv/bc" "${PROJECT_SOURCE_DIR}/3rdparty/dxil-spirv/debug")
 target_include_directories(anybox_dxil PUBLIC include)
 
