@@ -5,7 +5,7 @@
 #include <array>
 
 namespace {
-void CheckList(AnyBox::Graphics::Device* device, D3D12_COMMAND_LIST_TYPE type) {
+void CheckList(AnyBox::Graphics::Device* device, D3D12_COMMAND_LIST_TYPE type, bool extended) {
     using namespace AnyBox::Graphics;
     using namespace AnyBox::Graphics::Tests;
     auto createAllocator = Method<decltype(&Device::CreateCommandAllocator)>(device, 9);
@@ -13,7 +13,12 @@ void CheckList(AnyBox::Graphics::Device* device, D3D12_COMMAND_LIST_TYPE type) {
     void* output = nullptr;
     Require(createAllocator(device, type, AllocatorId, &output) == 0 && output, "List test allocator creation failed");
     auto* allocator = static_cast<Allocator*>(output);
-    Require(createList(device, 0, type, allocator, nullptr, XboxGraphicsListId, &output) == 0 && output, "Xbox command list creation failed");
+    if (extended) {
+        XboxListDescription description{type, 2, 1, 0};
+        Require(Method<decltype(&Device::CreateCommandListX)>(device, 73)(device, &description, allocator, nullptr, XboxGraphicsListId, &output) == 0 && output, "Deferred Xbox command list creation failed");
+    } else {
+        Require(createList(device, 0, type, allocator, nullptr, XboxGraphicsListId, &output) == 0 && output, "Xbox command list creation failed");
+    }
     auto* list = static_cast<CommandList*>(output);
     auto close = Method<decltype(&CommandList::Close)>(list, 9);
     auto reset = Method<decltype(&CommandList::Reset)>(list, 10);
@@ -60,7 +65,8 @@ void CheckList(AnyBox::Graphics::Device* device, D3D12_COMMAND_LIST_TYPE type) {
 }
 
 void AnyBox::Graphics::Tests::CheckLists(Device* device) {
-    for (auto type : {D3D12_COMMAND_LIST_TYPE_DIRECT, D3D12_COMMAND_LIST_TYPE_BUNDLE, D3D12_COMMAND_LIST_TYPE_COMPUTE, D3D12_COMMAND_LIST_TYPE_COPY, static_cast<D3D12_COMMAND_LIST_TYPE>(0x10)}) CheckList(device, type);
+    for (auto type : {D3D12_COMMAND_LIST_TYPE_DIRECT, D3D12_COMMAND_LIST_TYPE_BUNDLE, D3D12_COMMAND_LIST_TYPE_COMPUTE, D3D12_COMMAND_LIST_TYPE_COPY, static_cast<D3D12_COMMAND_LIST_TYPE>(0x10)}) CheckList(device, type, false);
+    for (auto type : {D3D12_COMMAND_LIST_TYPE_DIRECT, D3D12_COMMAND_LIST_TYPE_COMPUTE}) CheckList(device, type, true);
     auto create = Method<decltype(&Device::CreateCommandListX)>(device, 73);
     XboxListDescription description{D3D12_COMMAND_LIST_TYPE_DIRECT, 0, 1, 0};
     void* output = nullptr;
@@ -71,7 +77,7 @@ void AnyBox::Graphics::Tests::CheckLists(Device* device) {
     Require(Method<decltype(&CommandList::Close)>(list, 9)(list) == 0, "Xbox extended command list close failed");
     Require(Method<decltype(&CommandList::Release)>(list, 2)(list) == 0, "Xbox extended command list was not released");
     Require(Method<decltype(&Allocator::Release)>(allocator, 2)(allocator) == 0, "Xbox list allocator was not released");
-    description.flags = 2;
+    description.flags = 1;
     Reject<std::runtime_error>([&] { create(device, &description, nullptr, nullptr, XboxGraphicsListId, &output); });
     Require(!output, "Rejected Xbox recording flags retained a command list");
 }
