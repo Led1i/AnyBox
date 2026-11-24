@@ -26,6 +26,8 @@ Unmodified executables require Windows Developer Mode for process-local SDK acti
 
 The project is intended for interoperability, research and preservation. Game files, firmware, cryptographic keys and proprietary console SDK libraries are not distributed with the project.
 
+Users must supply their own game executables and data and are responsible for ensuring they have the right to use these files with AnyBox.
+
 AnyBox is an independent project and is not affiliated with, authorized or endorsed by Microsoft. Xbox is a trademark of Microsoft Corporation.
 
 ## License
