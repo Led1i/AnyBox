@@ -7,6 +7,7 @@
 #include <stdexcept>
 
 void CheckDxbcChecksums();
+void CheckXboxRootFlags();
 
 namespace {
 constexpr GUID DeserializerId{0x34AB647B, 0x3CC8, 0x46AC, {0x84, 0x1B, 0xC0, 0x96, 0x56, 0x45, 0xC0, 0x46}};
@@ -86,5 +87,6 @@ int main() {
         RoundTrip(D3D_ROOT_SIGNATURE_VERSION_1_1);
         Errors();
         CheckDxbcChecksums();
+        CheckXboxRootFlags();
     });
 }
