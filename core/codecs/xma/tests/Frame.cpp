@@ -12,6 +12,7 @@ std::pair<std::vector<std::byte>, std::uint32_t> Silence(std::uint32_t channels,
     bits.push_back(true);
     bits.push_back(false);
     if (channels == 2) bits.push_back(false);
+    bits.insert(bits.end(), 8, false);
     bits.insert(bits.end(), 3, false);
     if (channels == 2) {
         bits.push_back(false);
@@ -52,6 +53,11 @@ void Run() {
             if (!rejected) throw std::runtime_error("Invalid XMA frame length was accepted");
         }
     }
+    AnyBox::Codecs::XmaFrameDecoder decoder(48000, 1);
+    std::array<std::byte, 3> malformed{std::byte{0}, std::byte{47}, std::byte{0}};
+    bool rejected = false;
+    try { decoder.Decode(malformed, 0, 23); } catch (const std::runtime_error&) { rejected = true; }
+    if (!rejected) throw std::runtime_error("XMA decoder accepted a bitstream error after producing PCM");
 }
 }
 

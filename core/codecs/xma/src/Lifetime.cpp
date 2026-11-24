@@ -1,5 +1,6 @@
 #include <anybox/codecs/XmaFrameDecoder.hpp>
 #include "FFmpeg.hpp"
+#include "Logging.hpp"
 
 void AnyBox::Codecs::XmaFrameDecoder::ContextDeleter::operator()(AVCodecContext* value) const noexcept { avcodec_free_context(&value); }
 void AnyBox::Codecs::XmaFrameDecoder::FrameDeleter::operator()(AVFrame* value) const noexcept { av_frame_free(&value); }
@@ -18,6 +19,7 @@ AnyBox::Codecs::XmaFrameDecoder::XmaFrameDecoder(std::uint32_t sampleRate, std::
 AnyBox::Codecs::XmaFrameDecoder::~XmaFrameDecoder() = default;
 
 AnyBox::Codecs::XmaFrameDecoder::Context AnyBox::Codecs::XmaFrameDecoder::createContext() const {
+    InitializeXmaLogging();
     const auto* codec = avcodec_find_decoder(AV_CODEC_ID_XMAFRAMES);
     if (!codec) throw std::runtime_error("XMA frame decoder is unavailable");
     Context result(avcodec_alloc_context3(codec));

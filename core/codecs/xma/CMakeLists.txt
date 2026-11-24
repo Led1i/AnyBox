@@ -1,4 +1,4 @@
-add_library(anybox_xma STATIC src/Lifetime.cpp src/Decode.cpp src/Assembly.cpp src/Packet.cpp)
+add_library(anybox_xma STATIC src/Lifetime.cpp src/Decode.cpp src/Assembly.cpp src/Packet.cpp src/Logging.cpp)
 target_include_directories(anybox_xma PUBLIC include)
 target_link_libraries(anybox_xma PUBLIC anybox_options PRIVATE anybox_ffmpeg_avcodec)
 

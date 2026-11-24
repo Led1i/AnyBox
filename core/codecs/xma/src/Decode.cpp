@@ -1,5 +1,6 @@
 #include <anybox/codecs/XmaFrameDecoder.hpp>
 #include "FFmpeg.hpp"
+#include "Logging.hpp"
 #include <cstring>
 
 AnyBox::Codecs::XmaFrame AnyBox::Codecs::XmaFrameDecoder::Decode(std::span<const std::byte> source, std::uint8_t firstBit, std::uint32_t bitCount) {
@@ -27,9 +28,11 @@ AnyBox::Codecs::XmaFrame AnyBox::Codecs::XmaFrameDecoder::Decode(std::span<const
     std::memcpy(packet->data + 1, source.data(), byteCount);
     packet->size = static_cast<int>(byteCount + 1);
     std::memset(packet->data + packet->size, 0, AV_INPUT_BUFFER_PADDING_SIZE);
+    XmaErrorScope errors;
     CheckXma(avcodec_send_packet(context.get(), packet.get()), "Submit XMA frame");
     needsDrain = true;
     CheckXma(avcodec_receive_frame(context.get(), frame.get()), "Decode XMA frame");
+    if (errors.HasError()) throw std::runtime_error("XMA decoder reported an invalid bitstream");
     if (frame->format != AV_SAMPLE_FMT_FLTP || frame->nb_samples != 512 || frame->channels != static_cast<int>(channels) || frame->sample_rate != static_cast<int>(sampleRate)) throw std::runtime_error("XMA decoder returned an inconsistent frame format");
 
     XmaFrame result{};
