@@ -14,7 +14,7 @@ target_include_directories(anybox_compute_shader PUBLIC include)
 
 add_library(anybox_native_shader STATIC src/native/Frontend.cpp)
 target_sources(anybox_native_shader PRIVATE src/native/Compute.cpp)
-target_sources(anybox_native_shader PRIVATE src/native/Optimize.cpp src/native/FirstLane.cpp src/native/MaskProof.cpp)
+target_sources(anybox_native_shader PRIVATE src/native/Optimize.cpp src/native/FirstLane.cpp src/native/MaskProof.cpp src/native/BitProof.cpp)
 target_sources(anybox_native_shader PRIVATE src/native/ScratchWrites.cpp)
 target_sources(anybox_native_shader PRIVATE src/native/Decode.cpp)
 target_sources(anybox_native_shader PRIVATE src/native/Slices.cpp src/native/Join.cpp src/native/Windows.cpp)

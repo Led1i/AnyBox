@@ -6,7 +6,7 @@
 #include <array>
 
 namespace {
-ShaderRecompiler::IrProgram Make(bool optimize) {
+ShaderRecompiler::IrProgram Make(bool optimize, bool bits) {
     using namespace ShaderRecompiler;
     IrProgram program;
     auto& entry = program.CreateBlock();
@@ -32,7 +32,12 @@ ShaderRecompiler::IrProgram Make(bool optimize) {
     IrBuilder builder(program);
     builder.SetInsertionPoint(entry);
     auto& lane = builder.Emit(IrOpcode::LaneId, IrType::U32, {});
-    auto& eligible = builder.LogicalNot(builder.ULessThan(lane, builder.Constant(16)));
+    auto bit = [&](std::uint32_t word) -> IrValue& {
+        auto& selector = builder.BitwiseAnd(builder.Emit(IrOpcode::LaneId, IrType::U32, {}), builder.Constant(31));
+        return builder.INotEqual(builder.BitwiseAnd(builder.ShiftRightLogical(builder.Constant(word), selector), builder.Constant(1)), builder.Constant(0));
+    };
+    auto& eligible = bits ? bit(0xFFFF0000) : builder.LogicalNot(builder.ULessThan(lane, builder.Constant(16)));
+    auto& initial = bits ? bit(0xFF0F0000) : eligible;
     auto& payload = builder.ShiftLeftLogical(builder.IAdd(lane, builder.Constant(1)), builder.Constant(5));
     auto& low = builder.ShiftLeftLogical(lane, builder.Constant(2));
     builder.SetInsertionPoint(header);
@@ -51,7 +56,7 @@ ShaderRecompiler::IrProgram Make(bool optimize) {
     program.Resources().memoryInfo.push_back(memory);
     (void)builder.Emit(IrOpcode::StoreAddressU32, IrType::Void, {&address, &low, &builder.Constant(2), &first, &chosen}, MemoryFlags{0, 0});
     auto& next = builder.LogicalAnd(mask, builder.LogicalNot(chosen));
-    mask.AddPhiOperand(&entry, &eligible);
+    mask.AddPhiOperand(&entry, &initial);
     mask.AddPhiOperand(&body, &next);
     ValidateProgram(program, true);
     if (optimize) Fixtures::Require(AnyBox::Shader::SimplifyFirstLaneGuards(program) == 1);
@@ -60,16 +65,20 @@ ShaderRecompiler::IrProgram Make(bool optimize) {
 }
 
 void BufferTests::CheckFirstLaneGpu(AnyBox::Vulkan::Context& context) {
-    for (bool optimize : {false, true}) {
-        auto program = Make(optimize);
-        ShaderRecompiler::ShaderComputeInputInfo input;
-        input.threadsNum[0] = 32;
-        input.threadsNum[1] = input.threadsNum[2] = 1;
-        input.waveSize = input.hostSubgroupSize = 32;
-        auto shader = AnyBox::Shader::CompileCompute(program, input, Target(), {0, 0, 0, 128});
-        std::array<std::uint32_t, 32> expected;
-        expected.fill(UINT32_MAX);
-        for (unsigned lane = 16; lane < 32; ++lane) expected[lane] = (lane + 1) << 5;
-        RunGpu(context, shader, expected, {1, 1, 1});
+    for (bool bits : {false, true}) {
+        for (bool optimize : {false, true}) {
+            auto program = Make(optimize, bits);
+            ShaderRecompiler::ShaderComputeInputInfo input;
+            input.threadsNum[0] = 32;
+            input.threadsNum[1] = input.threadsNum[2] = 1;
+            input.waveSize = input.hostSubgroupSize = 32;
+            auto shader = AnyBox::Shader::CompileCompute(program, input, Target(), {0, 0, 0, 128});
+            std::array<std::uint32_t, 32> expected;
+            expected.fill(UINT32_MAX);
+            for (unsigned lane = 0; lane < 32; ++lane) {
+                if ((bits ? 0xFF0F0000U : 0xFFFF0000U) & (1U << lane)) expected[lane] = (lane + 1) << 5;
+            }
+            RunGpu(context, shader, expected, {1, 1, 1});
+        }
     }
 }

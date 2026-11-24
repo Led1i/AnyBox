@@ -11,7 +11,7 @@ struct Fixture {
     IrValue* read = nullptr;
     IrValue* payload = nullptr;
 
-    Fixture(bool narrow, bool duplicate, bool changing, bool validEntry) {
+    Fixture(bool narrow, bool duplicate, bool changing, bool validEntry, bool bits = false, bool widenedBits = false, unsigned selectorMask = 31) {
         auto& entry = program.CreateBlock();
         auto& header = program.CreateBlock();
         auto& body = program.CreateBlock();
@@ -34,7 +34,16 @@ struct Fixture {
         metadata[1].terminator.continueBlock = 2;
         IrBuilder builder(program);
         builder.SetInsertionPoint(entry);
-        auto& condition = builder.INotEqual(builder.GetUserData(static_cast<ScalarReg>(0)), builder.Constant(0));
+        auto bit = [&](IrValue& word, unsigned selector) -> IrValue& {
+            auto& lane = builder.Emit(IrOpcode::LaneId, IrType::U32, {});
+            auto& index = builder.BitwiseAnd(lane, builder.Constant(selector));
+            return builder.INotEqual(builder.BitwiseAnd(builder.ShiftRightLogical(word, index), builder.Constant(1)), builder.Constant(0));
+        };
+        auto& raw = builder.GetUserData(static_cast<ScalarReg>(0));
+        auto& condition = bits ? bit(raw, 31) : builder.INotEqual(raw, builder.Constant(0));
+        auto& additional = builder.GetUserData(static_cast<ScalarReg>(2));
+        auto& initialBits = widenedBits ? builder.BitwiseOr(raw, additional) : builder.BitwiseAnd(raw, additional);
+        auto& anchored = bits ? bit(initialBits, selectorMask) : condition;
         auto& other = builder.INotEqual(builder.GetUserData(static_cast<ScalarReg>(1)), builder.Constant(0));
         builder.SetInsertionPoint(header);
         mask = &builder.Emit(IrOpcode::Phi, IrType::Bool, {});
@@ -46,7 +55,7 @@ struct Fixture {
         auto& value = builder.Select(chosen, *payload, builder.Constant(3));
         read = &builder.Emit(IrOpcode::ReadFirstLane, IrType::U32, {&value, mask});
         auto& update = narrow ? builder.LogicalAnd(*copied, other) : builder.LogicalOr(*copied, other);
-        auto* initial = validEntry ? &condition : &other;
+        auto* initial = validEntry ? &anchored : &other;
         mask->AddPhiOperand(&entry, initial);
         mask->AddPhiOperand(&body, &update);
         if (duplicate) {
@@ -71,4 +80,10 @@ void CheckFirstLaneGuards() {
     Fixtures::Require(AnyBox::Shader::SimplifyFirstLaneGuards(changing.program) == 0);
     Fixture unguarded(true, false, false, false);
     Fixtures::Require(AnyBox::Shader::SimplifyFirstLaneGuards(unguarded.program) == 0);
+    Fixture bits(true, true, false, true, true);
+    Fixtures::Require(AnyBox::Shader::SimplifyFirstLaneGuards(bits.program) == 1);
+    Fixture widenedBits(true, true, false, true, true, true);
+    Fixtures::Require(AnyBox::Shader::SimplifyFirstLaneGuards(widenedBits.program) == 0);
+    Fixture selector(true, true, false, true, true, false, 15);
+    Fixtures::Require(AnyBox::Shader::SimplifyFirstLaneGuards(selector.program) == 0);
 }
