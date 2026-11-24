@@ -19,6 +19,10 @@ bool BufferLowering::Emit(const LLVMBC::CallInst& instruction, ScalarLowering& s
         return true;
     }
     unsigned bits;
+    if (identifier == "dx.op.cbufferLoadLegacy.i32" || identifier == "dx.op.cbufferLoadLegacy.i64" || identifier == "dx.op.cbufferLoadLegacy.f32") {
+        if (!aggregates.contains(&instruction)) constantBuffer(instruction, identifier == "dx.op.cbufferLoadLegacy.i64" ? 64 : 32, scalar, identifier == "dx.op.cbufferLoadLegacy.f32");
+        return true;
+    }
     if (identifier == "dx.op.rawBufferLoad.f32") {
         if (!aggregates.contains(&instruction)) load(instruction, 32, scalar, true);
         return true;
@@ -57,7 +61,7 @@ IrValue* BufferLowering::Extract(const LLVMBC::ExtractValueInst& instruction, Sc
     }
     if (instruction.getNumIndices() != 1) throw std::runtime_error("DXIL nested buffer result extraction is not implemented");
     auto index = instruction.getIndices()[0];
-    if (index >= 5) throw std::runtime_error("DXIL buffer result extraction index is invalid");
+    if (index >= input->getType()->getStructNumElements() || index >= 5) throw std::runtime_error("DXIL buffer result extraction index is invalid");
     if (index == 4) throw std::runtime_error("DXIL sparse buffer residency feedback is not implemented");
     auto* value = found->second.at(index);
     if (!value) throw std::runtime_error("DXIL buffer result extracts a component absent from its load mask");

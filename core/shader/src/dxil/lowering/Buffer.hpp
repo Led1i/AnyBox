@@ -39,6 +39,7 @@ private:
         IrValue& active;
     };
     void load(const LLVMBC::CallInst& instruction, unsigned bits, ScalarLowering& scalar, bool floating = false);
+    void constantBuffer(const LLVMBC::CallInst& instruction, unsigned bits, ScalarLowering& scalar, bool floating);
     void store(const LLVMBC::CallInst& instruction, unsigned bits, ScalarLowering& scalar, bool floating = false);
     Access resolve(const LLVMBC::CallInst& instruction, ScalarLowering& scalar, bool write);
     Component component(const Access& access, unsigned bits, unsigned index);
