@@ -7,12 +7,14 @@
 void CheckNativeCompute();
 void CheckNativeFlow();
 void CheckNativeScratchWrites();
+void CheckNativeImages();
 
 int main() {
     return AnyBox::Tests::Run([] {
         CheckNativeCompute();
         CheckNativeFlow();
         CheckNativeScratchWrites();
+        CheckNativeImages();
         using namespace Fixtures;
         auto data = MakeNativeProgram();
         AnyBox::Shader::NativeFrontend frontend(data);
