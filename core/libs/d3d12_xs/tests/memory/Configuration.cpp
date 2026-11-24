@@ -61,6 +61,11 @@ int main(int count, char** arguments) {
         auto repeated = configuration;
         repeated.backendData = {};
         Require(D3D12ConfigureVirtualMemoryX(&repeated) == 0x10000000 && repeated.backendData == configuration.backendData, "Repeated graphics configuration changed its backing storage");
+        repeated.pageTablePageCount = 0;
+        repeated.backendData = {};
+        Require(D3D12ConfigureVirtualMemoryX(&repeated) == 0x10000000 && repeated.backendData == configuration.backendData, "Default graphics request did not retain the existing configuration");
+        XMemGetWorkingSetStatistics(0x20000000, &statistics);
+        Require(statistics.gpuPageTableSize == pageTableBytes, "Default graphics request changed the registered budget");
         repeated.pageTablePageCount = 2;
         Reject<std::logic_error>([&] { D3D12ConfigureVirtualMemoryX(&repeated); });
         return 0;

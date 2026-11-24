@@ -37,7 +37,8 @@ std::int32_t D3D12ConfigureVirtualMemoryX(D3D12VirtualMemoryConfiguration* confi
     std::lock_guard lock(memory.mutex);
     if (memory.configuration) {
         const auto& previous = *memory.configuration;
-        if (configuration->pageTablePageCount != previous.pageTablePageCount || configuration->framePreserveBufferSize != previous.framePreserveBufferSize) throw std::logic_error("D3D12 virtual memory has already been configured differently");
+        auto previousPages = previous.pageTablePageCount != 0 ? previous.pageTablePageCount : 5;
+        if ((configuration->pageTablePageCount != 0 && configuration->pageTablePageCount != previousPages) || configuration->framePreserveBufferSize != previous.framePreserveBufferSize) throw std::logic_error("D3D12 virtual memory has already been configured differently");
         configuration->backendData = previous.backendData;
         return 0x10000000;
     }
