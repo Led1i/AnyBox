@@ -48,6 +48,8 @@ bool Implies(const IrProgram& program, const IrValue* mask, const IrValue* condi
     if (depth == 0) return false;
     if (AnyBox::Shader::NativeBitPredicateImplies(mask, condition, steps)) return true;
     if (AnyBox::Shader::NativeBallotPredicateImplies(mask, condition, program.WaveSize(), steps)) return true;
+    if (condition->Opcode() == IrOpcode::LogicalAnd && condition->ArgumentCount() == 2 && Implies(program, mask, condition->Argument(0), depth - 1, steps) && Implies(program, mask, condition->Argument(1), depth - 1, steps)) return true;
+    if (condition->Opcode() == IrOpcode::LogicalOr && condition->ArgumentCount() == 2 && (Implies(program, mask, condition->Argument(0), depth - 1, steps) || Implies(program, mask, condition->Argument(1), depth - 1, steps))) return true;
     if (mask->Opcode() == IrOpcode::SelectU1 && mask->ArgumentCount() == 3) return Implies(program, mask->Argument(1), condition, depth - 1, steps) && Implies(program, mask->Argument(2), condition, depth - 1, steps);
     if (mask->Opcode() == IrOpcode::LogicalAnd && mask->ArgumentCount() == 2) return Implies(program, mask->Argument(0), condition, depth - 1, steps) || Implies(program, mask->Argument(1), condition, depth - 1, steps);
     if (mask->Opcode() == IrOpcode::LogicalOr && mask->ArgumentCount() == 2) return Implies(program, mask->Argument(0), condition, depth - 1, steps) && Implies(program, mask->Argument(1), condition, depth - 1, steps);

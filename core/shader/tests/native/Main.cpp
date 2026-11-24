@@ -12,6 +12,7 @@ void CheckNativeFmaDecoding();
 void CheckDescriptorChoices();
 void CheckFirstLaneGuards();
 void CheckBallotFirstLaneGuards();
+void CheckBooleanFirstLaneGuards();
 
 int main() {
     return AnyBox::Tests::Run([] {
@@ -23,6 +24,7 @@ int main() {
         CheckDescriptorChoices();
         CheckFirstLaneGuards();
         CheckBallotFirstLaneGuards();
+        CheckBooleanFirstLaneGuards();
         using namespace Fixtures;
         auto data = MakeNativeProgram();
         AnyBox::Shader::NativeFrontend frontend(data);

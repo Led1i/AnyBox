@@ -3,7 +3,7 @@
 #include <IntermediateRepresentation/IrBuilder.hpp>
 
 namespace {
-void Check(std::uint32_t waveSize, std::uint32_t selectorMask, unsigned component, bool widen, bool expected) {
+void Check(std::uint32_t waveSize, std::uint32_t selectorMask, unsigned component, bool widen, bool expected, bool compound = false) {
     using namespace ShaderRecompiler;
     IrProgram program;
     program.SetWaveSize(waveSize);
@@ -14,7 +14,8 @@ void Check(std::uint32_t waveSize, std::uint32_t selectorMask, unsigned componen
     IrBuilder builder(program);
     builder.SetInsertionPoint(block);
     auto& lane = builder.Emit(IrOpcode::LaneId, IrType::U32, {});
-    auto& condition = builder.UGreaterThan(lane, builder.Constant(8));
+    auto& lower = builder.UGreaterThan(lane, builder.Constant(8));
+    auto& condition = compound ? builder.LogicalAnd(lower, builder.ULessThan(lane, builder.Constant(28))) : lower;
     auto& ballot = builder.Emit(IrOpcode::Ballot, IrType::Vec4U32, {&condition});
     auto& word = builder.CompositeExtract(ballot, component);
     auto& extra = builder.Constant(0xFF0F0000U);
@@ -34,6 +35,7 @@ void Check(std::uint32_t waveSize, std::uint32_t selectorMask, unsigned componen
 
 void CheckBallotFirstLaneGuards() {
     Check(32, 31, 0, false, true);
+    Check(32, 31, 0, false, true, true);
     Check(32, UINT32_MAX, 0, false, true);
     Check(64, 31, 0, false, false);
     Check(32, 15, 0, false, false);
