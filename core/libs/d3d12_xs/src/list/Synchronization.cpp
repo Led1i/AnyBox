@@ -41,7 +41,7 @@ ID3D12GraphicsCommandList7* AnyBox::Graphics::CommandList::getSynchronizationHos
 }
 
 void AnyBox::Graphics::CommandList::synchronize(bool top, std::uint32_t flags, std::uint32_t control, std::uint64_t address, std::uint64_t size) {
-    if (closed) throw std::logic_error("GPU synchronization requires a recording command list");
+    if (IsClosed()) throw std::logic_error("GPU synchronization requires a recording command list");
     validateGuestCommands();
     ValidateFlags(guest.type, top, flags, control);
     ValidateRange(address, size);

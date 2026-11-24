@@ -1,7 +1,7 @@
 #include "List.hpp"
 #include <stdexcept>
 
-AnyBox::Graphics::CommandList::CommandList(ID3D12GraphicsCommandList* host, Device* device, Allocator* allocator, D3D12_COMMAND_LIST_TYPE type) : guest(&GetListTable(), type), host(host), device(device), allocator(allocator) {
+AnyBox::Graphics::CommandList::CommandList(ID3D12GraphicsCommandList* host, Device* device, Allocator* allocator, D3D12_COMMAND_LIST_TYPE type, std::uint32_t flags) : guest(&GetListTable(), type), host(host), device(device), allocator(allocator), state(flags) {
     Device::AddRef(device);
     Allocator::AddRef(allocator);
     resetGuestCommands();

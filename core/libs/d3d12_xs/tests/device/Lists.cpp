@@ -5,7 +5,7 @@
 #include <array>
 
 namespace {
-void CheckList(AnyBox::Graphics::Device* device, D3D12_COMMAND_LIST_TYPE type, bool extended) {
+void CheckList(AnyBox::Graphics::Device* device, D3D12_COMMAND_LIST_TYPE type, std::uint32_t flags) {
     using namespace AnyBox::Graphics;
     using namespace AnyBox::Graphics::Tests;
     auto createAllocator = Method<decltype(&Device::CreateCommandAllocator)>(device, 9);
@@ -14,13 +14,14 @@ void CheckList(AnyBox::Graphics::Device* device, D3D12_COMMAND_LIST_TYPE type, b
     void* output = nullptr;
     Require(createAllocator(device, type, AllocatorId, &output) == 0 && output, "List test allocator creation failed");
     auto* allocator = static_cast<Allocator*>(output);
-    if (extended) {
-        XboxListDescription description{type, 2, 1, 0};
+    if (flags != 0) {
+        XboxListDescription description{type, flags, 1, 0};
         Require(Method<decltype(&Device::CreateCommandListX)>(device, 73)(device, &description, allocator, nullptr, interfaceId, &output) == 0 && output, "Deferred Xbox command list creation failed");
     } else {
         Require(createList(device, 0, type, allocator, nullptr, interfaceId, &output) == 0 && output, "Xbox command list creation failed");
     }
     auto* list = static_cast<CommandList*>(output);
+    Require(list->GetCreationFlags() == flags, "Xbox command list creation flags were not retained");
     auto close = Method<decltype(&CommandList::Close)>(list, 9);
     auto reset = Method<decltype(&CommandList::Reset)>(list, 10);
     auto query = Method<decltype(&CommandList::QueryInterface)>(list, 0);
@@ -51,6 +52,7 @@ void CheckList(AnyBox::Graphics::Device* device, D3D12_COMMAND_LIST_TYPE type, b
             execute(queue, count, batch.data());
             Require(signal(queue, fence, count) == 0 && complete(fence, count, nullptr) == 0, "Submitted command lists did not finish on the GPU");
             Require(Method<decltype(&Allocator::Reset)>(allocator, 8)(allocator) == 0 && reset(list, allocator, nullptr) == 0, "Completed command list could not be reused");
+            Require(list->GetCreationFlags() == flags, "Reset changed Xbox command list creation flags");
             Reject<std::logic_error>([&] { execute(queue, 1, batch.data()); });
             Require(close(list) == 0, "Reused command list close failed");
         }
@@ -66,8 +68,10 @@ void CheckList(AnyBox::Graphics::Device* device, D3D12_COMMAND_LIST_TYPE type, b
 }
 
 void AnyBox::Graphics::Tests::CheckLists(Device* device) {
-    for (auto type : {D3D12_COMMAND_LIST_TYPE_DIRECT, D3D12_COMMAND_LIST_TYPE_BUNDLE, D3D12_COMMAND_LIST_TYPE_COMPUTE, D3D12_COMMAND_LIST_TYPE_COPY, static_cast<D3D12_COMMAND_LIST_TYPE>(0x10)}) CheckList(device, type, false);
-    for (auto type : {D3D12_COMMAND_LIST_TYPE_DIRECT, D3D12_COMMAND_LIST_TYPE_COMPUTE}) CheckList(device, type, true);
+    for (auto type : {D3D12_COMMAND_LIST_TYPE_DIRECT, D3D12_COMMAND_LIST_TYPE_BUNDLE, D3D12_COMMAND_LIST_TYPE_COMPUTE, D3D12_COMMAND_LIST_TYPE_COPY, static_cast<D3D12_COMMAND_LIST_TYPE>(0x10)}) CheckList(device, type, 0);
+    for (auto flags : {2U, 4U, 6U}) {
+        for (auto type : {D3D12_COMMAND_LIST_TYPE_DIRECT, D3D12_COMMAND_LIST_TYPE_COMPUTE}) CheckList(device, type, flags);
+    }
     auto create = Method<decltype(&Device::CreateCommandListX)>(device, 73);
     XboxListDescription description{D3D12_COMMAND_LIST_TYPE_DIRECT, 0, 1, 0};
     void* output = nullptr;

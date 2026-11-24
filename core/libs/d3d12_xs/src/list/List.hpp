@@ -20,12 +20,13 @@ struct XboxListDescription {
 
 class CommandList : public ObjectLifetime<CommandList> {
 public:
-    CommandList(ID3D12GraphicsCommandList* host, Device* device, Allocator* allocator, D3D12_COMMAND_LIST_TYPE type);
+    CommandList(ID3D12GraphicsCommandList* host, Device* device, Allocator* allocator, D3D12_COMMAND_LIST_TYPE type, std::uint32_t flags = 0);
     ~CommandList();
     ID3D12GraphicsCommandList* GetHost() const noexcept { return host; }
     Device* GetParent() const noexcept { return device; }
     D3D12_COMMAND_LIST_TYPE GetNativeType() const noexcept { return static_cast<std::uint32_t>(guest.type) == 0x10 ? D3D12_COMMAND_LIST_TYPE_COPY : guest.type; }
-    bool IsClosed() const noexcept { return closed; }
+    bool IsClosed() const noexcept { return (state & closedBit) != 0; }
+    std::uint32_t GetCreationFlags() const noexcept { return state & ~closedBit; }
     static constexpr std::size_t GetVtableOffset() { return offsetof(CommandList, guest) + offsetof(GuestListHeader, vtable); }
     static CommandList* From(void* object);
     bool Supports(const Guid& interfaceId) const noexcept;
@@ -48,7 +49,8 @@ private:
     ID3D12GraphicsCommandList* host;
     Device* device;
     Allocator* allocator;
-    bool closed = false;
+    static constexpr std::uint32_t closedBit = 0x80000000;
+    std::uint32_t state;
     ID3D12GraphicsCommandList7* synchronizationHost = nullptr;
 };
 
