@@ -37,7 +37,14 @@ void AnyBox::Relinker::Tests::CheckPatching() {
     Require(Read<std::uint32_t>(image.GetBytes(), 0x124) == 36 && std::ranges::equal(image.GetBytes().subspan(image.FileOffset(directory, 12), 12), std::span(original).subspan(1024, 12)), "PE helper placement did not preserve the original runtime function entry");
     auto rewritten = std::vector<std::byte>(image.GetBytes().begin(), image.GetBytes().end());
     Require(Relink(image, cpu).insertAddresses.empty() && std::ranges::equal(image.GetBytes(), rewritten), "PE INSERTQ lowering was not idempotent");
-    CheckPatchedExecution(image);
+    CheckPatchedExecution(image, (0x123456789ABCDEF0ULL & ~0xFF000000ULL) | (0xF0ULL << 24));
+
+    auto extract = Fixture(std::array<std::uint8_t, 15>{0x48, 0x83, 0xEC, 0x28, 0x66, 0x0F, 0x78, 0xC0, 27, 11, 0x48, 0x83, 0xC4, 0x28, 0xC3});
+    std::memcpy(extract.data() + 1072, unwind.data(), unwind.size());
+    Image extractImage(extract);
+    auto extracted = Relink(extractImage, cpu);
+    Require(extracted.extractAddresses == std::vector<std::uint32_t>{0x1004} && extracted.insertAddresses.empty(), "PE EXTRQ lowering did not report its original call site");
+    CheckPatchedExecution(extractImage, (0x123456789ABCDEF0ULL >> 11) & 0x7FFFFFF);
 
     auto invalid = original;
     Put<std::uint32_t>(invalid, 0xD4, 472);
@@ -57,4 +64,5 @@ void AnyBox::Relinker::Tests::CheckPatching() {
     Relink(leafImage, cpu);
     auto helper = decoder.Decode(leafImage.Code(leafImage.GetSections().back().address));
     Require(helper.native.mnemonic == ZYDIS_MNEMONIC_LEA && helper.operands[1].mem.disp.value == -32, "PE leaf call-site lowering allocated an incorrectly aligned helper stack");
+    CheckPatchedExecution(leafImage, (0x123456789ABCDEF0ULL & ~0xFF000000ULL) | (0xF0ULL << 24));
 }

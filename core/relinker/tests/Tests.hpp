@@ -12,4 +12,5 @@ void CheckCpu();
 void CheckControlFlow();
 void CheckInsert();
 void CheckPatching();
+void CheckExtract();
 }

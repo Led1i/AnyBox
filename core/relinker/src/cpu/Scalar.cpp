@@ -41,6 +41,7 @@ std::optional<bool> AnyBox::Relinker::GetScalarSupport(const CpuState& state, Zy
     case ZYDIS_ISA_SET_CLWB: return structured(1, 24);
     case ZYDIS_ISA_SET_SERIALIZE: return structured(3, 14);
     case ZYDIS_ISA_SET_RTM: return structured(1, 11);
+    case ZYDIS_ISA_SET_MONITORX: return extended(2, 29);
     case ZYDIS_ISA_SET_PREFETCH_NOP: return extended(2, 8);
     case ZYDIS_ISA_SET_XSAVE: return basic(2, 26) && basic(2, 27);
     case ZYDIS_ISA_SET_XSAVEOPT: return basic(2, 27) && (state.save[0] & 1) != 0;

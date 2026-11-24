@@ -23,4 +23,5 @@ struct LoweringSite {
 };
 
 LoweredFunction LowerImmediateInsert(const DecodedInstruction& instruction, std::uint8_t stackSize = 40);
+LoweredFunction LowerImmediateExtract(const DecodedInstruction& instruction);
 }

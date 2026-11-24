@@ -57,6 +57,15 @@ AnyBox::Relinker::RelinkResult AnyBox::Relinker::Relink(Image& image, const Cpu&
                     }
                     lowerings.push_back({address, length, std::move(function)});
                     result.insertAddresses.push_back(address);
+                } else if (instruction.native.mnemonic == ZYDIS_MNEMONIC_EXTRQ) {
+                    auto function = LowerImmediateExtract(instruction);
+                    for (std::size_t position = 0; position < function.code.size();) {
+                        auto emitted = decoder.Decode(std::span(function.code).subspan(position));
+                        cpu.Require(emitted, address);
+                        position += emitted.native.length;
+                    }
+                    lowerings.push_back({address, length, std::move(function)});
+                    result.extractAddresses.push_back(address);
                 } else cpu.Require(instruction, address);
             }
             if (category == ZYDIS_CATEGORY_UNCOND_BR || category == ZYDIS_CATEGORY_RET || instruction.native.mnemonic == ZYDIS_MNEMONIC_INT3 || instruction.native.mnemonic == ZYDIS_MNEMONIC_UD2) break;

@@ -14,7 +14,7 @@ struct Registration {
 };
 }
 
-void AnyBox::Relinker::Tests::CheckPatchedExecution(const Image& image) {
+void AnyBox::Relinker::Tests::CheckPatchedExecution(const Image& image, std::uint64_t expectedLow) {
     auto size = Read<std::uint32_t>(image.GetBytes(), 0xD0);
     std::unique_ptr<void, Release> memory(VirtualAlloc(nullptr, size, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE));
     if (!memory) Windows::ThrowLastError("Allocate rewritten PE test image");
@@ -36,23 +36,27 @@ void AnyBox::Relinker::Tests::CheckPatchedExecution(const Image& image) {
     auto before = state.values;
     state.requested = 0xA93;
     fixture.RunAt(bytes + 0x1000, state);
-    auto expected = (before[0][0] & ~0xFF000000ULL) | ((before[0][0] & 0xFF) << 24);
-    Require(state.values[0][0] == expected, "Rewritten PE did not execute the INSERTQ helper with its original operands");
+    Require(state.values[0][0] == expectedLow, "Rewritten PE did not execute its SSE4a helper with its original operands");
     for (unsigned reg = 1; reg < 16; ++reg) Require(state.values[reg] == before[reg], "Rewritten PE INSERTQ helper modified an unrelated XMM register");
 
     alignas(16) std::array<std::uint64_t, 64> stack{};
     stack[33] = 0x12345678;
-    stack[27] = base + 0x1009;
+    auto site = Decoder().Decode(image.Code(0x1000)).native.mnemonic == ZYDIS_MNEMONIC_CALL ? 0x1000U : 0x1004U;
+    auto callerStack = reinterpret_cast<DWORD64>(&stack[33]) - image.GetStackAllocation(site);
+    *reinterpret_cast<DWORD64*>(callerStack - 8) = base + site + 5;
     CONTEXT context{};
-    context.Rip = base + image.GetSections().back().address + 5;
-    context.Rsp = reinterpret_cast<DWORD64>(&stack[22]);
+    auto address = image.GetSections().back().address;
+    auto first = Decoder().Decode(image.Code(address));
+    if (first.native.mnemonic != ZYDIS_MNEMONIC_RET) address += first.native.length;
+    context.Rip = base + address;
+    context.Rsp = callerStack - 8 - image.GetStackAllocation(address);
     DWORD64 foundBase = 0;
     auto* helper = RtlLookupFunctionEntry(context.Rip, &foundBase, nullptr);
     Require(helper != nullptr && foundBase == base, "Windows did not find the appended helper unwind entry");
     PVOID handlerData = nullptr;
     DWORD64 frame = 0;
     RtlVirtualUnwind(UNW_FLAG_NHANDLER, base, context.Rip, helper, &context, &handlerData, &frame, nullptr);
-    Require(context.Rip == base + 0x1009 && context.Rsp == reinterpret_cast<DWORD64>(&stack[28]), "Appended PE unwind data did not recover its original call site");
+    Require(context.Rip == base + site + 5 && context.Rsp == callerStack, "Appended PE unwind data did not recover its original call site");
     auto* original = RtlLookupFunctionEntry(context.Rip, &foundBase, nullptr);
     Require(original != nullptr && original->BeginAddress == 0x1000, "Original PE unwind entry was lost after adding the helper");
     RtlVirtualUnwind(UNW_FLAG_NHANDLER, base, context.Rip, original, &context, &handlerData, &frame, nullptr);

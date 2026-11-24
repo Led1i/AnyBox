@@ -34,6 +34,9 @@ void AnyBox::Relinker::Tests::CheckCpu() {
     Require(!Supports(state, {0x0F, 0x32}), "Privileged RDMSR was accepted for title execution");
     Require(!Supports(state, {0xF3, 0x0F, 0x01, 0xEC}), "Unvalidated UINTR was accepted");
     Require(Supports(state, {0xF3, 0x0F, 0x1E, 0xFA}), "ENDBR64 NOP compatibility was lost");
+    Require(!Supports(state, {0x0F, 0x01, 0xFA}) && !Supports(state, {0x0F, 0x01, 0xFB}), "MONITORX/MWAITX accepted without their CPUID bit");
+    state.extended[2] |= 1U << 29;
+    Require(Supports(state, {0x0F, 0x01, 0xFA}) && Supports(state, {0x0F, 0x01, 0xFB}), "Native MONITORX/MWAITX support was not recognized");
     Cpu host(CpuState::Detect());
     Require(host.Supports(Decoder().Decode(std::as_bytes(std::span("\xC3", 1)))), "Host rejected baseline RET");
 }
