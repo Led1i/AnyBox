@@ -8,11 +8,26 @@
 #include <Recompiler.hpp>
 #include <sstream>
 #include <stdexcept>
+#include <unordered_map>
 
 namespace {
 std::string Decode(std::span<const std::byte> program) {
     AnyBox::Shader::NativeFrontend frontend(program);
     return "instructions=" + std::to_string(frontend.GetDecoded().instructions.size()) + " blocks=" + std::to_string(frontend.GetGraph().blocks.size());
+}
+
+void DescribeFlow(std::ostream& output, const ShaderRecompiler::IrProgram& program) {
+    const auto& order = program.BlockOrder();
+    std::unordered_map<const ShaderRecompiler::IrBlock*, std::size_t> positions;
+    for (std::size_t index = 0; index < order.size(); ++index) positions.emplace(order[index], index);
+    output << "wave=" << program.WaveSize() << '\n';
+    for (std::size_t index = 0; index < order.size(); ++index) {
+        output << "cfg $" << index << " loopHeader=" << program.Metadata().blockInfo.at(index).terminator.loopHeader << " predecessors=";
+        for (auto* block : order[index]->Predecessors()) output << '$' << positions.at(block) << ',';
+        output << " successors=";
+        for (auto* block : order[index]->Successors()) output << '$' << positions.at(block) << ',';
+        output << '\n';
+    }
 }
 }
 
@@ -60,7 +75,9 @@ std::string AnyBox::Shader::Tools::InspectNativeIr(std::span<const std::byte> co
         NativeFrontend frontend(programs[index]);
         ShaderRecompiler::ShaderFloatMode candidate{state.floatControl, false, false, false};
         auto lowered = LowerNativeCompute(frontend, state, candidate, AuditTarget());
-        output << "program=" << index << " candidateFloatingProfile=true\n" << ShaderRecompiler::ProgramToString(lowered.program);
+        output << "program=" << index << " candidateFloatingProfile=true\n";
+        DescribeFlow(output, lowered.program);
+        output << ShaderRecompiler::ProgramToString(lowered.program);
     }
     return output.str();
 }
