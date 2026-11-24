@@ -16,6 +16,8 @@ public:
     ~Resource();
     Vulkan::Buffer& GetGpuBuffer() const noexcept { return *buffer; }
     static bool Supports(const Guid& interfaceId) noexcept;
+    static Resource* From(void* value, Device* owner);
+    const D3D12_RESOURCE_DESC1& GetMetadata() const noexcept { return description; }
     static constexpr std::size_t GetVtableOffset() { return offsetof(Resource, vtable); }
     static HRESULT Map(Resource* self, std::uint32_t subresource, const D3D12_RANGE* range, void** data);
     static void Unmap(Resource* self, std::uint32_t subresource, const D3D12_RANGE* range);

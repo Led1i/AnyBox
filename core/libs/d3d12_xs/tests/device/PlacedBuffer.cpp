@@ -2,6 +2,7 @@
 #include "../../src/resource/Resource.hpp"
 #include "PlacedTransfer.hpp"
 #include "ResourceMetadata.hpp"
+#include "BufferViews.hpp"
 #include <xmem.hpp>
 
 void AnyBox::Graphics::Tests::CheckPlacedBuffer(Device* device) {
@@ -45,6 +46,7 @@ void AnyBox::Graphics::Tests::CheckPlacedBuffer(Device* device) {
     Require(address[17] == std::byte{0x73}, "Xbox buffer mapping is not coherent with title memory");
     CheckPlacedBufferTransfer(device, resource, {address, 2 * page}, false);
     CheckResourceMetadata(device, resource);
+    CheckBufferViews(device, resource);
     auto properties = Method<decltype(&Resource::GetHeapProperties)>(resource, 14);
     D3D12_HEAP_PROPERTIES heap{};
     Reject<std::invalid_argument>([&] { properties(resource, nullptr, nullptr); });
@@ -64,6 +66,7 @@ void AnyBox::Graphics::Tests::CheckPlacedBuffer(Device* device) {
         Require(create(device, pointer, &description, D3D12_BARRIER_LAYOUT_UNDEFINED, nullptr, ResourceId, &output) == S_OK && output, "Xbox scatter buffer creation failed");
         auto* scatter = static_cast<Resource*>(output);
         CheckPlacedBufferTransfer(device, scatter, {address, 2 * page}, repeated);
+        CheckBufferViews(device, scatter);
         Reject<std::logic_error>([&] { XMemMapPhysicalPages(address, 2, nullptr); });
         Require(release(scatter) == 0, "Xbox scatter buffer final reference was not released");
     }

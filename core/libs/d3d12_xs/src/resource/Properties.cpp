@@ -1,6 +1,16 @@
 #include "Resource.hpp"
 #include <anybox/Unimplemented.hpp>
 
+AnyBox::Graphics::Resource* AnyBox::Graphics::Resource::From(void* value, Device* owner) {
+    if (!value || reinterpret_cast<std::uintptr_t>(value) % alignof(Resource) != 0) throw std::invalid_argument("Xbox resource pointer is null or misaligned");
+    const ObjectTable* table = nullptr;
+    std::memcpy(&table, value, sizeof(table));
+    if (table != &GetResourceTable()) throw std::invalid_argument("Object is not an AnyBox graphics resource");
+    auto* resource = static_cast<Resource*>(value);
+    if (resource->device != owner) throw std::invalid_argument("Xbox resource belongs to another graphics device");
+    return resource;
+}
+
 D3D12_RESOURCE_DESC AnyBox::Graphics::Resource::GetDescription(Resource* self) {
     D3D12_RESOURCE_DESC value{};
     static_assert(offsetof(D3D12_RESOURCE_DESC, Flags) == offsetof(D3D12_RESOURCE_DESC1, Flags));
