@@ -5,6 +5,9 @@
 #include <array>
 #include <stdexcept>
 
+void CheckDxil();
+void CheckCompilerOptions();
+
 namespace {
 using namespace AnyBox::Graphics::Container;
 void Require(bool value) {
@@ -71,5 +74,7 @@ int main() {
     return AnyBox::Tests::Run([] {
         RoundTrip();
         InvalidContainers();
+        CheckDxil();
+        CheckCompilerOptions();
     });
 }

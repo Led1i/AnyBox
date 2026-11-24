@@ -1,10 +1,12 @@
 add_library(anybox_container STATIC src/Dxbc.cpp src/Compression.cpp)
 target_sources(anybox_container PRIVATE src/View.cpp src/Builder.cpp)
+target_sources(anybox_container PRIVATE src/Dxil.cpp src/CompilerOptions.cpp)
 target_link_libraries(anybox_container PUBLIC anybox_options)
 target_include_directories(anybox_container PUBLIC include)
 
 if(BUILD_TESTING)
     add_executable(container_tests tests/Main.cpp)
+    target_sources(container_tests PRIVATE tests/Fixtures.cpp tests/Dxil.cpp tests/CompilerOptions.cpp)
     target_link_libraries(container_tests PRIVATE anybox_container anybox_test_support)
     target_compile_definitions(container_tests PRIVATE ANYBOX_LIBRARY_NAME="graphics_container")
     set_target_properties(container_tests PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${ANYBOX_RUNTIME_DIRECTORY}")
