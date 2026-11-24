@@ -8,8 +8,8 @@
 #include <stdexcept>
 
 namespace AnyBox::Graphics {
-template<class TObject>
-class ObjectLifetime : public ObjectProperties<TObject> {
+template<class TObject, template<class> class TProperties = ObjectProperties>
+class ObjectLifetime : public TProperties<TObject> {
 public:
     static std::int32_t QueryInterface(TObject* self, const Guid& interfaceId, void** object) {
         if (!object) throw std::invalid_argument("Graphics interface output is null");

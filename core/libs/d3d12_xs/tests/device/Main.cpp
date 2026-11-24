@@ -60,6 +60,7 @@ int main(int argc, char** argv) {
             CheckSynchronization(device);
             CheckPhysicalHeap(device);
             CheckPlacedBuffer(device);
+            CheckDescriptorHeaps(device);
             CheckVulkanTimeline(device);
             CheckInlineCommands(device);
             CheckDxgi(device);

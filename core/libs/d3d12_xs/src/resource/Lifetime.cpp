@@ -8,7 +8,7 @@ AnyBox::Graphics::Resource::Resource(BufferBacking backing, Device* device, std:
 }
 
 AnyBox::Graphics::Resource::~Resource() {
-    delete privateData.load(std::memory_order_relaxed);
+    privateData.Reset();
     delete buffer;
     pages->Release();
     Device::Release(device);

@@ -2,15 +2,15 @@
 
 #include "Backing.hpp"
 #include "../object/Lifetime.hpp"
+#include "../object/ManagedProperties.hpp"
 
 namespace AnyBox::Graphics {
-class PrivateData;
 inline constexpr Guid ResourceId{0x696442BE, 0xA72E, 0x4059, {0xBC, 0x79, 0x5B, 0x5C, 0x98, 0x04, 0x0F, 0xAD}};
 inline constexpr Guid Resource1Id{0x9D5E227A, 0x4430, 0x4161, {0x88, 0xB3, 0x3E, 0xCA, 0x6B, 0xB1, 0x6E, 0x19}};
 inline constexpr Guid Resource2Id{0xBE36EC3B, 0xEA85, 0x4AEB, {0xA4, 0x5A, 0xE9, 0xD7, 0x64, 0x04, 0xA4, 0x95}};
 const ObjectTable& GetResourceTable();
 
-class Resource : public ObjectLifetime<Resource> {
+class Resource : public ObjectLifetime<Resource, ManagedProperties> {
 public:
     Resource(BufferBacking backing, Device* device, std::uintptr_t address, const D3D12_RESOURCE_DESC1& description);
     ~Resource();
@@ -23,15 +23,11 @@ public:
     static D3D12_RESOURCE_DESC1 GetDescription1(Resource* self);
     static std::uint64_t GetGPUVirtualAddress(Resource* self) noexcept;
     static HRESULT GetHeapProperties(Resource* self, D3D12_HEAP_PROPERTIES* properties, D3D12_HEAP_FLAGS* flags);
-    static HRESULT GetPrivateData(Resource* self, const Guid& key, std::uint32_t* size, void* data);
-    static HRESULT SetPrivateData(Resource* self, const Guid& key, std::uint32_t size, const void* data);
-    static HRESULT SetPrivateDataInterface(Resource* self, const Guid& key, const IUnknown* object);
-    static HRESULT SetName(Resource* self, const wchar_t* name);
+    PrivateData& GetPrivateDataStore() { return privateData.Get(); }
 
 private:
-    friend class ObjectLifetime<Resource>;
+    friend class ObjectLifetime<Resource, ManagedProperties>;
     std::atomic<std::uint32_t>& getReferences() noexcept { return references; }
-    PrivateData& getPrivateData();
     const ObjectTable* vtable;
     std::uint32_t objectFlags = 0;
     std::atomic<std::uint32_t> references{1};
@@ -40,7 +36,7 @@ private:
     IPhysicalPageLease* pages;
     std::uintptr_t address;
     D3D12_RESOURCE_DESC1 description;
-    std::atomic<PrivateData*> privateData{nullptr};
+    PrivateDataSlot privateData;
 };
 static_assert(std::is_standard_layout_v<Resource>);
 static_assert(Resource::GetVtableOffset() == 0);
