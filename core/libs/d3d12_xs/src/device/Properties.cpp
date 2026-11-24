@@ -16,11 +16,11 @@ void AnyBox::Graphics::CheckGraphicsResult(HRESULT result, const char* operation
 
 std::uint32_t AnyBox::Graphics::Device::GetNodeCount(Device* self) { return self->host->GetNodeCount(); }
 
-std::uint32_t AnyBox::Graphics::Device::GetDescriptorHandleIncrementSize(Device* self, D3D12_DESCRIPTOR_HEAP_TYPE type) {
-    if (type < D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV || type >= D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES) throw std::invalid_argument("Invalid graphics descriptor heap type");
-    auto size = self->host->GetDescriptorHandleIncrementSize(type);
-    if (size == 0) throw std::runtime_error("Host graphics descriptor handle increment is zero");
-    return size;
+std::uint32_t AnyBox::Graphics::Device::GetDescriptorHandleIncrementSize(Device*, D3D12_DESCRIPTOR_HEAP_TYPE type) {
+    constexpr std::array<std::uint32_t, 5> sizes{32, 16, 112, 128, 16};
+    auto index = static_cast<std::uint32_t>(type);
+    if (index >= sizes.size()) throw std::invalid_argument("Invalid graphics descriptor heap type");
+    return sizes[index];
 }
 
 D3D12_HEAP_PROPERTIES AnyBox::Graphics::Device::GetCustomHeapProperties(Device* self, std::uint32_t nodeMask, D3D12_HEAP_TYPE type) {

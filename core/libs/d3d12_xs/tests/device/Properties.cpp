@@ -26,10 +26,11 @@ void AnyBox::Graphics::Tests::CheckProperties(Device* device) {
     auto count = Method<decltype(&Device::GetNodeCount)>(device, 7);
     Require(count(device) == host->GetNodeCount() && count(device) > 0, "Xbox graphics node count differs from its host");
     auto increment = Method<decltype(&Device::GetDescriptorHandleIncrementSize)>(device, 15);
-    for (auto type : {D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER, D3D12_DESCRIPTOR_HEAP_TYPE_RTV, D3D12_DESCRIPTOR_HEAP_TYPE_DSV}) {
-        Require(increment(device, type) == host->GetDescriptorHandleIncrementSize(type), "Xbox descriptor increment differs from its host heap type");
+    constexpr std::array<std::uint32_t, 5> descriptorSizes{32, 16, 112, 128, 16};
+    for (std::uint32_t index = 0; index < descriptorSizes.size(); ++index) {
+        Require(increment(device, static_cast<D3D12_DESCRIPTOR_HEAP_TYPE>(index)) == descriptorSizes[index], "Xbox descriptor increment differs from the console ABI");
     }
-    Reject<std::invalid_argument>([&] { increment(device, D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES); });
+    Reject<std::invalid_argument>([&] { increment(device, static_cast<D3D12_DESCRIPTOR_HEAP_TYPE>(5)); });
     Reject<std::invalid_argument>([&] { increment(device, static_cast<D3D12_DESCRIPTOR_HEAP_TYPE>(-1)); });
     auto heap = Method<decltype(&Device::GetCustomHeapProperties)>(device, 26);
     for (auto type : {D3D12_HEAP_TYPE_DEFAULT, D3D12_HEAP_TYPE_UPLOAD, D3D12_HEAP_TYPE_READBACK}) {
