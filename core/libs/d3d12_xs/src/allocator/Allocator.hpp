@@ -22,6 +22,7 @@ public:
 private:
     friend class ObjectLifetime<Allocator>;
     const DeviceTable* vtable;
+    std::atomic<std::uint32_t>& getReferences() noexcept { return references; }
     std::atomic<std::uint32_t> references{1};
     ID3D12CommandAllocator* host;
     Device* device;

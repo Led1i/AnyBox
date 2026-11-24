@@ -24,6 +24,7 @@ public:
 private:
     friend class ObjectLifetime<Fence>;
     const DeviceTable* vtable;
+    std::atomic<std::uint32_t>& getReferences() noexcept { return references; }
     std::atomic<std::uint32_t> references{1};
     ID3D12Fence* host;
     Device* device;

@@ -1,9 +1,10 @@
 #include "List.hpp"
 #include <stdexcept>
 
-AnyBox::Graphics::CommandList::CommandList(ID3D12GraphicsCommandList* host, Device* device, Allocator* allocator, D3D12_COMMAND_LIST_TYPE type) : vtable(&GetListTable()), host(host), device(device), allocator(allocator), type(type) {
+AnyBox::Graphics::CommandList::CommandList(ID3D12GraphicsCommandList* host, Device* device, Allocator* allocator, D3D12_COMMAND_LIST_TYPE type) : guest(&GetListTable(), type), host(host), device(device), allocator(allocator) {
     Device::AddRef(device);
     Allocator::AddRef(allocator);
+    resetGuestCommands();
 }
 
 AnyBox::Graphics::CommandList::~CommandList() {
@@ -28,6 +29,6 @@ bool AnyBox::Graphics::CommandList::SupportsCreation(D3D12_COMMAND_LIST_TYPE typ
     return interfaceId == GraphicsListId || interfaceId == XboxGraphicsListId;
 }
 
-bool AnyBox::Graphics::CommandList::Supports(const Guid& interfaceId) const noexcept { return interfaceId == UnknownId || interfaceId == ObjectId || interfaceId == DeviceChildId || interfaceId == CommandListId || SupportsCreation(type, interfaceId); }
+bool AnyBox::Graphics::CommandList::Supports(const Guid& interfaceId) const noexcept { return interfaceId == UnknownId || interfaceId == ObjectId || interfaceId == DeviceChildId || interfaceId == CommandListId || SupportsCreation(guest.type, interfaceId); }
 
-D3D12_COMMAND_LIST_TYPE AnyBox::Graphics::CommandList::GetType(CommandList* self) { return self->type; }
+D3D12_COMMAND_LIST_TYPE AnyBox::Graphics::CommandList::GetType(CommandList* self) { return self->guest.type; }

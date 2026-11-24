@@ -21,15 +21,16 @@ public:
     }
 
     static std::uint32_t AddRef(TObject* self) {
-        auto previous = self->references.load(std::memory_order_relaxed);
+        auto& references = self->getReferences();
+        auto previous = references.load(std::memory_order_relaxed);
         do {
             if (previous == 0 || previous == std::numeric_limits<std::uint32_t>::max()) throw std::overflow_error("Graphics object reference count is invalid");
-        } while (!self->references.compare_exchange_weak(previous, previous + 1, std::memory_order_relaxed));
+        } while (!references.compare_exchange_weak(previous, previous + 1, std::memory_order_relaxed));
         return previous + 1;
     }
 
     static std::uint32_t Release(TObject* self) {
-        auto previous = self->references.fetch_sub(1, std::memory_order_acq_rel);
+        auto previous = self->getReferences().fetch_sub(1, std::memory_order_acq_rel);
         if (previous == 0) throw std::logic_error("Graphics object reference count underflows");
         if (previous == 1) delete self;
         return previous - 1;

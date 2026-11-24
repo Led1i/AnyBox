@@ -29,6 +29,7 @@ public:
 private:
     friend class ObjectLifetime<Self>;
     const DeviceTable* vtable;
+    std::atomic<std::uint32_t>& getReferences() noexcept { return references; }
     std::atomic<std::uint32_t> references{1};
     TNative* host;
     Device* device;

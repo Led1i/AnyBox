@@ -35,4 +35,5 @@ void CheckAllocators(Device* device);
 void CheckLists(Device* device);
 void CheckRoots(Device* device);
 void CheckSynchronization(Device* device);
+void CheckInlineCommands(Device* device);
 }

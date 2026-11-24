@@ -57,6 +57,7 @@ int main(int argc, char** argv) {
         CheckLists(device);
         CheckRoots(device);
         CheckSynchronization(device);
+        CheckInlineCommands(device);
         auto unavailable = Method<void (*)(void*, ...)>(device, 127);
         Reject<std::runtime_error>([&] { unavailable(device, nullptr, nullptr, nullptr); });
         if (validation) CheckValidation(device);

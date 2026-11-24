@@ -3,6 +3,7 @@
 
 HRESULT AnyBox::Graphics::CommandList::Close(CommandList* self) {
     if (self->closed) throw std::logic_error("Command list is already closed");
+    self->validateGuestCommands();
     auto result = self->host->Close();
     CheckGraphicsResult(result, "ID3D12GraphicsCommandList::Close");
     self->closed = true;
@@ -14,7 +15,7 @@ HRESULT AnyBox::Graphics::CommandList::Reset(CommandList* self, void* allocator,
     if (initialState) throw std::runtime_error("Initial command list pipeline state is not implemented");
     auto* next = Allocator::From(allocator);
     if (next->GetParent() != self->device) throw std::invalid_argument("Command list and allocator devices differ");
-    if (next->GetType() != self->type) throw std::invalid_argument("Command list and allocator types differ");
+    if (next->GetType() != self->guest.type) throw std::invalid_argument("Command list and allocator types differ");
     auto result = self->host->Reset(next->GetHost(), nullptr);
     CheckGraphicsResult(result, "ID3D12GraphicsCommandList::Reset");
 
@@ -22,5 +23,6 @@ HRESULT AnyBox::Graphics::CommandList::Reset(CommandList* self, void* allocator,
     Allocator::Release(self->allocator);
     self->allocator = next;
     self->closed = false;
+    self->resetGuestCommands();
     return result;
 }
