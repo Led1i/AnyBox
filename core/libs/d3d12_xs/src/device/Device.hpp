@@ -31,6 +31,7 @@ DeviceMethod MethodAddress(TFunction function) {
 const DeviceTable& GetDeviceTable();
 struct XboxQueueDescription;
 struct XboxListDescription;
+struct XboxShaderViewDescription;
 class DxgiDevice;
 class FrameClock;
 struct FrameAncillary;
@@ -62,6 +63,7 @@ public:
     static HRESULT CreateRootSignature(Device* self, std::uint32_t nodeMask, const void* data, std::size_t size, const Guid& interfaceId, void** signature);
     static HRESULT CreateDescriptorHeap(Device* self, const D3D12_DESCRIPTOR_HEAP_DESC* description, const Guid& interfaceId, void** heap);
     static void CreateShaderResourceView(Device* self, void* resource, const D3D12_SHADER_RESOURCE_VIEW_DESC* description, std::uint64_t destination);
+    static void CreateShaderResourceViewX(Device* self, const D3D12_RESOURCE_DESC* resource, const XboxShaderViewDescription* description, std::uint64_t destination);
     static void CreateConstantBufferView(Device* self, const D3D12_CONSTANT_BUFFER_VIEW_DESC* description, std::uint64_t destination);
     static void CreateUnorderedAccessView(Device* self, void* resource, void* counterResource, const D3D12_UNORDERED_ACCESS_VIEW_DESC* description, std::uint64_t destination);
     static HRESULT GetDeviceRemovedReason(Device* self);

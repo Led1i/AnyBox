@@ -48,5 +48,6 @@ void CheckDescriptorHeaps(Device* device);
 void CheckNullShaderViews(Device* device);
 void CheckNullUnorderedViews(Device* device);
 void CheckConstantViews(Device* device);
+void CheckRawShaderViews(Device* device);
 void CheckVulkanTimeline(Device* device);
 }
