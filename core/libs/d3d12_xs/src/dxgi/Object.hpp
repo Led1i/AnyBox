@@ -12,14 +12,6 @@ inline Guid ReadGuid(REFGUID value) noexcept {
     return result;
 }
 
-template<class TInterface>
-struct ComRelease {
-    void operator()(TInterface* value) const noexcept { value->Release(); }
-};
-
-template<class TInterface>
-using ComOwner = std::unique_ptr<TInterface, ComRelease<TInterface>>;
-
 template<class TDerived, class TInterface, class TNative>
 class DxgiObject : public TInterface {
 public:

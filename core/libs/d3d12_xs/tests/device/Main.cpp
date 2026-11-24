@@ -57,6 +57,7 @@ int main(int argc, char** argv) {
         CheckLists(device);
         CheckRoots(device);
         CheckSynchronization(device);
+        CheckPhysicalHeap(device);
         CheckInlineCommands(device);
         CheckDxgi(device);
         CheckFrameConfiguration(device);

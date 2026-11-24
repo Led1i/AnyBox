@@ -1,7 +1,7 @@
 #include "Adapter.hpp"
 #include "Output.hpp"
 
-AnyBox::Graphics::DxgiAdapter::DxgiAdapter(NativeAdapter native) : DxgiObject(ComOwner<IDXGIAdapter1>(native.release())) {}
+AnyBox::Graphics::DxgiAdapter::DxgiAdapter(NativeAdapter native) : DxgiObject(std::move(native)) {}
 
 HRESULT AnyBox::Graphics::DxgiAdapter::GetParent(REFIID interfaceId, void** parent) {
     if (!parent) throw std::invalid_argument("DXGI factory output is null");

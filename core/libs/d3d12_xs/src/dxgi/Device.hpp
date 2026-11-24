@@ -28,9 +28,6 @@ private:
     ULONG tryAddRef();
     std::atomic<std::uint32_t> references{1};
     Device* device;
-    struct ReleaseAdapter {
-        void operator()(IDXGIAdapter1* value) const noexcept { value->Release(); }
-    };
-    std::unique_ptr<IDXGIAdapter1, ReleaseAdapter> adapter;
+    NativeAdapter adapter;
 };
 }
